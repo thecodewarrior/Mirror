@@ -1,0 +1,8 @@
+package com.teamwizardry.mirror.reflection.abstractionlayer.type
+
+import java.lang.reflect.WildcardType
+
+class AbstractWildcardType(type: WildcardType): AbstractType<WildcardType>(type) {
+    val lowerBounds = type.lowerBounds.map { AbstractType.create(it) }
+    val upperBounds = type.upperBounds.map { AbstractType.create(it) }
+}
