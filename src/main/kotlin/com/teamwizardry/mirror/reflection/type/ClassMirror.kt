@@ -45,6 +45,19 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
     var raw: ClassMirror = this
         internal set
 
+    /**
+     * Specialize this class with the given parameters. This will ripple the changes into supertypes/interfaces, method
+     * and field signatures, etc.
+     *
+     * @throws IllegalArgumentException if the passed type list is not the same length as [typeParameters]
+     */
+    fun specialize(vararg parameters: TypeMirror): ClassMirror {
+        if(parameters.size != typeParameters.size)
+            throw IllegalArgumentException("Passed parameter count ${parameters.size} is different from class type " +
+                    "parameter count ${typeParameters.size}")
+        return cache.specializeClass(raw.abstractType, parameters.toList())
+    }
+
     private val genericMapping: Map<AbstractTypeVariable, TypeMirror> by lazy {
         raw.typeParameters.indices.associate {
             (raw.typeParameters[it].abstractType as AbstractTypeVariable) to typeParameters[it]
@@ -67,6 +80,31 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
         result = 31 * result + abstractType.hashCode()
         result = 31 * result + typeParameters.hashCode()
         return result
+    }
+
+    fun toFullString(): String {
+        var str = ""
+        str += abstractType.type.simpleName
+        if(typeParameters.isNotEmpty()) {
+            str += "<${typeParameters.joinToString(", ")}>"
+        }
+        superclass?.let { superclass ->
+            str += " extends $superclass"
+        }
+        if(interfaces.isNotEmpty()) {
+            str += " implements ${interfaces.joinToString(", ")}"
+        }
+
+        return str
+    }
+
+    override fun toString(): String {
+        var str = ""
+        str += abstractType.type.simpleName
+        if(typeParameters.isNotEmpty()) {
+            str += "<${typeParameters.joinToString(", ")}>"
+        }
+        return str
     }
 }
 

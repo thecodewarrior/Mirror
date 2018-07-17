@@ -26,12 +26,5 @@ abstract class TypeMirror {
      * parameterized type as the raw type of the returned mirror.
      */
     abstract val rawType: Type
-
-    companion object {
-        @JvmStatic
-        fun reflect(type: Type): TypeMirror {
-            return MirrorCache.DEFAULT.reflect(AbstractType.create(type))
-        }
-    }
 }
 

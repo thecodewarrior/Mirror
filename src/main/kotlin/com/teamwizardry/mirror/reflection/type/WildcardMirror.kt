@@ -67,4 +67,17 @@ class WildcardMirror internal constructor(override val cache: MirrorCache, overr
         result = 31 * result + lowerBounds.hashCode()
         return result
     }
+
+    override fun toString(): String {
+        var str = "?"
+        if(upperBounds.isNotEmpty()) {
+            // java spec doesn't have multi-bounded wildcards, but we don't want to throw away data, so join to ` & `
+            str += " super ${upperBounds.joinToString(" & ")}"
+        }
+        if(lowerBounds.isNotEmpty()) {
+            // java spec doesn't have multi-bounded wildcards, but we don't want to throw away data, so join to ` & `
+            str += " extends ${lowerBounds.joinToString(" & ")}"
+        }
+        return str
+    }
 }

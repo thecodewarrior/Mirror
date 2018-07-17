@@ -48,5 +48,7 @@ class ArrayMirror internal constructor(override val cache: MirrorCache, override
         return result
     }
 
-
+    override fun toString(): String {
+        return "[$component]"
+    }
 }

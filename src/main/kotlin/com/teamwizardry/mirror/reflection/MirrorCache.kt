@@ -5,9 +5,9 @@ import com.teamwizardry.mirror.reflection.type.*
 
 internal class MirrorCache {
     private val cache = mutableMapOf<Any, TypeMirror>()
-    private val specializedClasses = mutableMapOf<Pair<AbstractClass, List<TypeMirror>>, TypeMirror>()
-    private val specializedWildcards = mutableMapOf<Pair<AbstractWildcardType, Pair<List<TypeMirror>, List<TypeMirror>>>, TypeMirror>()
-    private val specializedArrays = mutableMapOf<Pair<AbstractGenericArrayType, TypeMirror>, TypeMirror>()
+    private val specializedClasses = mutableMapOf<Pair<AbstractClass, List<TypeMirror>>, ClassMirror>()
+    private val specializedWildcards = mutableMapOf<Pair<AbstractWildcardType, Pair<List<TypeMirror>, List<TypeMirror>>>, WildcardMirror>()
+    private val specializedArrays = mutableMapOf<Pair<AbstractGenericArrayType, TypeMirror>, ArrayMirror>()
 
     fun reflect(type: AbstractType<*>): TypeMirror {
         val cached = cache[type]
@@ -43,16 +43,13 @@ internal class MirrorCache {
     }
 
     internal fun specializeMapping(type: AbstractType<*>, mapping: Map<AbstractTypeVariable, TypeMirror>): TypeMirror {
-        var typeChanged = false
         fun map(toMap: AbstractType<*>): TypeMirror {
-            mapping[type]?.let {
-                typeChanged = true
+            mapping[toMap]?.let {
                 return it
             }
             val unspecialized = this.reflect(toMap)
             val specialized = specializeMapping(toMap, mapping)
             if(specialized != unspecialized) {
-                typeChanged = true
                 return specialized
             }
             return unspecialized
@@ -78,7 +75,7 @@ internal class MirrorCache {
         return mirror ?: reflect(type)
     }
 
-    private fun specializeClass(type: AbstractClass, arguments: List<TypeMirror>): TypeMirror {
+    internal fun specializeClass(type: AbstractClass, arguments: List<TypeMirror>): ClassMirror {
         specializedClasses[type to arguments]?.let { return it }
 
         val raw = reflect(type) as ClassMirror
@@ -91,7 +88,7 @@ internal class MirrorCache {
         return specialized
     }
 
-    private fun specializeWildcard(type: AbstractWildcardType, upperBounds: List<TypeMirror>, lowerBounds: List<TypeMirror>): TypeMirror {
+    private fun specializeWildcard(type: AbstractWildcardType, upperBounds: List<TypeMirror>, lowerBounds: List<TypeMirror>): WildcardMirror {
         specializedWildcards[type to (upperBounds to lowerBounds)]?.let { return it }
 
         val raw = reflect(type) as WildcardMirror
@@ -104,8 +101,7 @@ internal class MirrorCache {
         return specialized
     }
 
-    private fun specializeArray(type: AbstractGenericArrayType, component: ConcreteTypeMirror): TypeMirror {
-        component as ConcreteTypeMirror
+    private fun specializeArray(type: AbstractGenericArrayType, component: ConcreteTypeMirror): ArrayMirror {
         specializedArrays[type to component]?.let { return it }
 
         val raw = reflect(type) as ArrayMirror

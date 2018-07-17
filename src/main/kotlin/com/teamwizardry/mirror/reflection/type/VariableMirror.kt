@@ -33,5 +33,12 @@ class VariableMirror internal constructor(override val cache: MirrorCache, overr
         return result
     }
 
-
+    override fun toString(): String {
+        var str = ""
+        str += abstractType.type.name
+        if(bounds.isNotEmpty()) {
+            str += " extends ${bounds.joinToString(" & ")}"
+        }
+        return str
+    }
 }
