@@ -1,4 +1,4 @@
-package com.teamwizardry.mirror.reflection.type
+package com.teamwizardry.mirror.reflection.testsupport
 
 interface Interface1
 interface GenericInterface1<T>

@@ -9,6 +9,6 @@ abstract class TypeToken<T> {
     }
 }
 
-inline fun <reified T> javaType(): Type {
+inline fun <reified T> typeToken(): Type {
     return (object : TypeToken<T>() {}).get()
 }

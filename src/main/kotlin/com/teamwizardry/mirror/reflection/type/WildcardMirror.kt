@@ -22,7 +22,7 @@ class WildcardMirror internal constructor(override val cache: MirrorCache, overr
      * - ArrayList<>     - Invalid. `anArrayList = superAbstractListVariable` will throw
      */
     var lowerBounds: List<TypeMirror> by lazyOrSet {
-        abstractType.lowerBounds.map { cache.reflect(it) }
+        abstractType.lowerBounds.map { cache.types.reflect(it) }
     }
         internal set
 
@@ -41,7 +41,7 @@ class WildcardMirror internal constructor(override val cache: MirrorCache, overr
      * ```
      */
     var upperBounds: List<TypeMirror> by lazyOrSet {
-        abstractType.upperBounds.map { cache.reflect(it) }
+        abstractType.upperBounds.map { cache.types.reflect(it) }
     }
         internal set
 

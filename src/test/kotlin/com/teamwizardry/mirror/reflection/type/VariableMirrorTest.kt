@@ -2,6 +2,8 @@ package com.teamwizardry.mirror.reflection.type
 
 import com.teamwizardry.librarianlib.commons.reflection.typeParameter
 import com.teamwizardry.mirror.reflection.Mirror
+import com.teamwizardry.mirror.reflection.testsupport.Interface1
+import com.teamwizardry.mirror.reflection.testsupport.Interface2
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

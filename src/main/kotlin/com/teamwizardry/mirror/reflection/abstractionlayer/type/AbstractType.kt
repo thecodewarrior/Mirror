@@ -2,7 +2,7 @@ package com.teamwizardry.mirror.reflection.abstractionlayer.type
 
 import java.lang.reflect.*
 
-abstract class AbstractType<T: Type>(val type: T) {
+internal abstract class AbstractType<T: Type>(val type: T) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is AbstractType<*>) return false

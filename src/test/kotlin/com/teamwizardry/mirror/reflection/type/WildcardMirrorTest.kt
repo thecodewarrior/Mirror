@@ -1,6 +1,9 @@
 package com.teamwizardry.mirror.reflection.type
 
 import com.teamwizardry.mirror.reflection.Mirror
+import com.teamwizardry.mirror.reflection.testsupport.Interface1
+import com.teamwizardry.mirror.reflection.testsupport.LowerBounded
+import com.teamwizardry.mirror.reflection.testsupport.UpperBounded
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

@@ -1,8 +1,8 @@
 package com.teamwizardry.mirror.reflection.type
 
 import com.teamwizardry.mirror.reflection.Mirror
-import com.teamwizardry.mirror.reflection.MirrorTestBase
-import com.teamwizardry.mirror.reflection.javaType
+import com.teamwizardry.mirror.reflection.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.reflection.typeToken
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -13,7 +13,7 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun getRawClass_onArray_shouldReturnArrayType() {
         val type = Mirror.reflect<Array<Any>>() as ArrayMirror
-        assertEquals(javaType<Array<Any>>(), type.rawType)
+        assertEquals(typeToken<Array<Any>>(), type.rawType)
     }
 
     @Test

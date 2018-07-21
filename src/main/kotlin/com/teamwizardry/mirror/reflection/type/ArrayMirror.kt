@@ -21,9 +21,9 @@ class ArrayMirror internal constructor(override val cache: MirrorCache, override
      */
     var component: TypeMirror by lazyOrSet {
         when(abstractType) {
-            is AbstractClass -> abstractType.componentType?.let { cache.reflect(it) }
+            is AbstractClass -> abstractType.componentType?.let { cache.types.reflect(it) }
                     ?: throw IllegalArgumentException("ArrayMirror type is a non-array Class")
-            is AbstractGenericArrayType -> cache.reflect(abstractType.genericComponentType)
+            is AbstractGenericArrayType -> cache.types.reflect(abstractType.genericComponentType)
             else -> throw IllegalArgumentException("ArrayMirror type not a Class or GenericArrayType. It is a ${abstractType.javaClass.simpleName}")
         }
     }

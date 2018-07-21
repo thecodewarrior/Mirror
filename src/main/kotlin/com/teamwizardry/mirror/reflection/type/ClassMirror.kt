@@ -3,6 +3,7 @@ package com.teamwizardry.mirror.reflection.type
 import com.teamwizardry.mirror.reflection.abstractionlayer.type.AbstractTypeVariable
 import com.teamwizardry.mirror.reflection.MirrorCache
 import com.teamwizardry.mirror.reflection.abstractionlayer.type.AbstractClass
+import com.teamwizardry.mirror.reflection.member.field.FieldMirror
 import com.teamwizardry.mirror.reflection.utils.lazyOrSet
 
 /**
@@ -11,13 +12,14 @@ import com.teamwizardry.mirror.reflection.utils.lazyOrSet
 class ClassMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractClass): ConcreteTypeMirror() {
     override val rawType = abstractType.type
 
+//region Supertypes
     /**
      * The supertype of this class. This property is `null` if this reflect represents [Object], an interface,
      * a primitive, or `void`
      */
     val superclass: ClassMirror? by lazy {
         abstractType.genericSuperclass?.let {
-            cache.specializeMapping(it, genericMapping) as ClassMirror
+            cache.types.specializeMapping(it, genericMapping) as ClassMirror
         }
     }
 
@@ -26,7 +28,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      */
     val interfaces: List<ClassMirror> by lazy {
         abstractType.genericInterfaces.map {
-            cache.specializeMapping(it, genericMapping) as ClassMirror
+            cache.types.specializeMapping(it, genericMapping) as ClassMirror
         }
     }
 
@@ -35,7 +37,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * Use [raw] to get the type parameters of the original class.
      */
     var typeParameters: List<TypeMirror> by lazyOrSet {
-        abstractType.typeParameters.map { cache.reflect(it) }
+        abstractType.typeParameters.map { cache.types.reflect(it) }
     }
         internal set
 
@@ -55,8 +57,20 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
         if(parameters.size != typeParameters.size)
             throw IllegalArgumentException("Passed parameter count ${parameters.size} is different from class type " +
                     "parameter count ${typeParameters.size}")
-        return cache.specializeClass(raw.abstractType, parameters.toList())
+        return cache.types.specializeClass(raw.abstractType, parameters.toList())
     }
+//endregion
+
+//region fields
+    /**
+     * The declared fields of this class. Does not include the fields of supertypes.
+     */
+    val declaredFields: List<FieldMirror> by lazy {
+        abstractType.declaredFields.map {
+            cache.fields.specializeMapping(it, genericMapping)
+        }
+    }
+//endregion
 
     private val genericMapping: Map<AbstractTypeVariable, TypeMirror> by lazy {
         raw.typeParameters.indices.associate {

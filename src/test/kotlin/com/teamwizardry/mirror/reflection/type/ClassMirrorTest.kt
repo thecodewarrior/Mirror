@@ -2,12 +2,16 @@ package com.teamwizardry.mirror.reflection.type
 
 import com.teamwizardry.librarianlib.commons.reflection.typeParameter
 import com.teamwizardry.mirror.reflection.*
+import com.teamwizardry.mirror.reflection.testsupport.Interface1
+import com.teamwizardry.mirror.reflection.testsupport.Interface2
+import com.teamwizardry.mirror.reflection.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.reflection.testsupport.Object1
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.DisplayName
 
 internal class ClassMirrorTest: MirrorTestBase() {
-
     @Test
     fun getRawClass_ofType_shouldReturnOriginalClass() {
         val type = Mirror.reflectClass<Object1>()
@@ -68,5 +72,22 @@ internal class ClassMirrorTest: MirrorTestBase() {
     fun getRaw_ofType_returnsItself() {
         val type = Mirror.reflectClass<Object1>()
         assertEquals(type, type.raw)
+    }
+
+    @Test
+    @DisplayName("Getting declared fields of a class should return the correct mirrors in order")
+    fun getFields() {
+        class FieldHolder {
+            @JvmField var foo: String? = null
+            @JvmField var bar: String? = null
+        }
+        val fooJvmField = FieldHolder::class.java.getField("foo")
+        val barJvmField = FieldHolder::class.java.getField("bar")
+        val holderMirror = Mirror.reflectClass<FieldHolder>()
+        val fields = holderMirror.declaredFields
+        assertEquals(listOf(
+                Mirror.reflect(fooJvmField),
+                Mirror.reflect(barJvmField)
+        ), fields)
     }
 }

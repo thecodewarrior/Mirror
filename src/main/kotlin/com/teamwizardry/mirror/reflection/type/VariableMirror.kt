@@ -15,7 +15,7 @@ class VariableMirror internal constructor(override val cache: MirrorCache, overr
      *
      * By default it contains the [Object] mirror.
      */
-    val bounds: List<TypeMirror> = abstractType.bounds.map { cache.reflect(it) }
+    val bounds: List<TypeMirror> = abstractType.bounds.map { cache.types.reflect(it) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
