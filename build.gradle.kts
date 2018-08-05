@@ -1,5 +1,7 @@
+import groovy.lang.Closure
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.concurrent.Callable
 
 plugins {
     java
@@ -34,7 +36,25 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<DokkaTask> {
+    val out = "$projectDir/docs"
     outputFormat = "html"
-    outputDirectory = "$buildDir/javadoc"
+    outputDirectory = out
     jdkVersion = 8
+    doFirst {
+        println("Cleaning doc directory $out...")
+        project.delete(fileTree(out))
+    }
+
+    kotlinTasks(Any().dokkaDelegateClosureOf<Any?> { emptyList<Any?>() })
+
+    sourceDirs = listOf("src/main/kotlin").map { projectDir.resolve(it) }
+    samples = listOf("src/samples/java", "src/samples/kotlin")
+    includes = projectDir.resolve("src/main/docs").walkTopDown()
+            .filter { it.isFile }
+            .toList()
+}
+
+fun <T> Any.dokkaDelegateClosureOf(action: T.() -> Unit) = object : Closure<Any?>(this, this) {
+    @Suppress("unused") // to be called dynamically by Groovy
+    fun doCall() = org.gradle.internal.Cast.uncheckedCast<T>(delegate).action()
 }

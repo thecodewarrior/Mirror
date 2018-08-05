@@ -1,12 +1,12 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.Mirror
-import com.teamwizardry.mirror.reflection.typeParameter
-import com.teamwizardry.mirror.reflection.*
-import com.teamwizardry.mirror.reflection.testsupport.Interface1
-import com.teamwizardry.mirror.reflection.testsupport.Interface2
-import com.teamwizardry.mirror.reflection.testsupport.MirrorTestBase
-import com.teamwizardry.mirror.reflection.testsupport.Object1
+import com.teamwizardry.mirror.typeParameter
+import com.teamwizardry.mirror.*
+import com.teamwizardry.mirror.testsupport.Interface1
+import com.teamwizardry.mirror.testsupport.Interface2
+import com.teamwizardry.mirror.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.testsupport.Object1
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

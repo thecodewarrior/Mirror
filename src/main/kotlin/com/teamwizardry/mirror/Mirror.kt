@@ -8,21 +8,16 @@ import com.teamwizardry.mirror.type.TypeMirror
 import java.lang.reflect.Field
 import java.lang.reflect.Type
 
-/*
-temp holding place
-terminology:
-    specialized mirror - a mirror that has had the type parameters as provided by Java replaced.
-    specialization - the process of creating a specialized mirror, or a specialized version of the mentioned mirror
-    specialize - the act of creating a specialized version of amirror
-*/
-
-
+/**
+ * Provides access to the Mirrors for various reflective types.
+ */
 object Mirror {
     internal var cache = MirrorCache()
 
     /**
      * Create a mirror of the passed type.
      */
+    @JvmStatic
     fun reflect(type: Type): TypeMirror {
         val abstract = AbstractType.create(type)
         return cache.types.reflect(abstract)
@@ -37,6 +32,7 @@ object Mirror {
      *
      * @throws IllegalArgumentException if the input class is an array type
      */
+    @JvmStatic
     fun reflectClass(clazz: Class<*>): ClassMirror {
         if(clazz.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
         return reflect(clazz) as ClassMirror
@@ -52,6 +48,7 @@ object Mirror {
         return reflect<T>() as ClassMirror
     }
 
+    @JvmStatic
     fun reflect(field: Field): FieldMirror {
         val abstract = AbstractField(field)
         return cache.fields.reflect(abstract)

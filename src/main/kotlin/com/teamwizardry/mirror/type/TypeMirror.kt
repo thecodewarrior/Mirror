@@ -9,10 +9,10 @@ import java.lang.reflect.*
  * type information provided by the JVM.
  *
  * Mirrors can be "specialized", which results in the generic type arguments being substituted all the way down the
- * chain. This substitution means that the mirror of [HashMap]`<Foo, Bar>` would have a superclass
- * [AbstractMap]`<Foo, Bar>` and a [Map.get] method whose return value is `Bar`. This "trickle down" approach makes
- * generic reflection dead easy and is much better than the mind-numbingly complex task of tracing type parameters
- * upward to figure out where they are defined.
+ * chain. This substitution means that the mirror of [java.util.HashMap]`<Foo, Bar>` would have a superclass
+ * [java.util.AbstractMap]`<Foo, Bar>` and a [java.util.Map.get] method whose return value is `Bar`. This "trickle down"
+ * approach makes generic reflection dead easy and is much better than the mind-numbingly complex task of tracing type
+ * parameters upward to figure out where they are defined.
  *
  * @see ClassMirror
  * @see ArrayMirror
@@ -22,8 +22,8 @@ import java.lang.reflect.*
 abstract class TypeMirror {
     /**
      * The cache this mirror was created by. Mirrors from other caches will not be considered equal even if they
-     * represent the same type. However, no production code should use anything but [TypeMirror.reflect], which
-     * uses a global cache.
+     * represent the same type. However, no production code should use anything but
+     * [com.teamwizardry.mirror.Mirror.reflect], which uses a global cache.
      */
     internal abstract val cache: MirrorCache
     /**

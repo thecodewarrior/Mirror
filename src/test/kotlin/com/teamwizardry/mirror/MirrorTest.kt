@@ -1,10 +1,10 @@
 package com.teamwizardry.mirror
 
-import com.teamwizardry.mirror.reflection.testsupport.MirrorTestBase
-import com.teamwizardry.mirror.reflection.type.ArrayMirror
-import com.teamwizardry.mirror.reflection.type.ClassMirror
-import com.teamwizardry.mirror.reflection.type.VariableMirror
-import com.teamwizardry.mirror.reflection.type.WildcardMirror
+import com.teamwizardry.mirror.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.type.ArrayMirror
+import com.teamwizardry.mirror.type.ClassMirror
+import com.teamwizardry.mirror.type.VariableMirror
+import com.teamwizardry.mirror.type.WildcardMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

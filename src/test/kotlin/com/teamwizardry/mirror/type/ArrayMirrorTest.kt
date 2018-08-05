@@ -1,8 +1,8 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.Mirror
-import com.teamwizardry.mirror.reflection.testsupport.MirrorTestBase
-import com.teamwizardry.mirror.reflection.typeToken
+import com.teamwizardry.mirror.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.typeToken
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

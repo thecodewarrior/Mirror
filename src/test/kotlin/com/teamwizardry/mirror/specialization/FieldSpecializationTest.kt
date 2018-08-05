@@ -1,7 +1,7 @@
 package com.teamwizardry.mirror.specialization
 
 import com.teamwizardry.mirror.Mirror
-import com.teamwizardry.mirror.reflection.testsupport.GenericInterface1
+import com.teamwizardry.mirror.testsupport.GenericInterface1
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
