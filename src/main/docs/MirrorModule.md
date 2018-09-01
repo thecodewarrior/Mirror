@@ -14,4 +14,8 @@ assert methodMirror.getReturnType() == Mirror.reflect(File.class);
 methodMirror.invoke(someMap, "foo")
 ```
 
+# Note for contributors
 
+This entire library hinges upon types being lazily evaluated. This means that mirror classes cannot construct any 
+other mirror classes during their own construction. This is crucial because it prevents loops from occurring, as each 
+mirror will be cached before any other mirrors (which may contain circular references) are created.
