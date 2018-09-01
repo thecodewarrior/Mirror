@@ -19,20 +19,19 @@ internal class FieldMirrorCache(private val cache: MirrorCache) {
         return mirror
     }
 
-    internal fun specializeMapping(field: AbstractField, mapping: Map<AbstractTypeVariable, TypeMirror>): FieldMirror {
-        val rawMirror = reflect(field)
-        val newType = cache.mapType(mapping, field.type)
+    fun getFieldMirror(field: AbstractField, newType: TypeMirror): FieldMirror {
+        specializedCache[field to newType]?.let { return it }
+        val raw = this.reflect(field)
+        val specialized: FieldMirror
+        if(raw.type == newType) {
+            specialized = raw
+        } else {
+            specialized = FieldMirror(cache, field)
+            specialized.type = newType
+            specialized.raw = raw
+        }
 
-        if(newType == rawMirror.type) return rawMirror
-
-        val cached = specializedCache[field to newType]
-        if(cached != null) return cached
-
-        val newMirror = FieldMirror(cache, field)
-        newMirror.type = newType
-        newMirror.raw = rawMirror
-        specializedCache[field to newType] = newMirror
-
-        return newMirror
+        specializedCache[field to newType] = specialized
+        return specialized
     }
 }

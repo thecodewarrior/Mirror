@@ -1,8 +1,8 @@
 package com.teamwizardry.mirror.type
 
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractTypeVariable
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
+import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
+import com.teamwizardry.mirror.abstractionlayer.type.*
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
 
@@ -23,7 +23,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      */
     val superclass: ClassMirror? by lazy {
         abstractType.genericSuperclass?.let {
-            cache.types.specializeMapping(it, genericMapping) as ClassMirror
+            this.map(cache.types.reflect(it)) as ClassMirror
         }
     }
 
@@ -34,7 +34,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      */
     val interfaces: List<ClassMirror> by lazy {
         abstractType.genericInterfaces.map {
-            cache.types.specializeMapping(it, genericMapping) as ClassMirror
+            this.map(cache.types.reflect(it)) as ClassMirror
         }
     }
 
@@ -64,7 +64,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
         if(parameters.size != typeParameters.size)
             throw IllegalArgumentException("Passed parameter count ${parameters.size} is different from class type " +
                     "parameter count ${typeParameters.size}")
-        return cache.types.specializeClass(raw.abstractType, parameters.toList())
+        return cache.types.getClassMirror(raw.abstractType, parameters.toList())
     }
 //endregion
 
@@ -74,15 +74,45 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      */
     val declaredFields: List<FieldMirror> by lazy {
         abstractType.declaredFields.map {
-            cache.fields.specializeMapping(it, genericMapping)
+            this.map(it)
         }
     }
 //endregion
 
-    private val genericMapping: Map<AbstractTypeVariable, TypeMirror> by lazy {
-        raw.typeParameters.indices.associate {
-            (raw.typeParameters[it].abstractType as AbstractTypeVariable) to typeParameters[it]
+    private fun map(type: TypeMirror): TypeMirror {
+        genericMapping[type]?.let {
+            return it
         }
+
+        when (type) {
+            is ArrayMirror -> {
+                val component = this.map(type.component)
+                if(component != type.component) {
+                    return cache.types.getArrayMirror(component as ConcreteTypeMirror)
+                }
+            }
+            is ClassMirror -> {
+                val parameters = type.typeParameters.map { this.map(it) }
+                if(parameters != type.typeParameters) {
+                    return cache.types.getClassMirror(type.raw.abstractType, parameters)
+                }
+            }
+        }
+
+        return type
+    }
+
+    private val genericMapping: Map<TypeMirror, TypeMirror> by lazy {
+        raw.typeParameters.zip(typeParameters).associate { it }
+    }
+
+    private fun map(field: AbstractField): FieldMirror {
+        val raw = cache.fields.reflect(field)
+        val newType = this.map(raw.type)
+
+        if(newType == raw.type) return raw
+
+        return cache.fields.getFieldMirror(raw.abstractField, newType)
     }
 
     override fun equals(other: Any?): Boolean {
