@@ -2,7 +2,7 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
-import java.lang.reflect.*
+import java.lang.reflect.Type
 
 /**
  * An abstract representation of a Java type that allows simpler reflective access to it, its members, and the generic

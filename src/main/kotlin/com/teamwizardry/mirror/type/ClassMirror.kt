@@ -2,9 +2,11 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
-import com.teamwizardry.mirror.abstractionlayer.type.*
+import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
+import com.teamwizardry.mirror.utils.unmodifiable
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * A type mirror representing a Java class. Classes are the only type mirror that supports manual specialization as
@@ -35,7 +37,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
     val interfaces: List<ClassMirror> by lazy {
         abstractType.genericInterfaces.map {
             this.map(cache.types.reflect(it)) as ClassMirror
-        }
+        }.unmodifiable()
     }
 
     /**
@@ -43,7 +45,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * [raw] to get the actual type parameters of the class as opposed to their specializations.
      */
     var typeParameters: List<TypeMirror> by lazyOrSet {
-        abstractType.typeParameters.map { cache.types.reflect(it) }
+        abstractType.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
     }
         internal set
 
@@ -70,11 +72,25 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
 
 //region fields
     /**
-     * The declared fields of this class. Does not include the fields of supertypes.
+     * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
+     * this list.
+     *
+     * This list is created when it is first accessed. This field is thread safe
      */
     val declaredFields: List<FieldMirror> by lazy {
         abstractType.declaredFields.map {
             this.map(it)
+        }.unmodifiable()
+    }
+
+    private val fieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
+
+    fun field(name: String): FieldMirror? {
+        return fieldNameCache.getOrPut(name) {
+            var field: FieldMirror? = null
+            field = field ?: declaredFields.find { it.name == name }
+            field = field ?: superclass?.field(name)
+            return@getOrPut field
         }
     }
 //endregion
@@ -134,7 +150,8 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
     }
 
     /**
-     * Returns a string representing the full declaration of this mirror, as opposed to [toString] which returns
+     * Returns a string representing the full declaration of this mirror, as opposed to [toString] which returns only
+     * the type name and generic parameters
      */
     fun toFullString(): String {
         var str = ""

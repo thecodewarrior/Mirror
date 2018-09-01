@@ -4,14 +4,19 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
+import java.lang.reflect.Modifier
 
 class FieldMirror internal constructor(val cache: MirrorCache, val abstractField: AbstractField) {
 
     var raw: FieldMirror = this
         internal set
-    val isEnumConstant = abstractField.isEnumConstant
+    val isEnumConstant: Boolean = abstractField.isEnumConstant
 
-    var name: String = abstractField.name
+    val name: String = abstractField.name
+    val isStatic: Boolean = Modifier.isStatic(abstractField.modifiers)
+    val isTransient: Boolean = Modifier.isTransient(abstractField.modifiers)
+    val isVolatile: Boolean = Modifier.isVolatile(abstractField.modifiers)
+    val accessLevel: AccessLevel = AccessLevel.fromModifiers(abstractField.modifiers)
 
     var declaringClass: TypeMirror by lazyOrSet {
         cache.types.reflect(abstractField.declaringClass)

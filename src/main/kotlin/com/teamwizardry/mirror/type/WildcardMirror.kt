@@ -3,7 +3,6 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractWildcardType
 import com.teamwizardry.mirror.utils.lazyOrSet
-import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
 
 class WildcardMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractWildcardType): TypeMirror() {

@@ -1,25 +1,34 @@
 package com.teamwizardry.mirror.member
 
+import java.lang.reflect.Modifier
+
 enum class AccessLevel {
     /**
-     * The `public` access level. Visible to everyone.
+     * The `private` access level. Visible only within the class itself.
      */
-    PUBLIC,
-    /**
-     * The `internal` access level. Visible only within the same module. The term "Module" has various meanings, more
-     * information is available [here.](https://kotlinlang.org/docs/reference/visibility-modifiers.html)
-     */
-    INTERNAL,
-    /**
-     * The default "no modifier" access level. Visible only within the same package
-     */
-    PACKAGE,
+    PRIVATE,
     /**
      * The `protected` access level. Visible only to subclasses.
      */
     PROTECTED,
     /**
-     * The `private` access level. Visible only within the class itself.
+     * The default "no modifier" access level. Visible only within the same package
      */
-    PRIVATE
+    PACKAGE,
+    /**
+     * The `public` access level. Visible to everyone.
+     */
+    PUBLIC;
+
+    companion object {
+        @JvmStatic
+        fun fromModifiers(modifiers: Int): AccessLevel {
+            when {
+                Modifier.isPrivate(modifiers) -> return PRIVATE
+                Modifier.isProtected(modifiers) -> return PROTECTED
+                Modifier.isPublic(modifiers) -> return PUBLIC
+                else -> return PACKAGE
+            }
+        }
+    }
 }
