@@ -4,6 +4,7 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
+import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.DisplayName
@@ -19,7 +20,7 @@ internal class ClassSpecializationTest: MirrorTestBase() {
         val specialized = genericType.specialize(specializeWith)
 
         assertNotEquals(genericType, specialized)
-        assertEquals(listOf(specializeWith), specialized.typeParameters)
+        assertSameList(listOf(specializeWith), specialized.typeParameters)
         assertEquals(genericType, specialized.raw)
     }
 

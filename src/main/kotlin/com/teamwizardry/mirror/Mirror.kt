@@ -1,11 +1,14 @@
 package com.teamwizardry.mirror
 
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
+import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import com.teamwizardry.mirror.member.FieldMirror
+import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.lang.reflect.Type
 
 /**
@@ -52,5 +55,11 @@ object Mirror {
     fun reflect(field: Field): FieldMirror {
         val abstract = AbstractField(field)
         return cache.fields.reflect(abstract)
+    }
+
+    @JvmStatic
+    fun reflect(method: Method): MethodMirror {
+        val abstract = AbstractMethod(method)
+        return cache.methods.reflect(abstract)
     }
 }

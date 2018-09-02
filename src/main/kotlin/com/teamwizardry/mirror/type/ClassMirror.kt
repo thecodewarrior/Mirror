@@ -2,8 +2,10 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
+import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
 import com.teamwizardry.mirror.member.FieldMirror
+import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
 import com.teamwizardry.mirror.utils.unmodifiable
 import java.util.concurrent.ConcurrentHashMap
@@ -70,12 +72,12 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
     }
 //endregion
 
-//region fields
+//region Fields
     /**
      * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
      * this list.
      *
-     * This list is created when it is first accessed. This field is thread safe
+     * This list is created when it is first accessed and is thread safe.
      */
     val declaredFields: List<FieldMirror> by lazy {
         abstractType.declaredFields.map {
@@ -92,6 +94,20 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
             field = field ?: superclass?.field(name)
             return@getOrPut field
         }
+    }
+//endregion
+
+//region Methods
+    /**
+     * The methods declared directly inside of this class, any methods inherited from superclasses will not appear in
+     * this list.
+     *
+     * This list is created when it is first accessed and is thread safe.
+     */
+    val declaredMethods: List<MethodMirror> by lazy {
+        abstractType.declaredMethods.map {
+            this.map(it)
+        }.unmodifiable()
     }
 //endregion
 
@@ -124,11 +140,22 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
 
     private fun map(field: AbstractField): FieldMirror {
         val raw = cache.fields.reflect(field)
-        val newType = this.map(raw.type)
+        if (this.raw == this) return raw
 
+        val newType = this.map(raw.type)
         if(newType == raw.type) return raw
 
         return cache.fields.getFieldMirror(raw.abstractField, newType)
+    }
+
+    private fun map(method: AbstractMethod): MethodMirror {
+        val raw = cache.methods.reflect(method)
+        if (this.raw == this) return raw
+        val newReturnType = this.map(raw.returnType)
+
+        if(newReturnType == raw.returnType) return raw
+
+        return cache.methods.getMethodMirror(raw.abstractMethod, newReturnType)
     }
 
     override fun equals(other: Any?): Boolean {

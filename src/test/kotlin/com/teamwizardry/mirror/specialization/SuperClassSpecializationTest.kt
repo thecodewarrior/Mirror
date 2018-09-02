@@ -4,6 +4,7 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.GenericInterface1
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -30,7 +31,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
         val supertype = simpleType.superclass!!
         val simpleTypeVariable = simpleType.typeParameters[0]
 
-        assertEquals(listOf(simpleTypeVariable), supertype.typeParameters)
+        assertSameList(listOf(simpleTypeVariable), supertype.typeParameters)
     }
 
     @Test
@@ -41,7 +42,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
         val specialized = Mirror.reflectClass(SimpleSubtype::class.java).specialize(Mirror.reflect<String>())
         val supertype = specialized.superclass!!
 
-        assertEquals(listOf(Mirror.reflect<String>()), supertype.typeParameters)
+        assertSameList(listOf(Mirror.reflect<String>()), supertype.typeParameters)
     }
 
     @Test
@@ -52,7 +53,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
         val subtype = Mirror.reflectClass(SimpleSubtype::class.java)
         val supertype = subtype.superclass!!
 
-        assertEquals(listOf(
+        assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface1::class.java)
                         .specialize(subtype.typeParameters[0])
         ), supertype.typeParameters)
@@ -66,7 +67,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
         val subtype = Mirror.reflectClass(SimpleSubtype::class.java).specialize(Mirror.reflect<String>())
         val supertype = subtype.superclass!!
 
-        assertEquals(listOf(
+        assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface1::class.java)
                         .specialize(Mirror.reflect<String>())
         ), supertype.typeParameters)

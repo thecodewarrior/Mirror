@@ -25,6 +25,6 @@ mirror will be cached before any other mirrors (which may contain circular refer
 
 | name | meaning |
 |------|---------|
-| Mirror | An object that "mirrors" a JVM reflection object, providing easier or more flexible access to said object. |
-| Specialized Mirror | A mirror that stores more information than the JVM reflection object itself. Currently all the extra information is in the form of generic type parameters |
+| Mirror | An object that "mirrors" a Core Reflection object, providing easier or more flexible access to said object. |
+| Specialized Mirror | A mirror that stores more information than the Core Reflection object itself. Currently all the extra information is in the form of generic type parameters |
 | Specialization | The process of taking a mirror and creating a specialized mirror given some additional information |

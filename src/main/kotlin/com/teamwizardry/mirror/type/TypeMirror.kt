@@ -26,6 +26,7 @@ abstract class TypeMirror {
      * [com.teamwizardry.mirror.Mirror.reflect], which uses a global cache.
      */
     internal abstract val cache: MirrorCache
+
     /**
      * The abstract type this mirror represents. Abstract types are used to make explicit the reflection APIs used and
      * sometimes to do some pre-processing of reflection data
@@ -33,7 +34,7 @@ abstract class TypeMirror {
     internal abstract val abstractType: AbstractType<*>
 
     /**
-     * The raw, un-specialized Java type this mirror represents.
+     * The Java Core Reflection type this mirror represents
      */
     abstract val java: Type
 }

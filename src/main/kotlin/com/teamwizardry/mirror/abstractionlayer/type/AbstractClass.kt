@@ -1,6 +1,7 @@
 package com.teamwizardry.mirror.abstractionlayer.type
 
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
+import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 
 internal class AbstractClass(type: Class<*>): AbstractType<Class<*>>(type) {
     val isArray = type.isArray
@@ -10,4 +11,5 @@ internal class AbstractClass(type: Class<*>): AbstractType<Class<*>>(type) {
     val typeParameters by lazy { type.typeParameters.map { AbstractTypeVariable(it) } }
 
     val declaredFields by lazy { type.declaredFields.map { AbstractField(it) } }
+    val declaredMethods by lazy { type.declaredMethods.map { AbstractMethod(it) } }
 }

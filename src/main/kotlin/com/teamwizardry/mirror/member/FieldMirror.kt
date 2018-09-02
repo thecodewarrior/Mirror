@@ -4,9 +4,12 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
+import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
-class FieldMirror internal constructor(val cache: MirrorCache, val abstractField: AbstractField) {
+class FieldMirror internal constructor(internal val cache: MirrorCache, internal val abstractField: AbstractField) {
+
+    val java: Field = abstractField.field
 
     var raw: FieldMirror = this
         internal set

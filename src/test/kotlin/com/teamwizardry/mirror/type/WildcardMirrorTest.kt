@@ -4,6 +4,7 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.LowerBounded
 import com.teamwizardry.mirror.testsupport.UpperBounded
+import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.lang.reflect.ParameterizedType
@@ -19,7 +20,7 @@ internal class WildcardMirrorTest {
 
         val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
         val type = Mirror.reflect(wildcard) as WildcardMirror
-        assertEquals(listOf(Mirror.reflect<Interface1>()), type.lowerBounds)
+        assertSameList(listOf(Mirror.reflect<Interface1>()), type.lowerBounds)
     }
 
     @Test
@@ -31,7 +32,7 @@ internal class WildcardMirrorTest {
 
         val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
         val type = Mirror.reflect(wildcard) as WildcardMirror
-        assertEquals(listOf(Mirror.reflect<Interface1>()), type.upperBounds)
+        assertSameList(listOf(Mirror.reflect<Interface1>()), type.upperBounds)
     }
 
     @Test

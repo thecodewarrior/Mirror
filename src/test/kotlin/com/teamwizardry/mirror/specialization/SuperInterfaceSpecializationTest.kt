@@ -4,7 +4,7 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.GenericInterface1
 import com.teamwizardry.mirror.testsupport.GenericInterface2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -18,7 +18,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
         val interfaces = simpleType.interfaces
 
         val generic = Mirror.reflectClass(GenericInterface1::class.java)
-        assertEquals(listOf(generic.specialize(Mirror.reflect<String>())), interfaces)
+        assertSameList(listOf(generic.specialize(Mirror.reflect<String>())), interfaces)
     }
 
     @Test
@@ -30,7 +30,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
         val genericInterface = simpleType.interfaces[0]
         val simpleTypeVariable = simpleType.typeParameters[0]
 
-        assertEquals(listOf(simpleTypeVariable), genericInterface.typeParameters)
+        assertSameList(listOf(simpleTypeVariable), genericInterface.typeParameters)
     }
 
     @Test
@@ -41,7 +41,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
         val specialized = Mirror.reflectClass(SimpleClass::class.java).specialize(Mirror.reflect<String>())
         val superInterface = specialized.interfaces[0]
 
-        assertEquals(listOf(Mirror.reflect<String>()), superInterface.typeParameters)
+        assertSameList(listOf(Mirror.reflect<String>()), superInterface.typeParameters)
     }
 
     @Test
@@ -52,7 +52,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
         val simpleType = Mirror.reflectClass(SimpleClass::class.java)
         val superInterface = simpleType.interfaces[0]
 
-        assertEquals(listOf(
+        assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface2::class.java)
                         .specialize(simpleType.typeParameters[0])
         ), superInterface.typeParameters)
@@ -66,7 +66,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
         val simpleType = Mirror.reflectClass(SimpleClass::class.java).specialize(Mirror.reflect<String>())
         val superInterface = simpleType.interfaces[0]
 
-        assertEquals(listOf(
+        assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface2::class.java)
                         .specialize(Mirror.reflect<String>())
         ), superInterface.typeParameters)
