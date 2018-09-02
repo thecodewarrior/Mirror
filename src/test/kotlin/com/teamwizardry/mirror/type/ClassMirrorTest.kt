@@ -14,7 +14,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun getRawClass_ofType_shouldReturnOriginalClass() {
         val type = Mirror.reflectClass<Object1>()
-        assertEquals(Object1::class.java, type.rawType)
+        assertEquals(Object1::class.java, type.java)
     }
 
     @Test

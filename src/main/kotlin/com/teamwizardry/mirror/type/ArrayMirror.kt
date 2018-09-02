@@ -10,7 +10,7 @@ import com.teamwizardry.mirror.utils.lazyOrSet
  * A mirror that represents an array type
  */
 class ArrayMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractType<*>): ConcreteTypeMirror() {
-    override var rawType: Class<*> = when(abstractType) {
+    override var java: Class<*> = when(abstractType) {
         is AbstractClass -> abstractType.type
         is AbstractGenericArrayType -> Array<Any>::class.java
         else -> throw IllegalArgumentException("ArrayMirror type not a Class or GenericArrayType. It is a ${abstractType.javaClass.simpleName}")

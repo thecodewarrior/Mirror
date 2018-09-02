@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @see TypeMirror
  */
 class ClassMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractClass): ConcreteTypeMirror() {
-    override val rawType = abstractType.type
+    override val java = abstractType.type
 
 //region Supertypes
     /**

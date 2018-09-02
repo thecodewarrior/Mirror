@@ -12,7 +12,7 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun getRawClass_onArray_shouldReturnArrayType() {
         val type = Mirror.reflect<Array<Any>>() as ArrayMirror
-        assertEquals(typeToken<Array<Any>>(), type.rawType)
+        assertEquals(typeToken<Array<Any>>(), type.java)
     }
 
     @Test

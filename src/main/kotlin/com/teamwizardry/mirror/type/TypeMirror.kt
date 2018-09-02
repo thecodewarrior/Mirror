@@ -35,6 +35,6 @@ abstract class TypeMirror {
     /**
      * The raw, un-specialized Java type this mirror represents.
      */
-    abstract val rawType: Type
+    abstract val java: Type
 }
 

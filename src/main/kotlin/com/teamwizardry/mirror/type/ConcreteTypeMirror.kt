@@ -9,6 +9,6 @@ package com.teamwizardry.mirror.type
  * @see ArrayMirror
  */
 abstract class ConcreteTypeMirror: TypeMirror() {
-    abstract override val rawType: Class<*>
+    abstract override val java: Class<*>
 }
 

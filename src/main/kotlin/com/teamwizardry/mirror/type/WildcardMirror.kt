@@ -6,7 +6,7 @@ import com.teamwizardry.mirror.utils.lazyOrSet
 import java.lang.reflect.WildcardType
 
 class WildcardMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractWildcardType): TypeMirror() {
-    override val rawType: WildcardType = abstractType.type
+    override val java: WildcardType = abstractType.type
     /**
      * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
      * of `T`.
