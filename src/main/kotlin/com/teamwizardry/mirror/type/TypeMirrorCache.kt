@@ -6,6 +6,7 @@ import com.teamwizardry.mirror.abstractionlayer.type.AbstractGenericArrayType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractParameterizedType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractTypeVariable
+import com.teamwizardry.mirror.abstractionlayer.type.AbstractVoid
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractWildcardType
 import com.teamwizardry.mirror.utils.unmodifiable
 import java.util.concurrent.ConcurrentHashMap
@@ -17,8 +18,11 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
 
     fun reflect(type: AbstractType<*>): TypeMirror {
         return rawCache.getOrPut(type) {
+
             val mirror: TypeMirror
             when (type) {
+                is AbstractVoid ->
+                    mirror = VoidMirror(cache, type)
                 is AbstractClass -> {
                     if (type.isArray) {
                         mirror = ArrayMirror(cache, type)

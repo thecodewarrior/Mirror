@@ -4,6 +4,7 @@ import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.VariableMirror
+import com.teamwizardry.mirror.type.VoidMirror
 import com.teamwizardry.mirror.type.WildcardMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
@@ -57,6 +58,12 @@ internal class MirrorTest: MirrorTestBase() {
 
         val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
         assertEquals(WildcardMirror::class.java, Mirror.reflect(wildcard).javaClass)
+    }
+
+    @Test
+    @DisplayName("Reflecting void should return a VoidMirror")
+    fun reflect_shouldReturnVoidMirror_whenPassedVoid() {
+        assertEquals(VoidMirror::class.java, Mirror.reflect(Void.TYPE).javaClass)
     }
 
     @Test

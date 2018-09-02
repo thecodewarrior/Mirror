@@ -1,6 +1,10 @@
 package com.teamwizardry.mirror.abstractionlayer.type
 
-import java.lang.reflect.*
+import java.lang.reflect.GenericArrayType
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import java.lang.reflect.TypeVariable
+import java.lang.reflect.WildcardType
 
 internal abstract class AbstractType<T: Type>(val type: T) {
     override fun equals(other: Any?): Boolean {
@@ -18,6 +22,7 @@ internal abstract class AbstractType<T: Type>(val type: T) {
 
     internal companion object {
         fun create(type: Type): AbstractType<*> {
+            if(type == Void.TYPE) return AbstractVoid
             return when(type) {
                 is Class<*> -> AbstractClass(type)
                 is GenericArrayType -> AbstractGenericArrayType(type)

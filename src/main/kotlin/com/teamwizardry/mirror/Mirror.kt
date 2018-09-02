@@ -31,7 +31,8 @@ object Mirror {
     }
 
     /**
-     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array.
+     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
+     * or void.
      *
      * @throws IllegalArgumentException if the input class is an array type
      */
@@ -42,7 +43,8 @@ object Mirror {
     }
 
     /**
-     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array.
+     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
+     * or void.
      *
      * @throws IllegalArgumentException if the input class is an array type
      */

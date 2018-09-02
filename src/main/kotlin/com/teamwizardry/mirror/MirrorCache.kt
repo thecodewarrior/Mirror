@@ -10,9 +10,5 @@ internal class MirrorCache {
     val fields = FieldMirrorCache(this)
     val methods = MethodMirrorCache(this)
     val parameters = ParameterMirrorCache(this)
-
-    companion object {
-        @JvmStatic val DEFAULT = MirrorCache()
-    }
 }
 
