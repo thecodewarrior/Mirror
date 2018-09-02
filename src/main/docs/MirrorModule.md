@@ -19,3 +19,12 @@ methodMirror.invoke(someMap, "foo")
 This entire library hinges upon types being lazily evaluated. This means that mirror classes cannot construct any 
 other mirror classes during their own construction. This is crucial because it prevents loops from occurring, as each 
 mirror will be cached before any other mirrors (which may contain circular references) are created.
+
+
+# Vocabulary
+
+| name | meaning |
+|------|---------|
+| Mirror | An object that "mirrors" a JVM reflection object, providing easier or more flexible access to said object. |
+| Specialized Mirror | A mirror that stores more information than the JVM reflection object itself. Currently all the extra information is in the form of generic type parameters |
+| Specialization | The process of taking a mirror and creating a specialized mirror given some additional information |
