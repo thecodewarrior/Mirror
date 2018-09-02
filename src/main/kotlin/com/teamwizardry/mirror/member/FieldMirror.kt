@@ -21,11 +21,6 @@ class FieldMirror internal constructor(internal val cache: MirrorCache, internal
     val isVolatile: Boolean = Modifier.isVolatile(abstractField.modifiers)
     val accessLevel: AccessLevel = AccessLevel.fromModifiers(abstractField.modifiers)
 
-    var declaringClass: TypeMirror by lazyOrSet {
-        cache.types.reflect(abstractField.declaringClass)
-    }
-        internal set
-
     var type: TypeMirror by lazyOrSet {
         cache.types.reflect(abstractField.type)
     }

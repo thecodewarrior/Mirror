@@ -152,10 +152,14 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
         val raw = cache.methods.reflect(method)
         if (this.raw == this) return raw
         val newReturnType = this.map(raw.returnType)
+        val newParamTypes = raw.parameterTypes.map { this.map(it) }
 
-        if(newReturnType == raw.returnType) return raw
+        if(
+            newReturnType == raw.returnType &&
+            newParamTypes == raw.parameterTypes
+        ) return raw
 
-        return cache.methods.getMethodMirror(raw.abstractMethod, newReturnType)
+        return cache.methods.getMethodMirror(raw.abstractMethod, newReturnType, newParamTypes)
     }
 
     override fun equals(other: Any?): Boolean {

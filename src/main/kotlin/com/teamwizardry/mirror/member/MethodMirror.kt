@@ -2,11 +2,13 @@ package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
-import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
+import com.teamwizardry.mirror.utils.unmodifiable
+import java.lang.reflect.Method
 
-class MethodMirror internal constructor(val cache: MirrorCache, val abstractMethod: AbstractMethod) {
+class MethodMirror internal constructor(internal val cache: MirrorCache, internal val abstractMethod: AbstractMethod) {
+    val java: Method = abstractMethod.method
 
     var raw: MethodMirror = this
         internal set
@@ -18,14 +20,15 @@ class MethodMirror internal constructor(val cache: MirrorCache, val abstractMeth
     }
         internal set
 
-    var typeParameters: List<TypeMirror> by lazyOrSet {
-        abstractMethod.typeParameters.map { cache.types.reflect(it) }
+    var parameters: List<ParameterMirror> by lazyOrSet {
+        abstractMethod.parameters.map {
+            cache.parameters.reflect(it)
+        }.unmodifiable()
     }
         internal set
 
-    //val parameters: List<ParameterMirror>
-    val declaringClass: ClassMirror by lazy {
-        cache.types.reflect(abstractMethod.delcaringClass) as ClassMirror
+    val parameterTypes: List<TypeMirror> by lazy {
+        parameters.map { it.type }.unmodifiable()
     }
 
     override fun toString(): String {

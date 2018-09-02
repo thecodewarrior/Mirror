@@ -1,13 +1,11 @@
 package com.teamwizardry.mirror.abstractionlayer.field
 
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import java.lang.reflect.Field
 
 internal class AbstractField(val field: Field) {
     val name: String = field.name
     val isEnumConstant = field.isEnumConstant
-    val declaringClass by lazy { AbstractClass(field.declaringClass) }
     val type by lazy { AbstractType.create(field.genericType) }
     val modifiers = field.modifiers
 

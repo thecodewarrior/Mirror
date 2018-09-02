@@ -14,13 +14,6 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("The declaringClass property should properly return the class the field was declared in")
-    fun declaringClass() {
-        val baseType = Mirror.reflectClass<FieldVisibilityTestClass>()
-        assertEquals(baseType, baseType.field("publicField")?.declaringClass)
-    }
-
-    @Test
     @DisplayName("Getting the declared fields of an enum type should return fields with the `isEnumConstant` flag " +
             "set to true")
     fun declaredFields_onEnumType() {
