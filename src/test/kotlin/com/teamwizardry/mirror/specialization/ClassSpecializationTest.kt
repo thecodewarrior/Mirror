@@ -1,8 +1,8 @@
 package com.teamwizardry.mirror.specialization
 
 import com.teamwizardry.mirror.Mirror
-import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.GenericObject1
+import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals

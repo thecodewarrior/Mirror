@@ -1,12 +1,11 @@
 package com.teamwizardry.mirror.type
 
-import com.teamwizardry.mirror.typeParameter
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
+import com.teamwizardry.mirror.typeParameter
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 internal class VariableMirrorTest {
 

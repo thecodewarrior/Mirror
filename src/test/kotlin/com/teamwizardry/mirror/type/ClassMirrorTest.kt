@@ -1,16 +1,14 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.Mirror
-import com.teamwizardry.mirror.typeParameter
-import com.teamwizardry.mirror.*
 import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
-import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
+import com.teamwizardry.mirror.typeParameter
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 
 internal class ClassMirrorTest: MirrorTestBase() {
     @Test

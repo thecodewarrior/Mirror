@@ -64,7 +64,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
 
     internal fun getArrayMirror(component: ConcreteTypeMirror): ArrayMirror {
         return specializedArrays.getOrPut(component) {
-            val arrayType = AbstractClass(java.lang.reflect.Array.newInstance(component.rawType).javaClass)
+            val arrayType = AbstractClass(java.lang.reflect.Array.newInstance(component.rawType, 0).javaClass)
             val raw = reflect(arrayType) as ArrayMirror
             val specialized: ArrayMirror
             if (raw.component == component) {

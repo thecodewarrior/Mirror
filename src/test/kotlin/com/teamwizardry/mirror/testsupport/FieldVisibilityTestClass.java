@@ -1,6 +1,6 @@
 package com.teamwizardry.mirror.testsupport;
 
-public class VisibilityTestClass {
+public class FieldVisibilityTestClass {
     public int publicField;
     int defaultField;
     protected int protectedField;

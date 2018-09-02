@@ -3,9 +3,8 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.typeToken
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import java.lang.reflect.GenericArrayType
 
 internal class ArrayMirrorTest: MirrorTestBase() {
