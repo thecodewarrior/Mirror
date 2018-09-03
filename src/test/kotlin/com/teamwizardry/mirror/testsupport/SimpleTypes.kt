@@ -20,4 +20,5 @@ open class GenericPairObject2<A, B>
 open class UpperBounded<out T>
 open class LowerBounded<in T>
 
-
+open class Exception1: Exception()
+open class Exception2: Exception()

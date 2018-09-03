@@ -22,3 +22,8 @@ fun <T> List<T>.synchronized() = Collections.synchronizedList(this)
 fun <K, V> Map<K, V>.synchronized() = Collections.synchronizedMap(this)
 fun <K, V> SortedMap<K, V>.synchronized() = Collections.synchronizedSortedMap(this)
 fun <K, V> NavigableMap<K, V>.synchronized() = Collections.synchronizedNavigableMap(this)
+
+fun <T> Collection<T>.unmodifiableCopy() = Collections.unmodifiableCollection(this.toList())
+fun <T> Set<T>.unmodifiableCopy() = Collections.unmodifiableSet(this.toSet())
+fun <T> List<T>.unmodifiableCopy() = Collections.unmodifiableList(this.toList())
+fun <K, V> Map<K, V>.unmodifiableCopy() = Collections.unmodifiableMap(this.toMap())

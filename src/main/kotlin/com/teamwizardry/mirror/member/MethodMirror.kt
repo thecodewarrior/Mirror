@@ -31,6 +31,13 @@ class MethodMirror internal constructor(internal val cache: MirrorCache, interna
         parameters.map { it.type }.unmodifiable()
     }
 
+    var exceptionTypes: List<TypeMirror> by lazyOrSet {
+        abstractMethod.exceptionTypes.map {
+            cache.types.reflect(it)
+        }.unmodifiable()
+    }
+        internal set
+
     override fun toString(): String {
         var str = ""
         str += "$returnType $name()"

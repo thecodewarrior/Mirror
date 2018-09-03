@@ -1,6 +1,9 @@
 package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.Mirror
+import com.teamwizardry.mirror.testsupport.CheckedExceptionMethodHolder
+import com.teamwizardry.mirror.testsupport.Exception1
+import com.teamwizardry.mirror.testsupport.Exception2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.NoParamNames
 import com.teamwizardry.mirror.testsupport.assertSameList
@@ -16,7 +19,7 @@ internal class MethodMirrorTest: MirrorTestBase() {
         class MethodHolder {
             fun method() {}
         }
-        val method = Mirror.reflect(MethodHolder::class.java.getMethod("method"))
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
         assertSame(Mirror.reflect(Void.TYPE), method.returnType)
         assertEquals(emptyList<Any>(), method.parameters)
     }
@@ -27,7 +30,7 @@ internal class MethodMirrorTest: MirrorTestBase() {
         class MethodHolder {
             fun method(): String { null!! }
         }
-        val method = Mirror.reflect(MethodHolder::class.java.getMethod("method"))
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
         assertSame(Mirror.reflect<String>(), method.returnType)
     }
 
@@ -37,7 +40,7 @@ internal class MethodMirrorTest: MirrorTestBase() {
         class MethodHolder {
             fun method(paramA: String, paramB: Int) {}
         }
-        val method = Mirror.reflect(MethodHolder::class.java.getMethod("method", String::class.java, Int::class.javaPrimitiveType))
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method", String::class.java, Int::class.javaPrimitiveType))
         assertSameList(listOf(
             Mirror.reflect<String>(),
             Mirror.reflect(Int::class.javaPrimitiveType!!)
@@ -51,7 +54,7 @@ internal class MethodMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("A void method with unnamed parameters should have corresponding parameter mirrors with null names")
     fun voidMethodWithUnnamedParameters() {
-        val method = Mirror.reflect(NoParamNames::class.java.getMethod("stringIntParams", String::class.java, Int::class.javaPrimitiveType))
+        val method = Mirror.reflect(NoParamNames::class.java.getDeclaredMethod("stringIntParams", String::class.java, Int::class.javaPrimitiveType))
         assertSameList(listOf(
             Mirror.reflect<String>(),
             Mirror.reflect(Int::class.javaPrimitiveType!!)
@@ -60,5 +63,15 @@ internal class MethodMirrorTest: MirrorTestBase() {
             null,
             null
         ), method.parameters.map { it.name })
+    }
+
+    @Test
+    @DisplayName("A method with checked exceptions should have corresponding type mirrors")
+    fun voidMethodWithCheckedExceptions() {
+        val method = Mirror.reflect(CheckedExceptionMethodHolder::class.java.getDeclaredMethod("method"))
+        assertSameList(listOf(
+            Mirror.reflect<Exception1>(),
+            Mirror.reflect<Exception2>()
+        ), method.exceptionTypes)
     }
 }

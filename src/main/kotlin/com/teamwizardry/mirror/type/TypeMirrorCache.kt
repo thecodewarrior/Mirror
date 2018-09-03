@@ -8,7 +8,7 @@ import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractTypeVariable
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractVoid
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractWildcardType
-import com.teamwizardry.mirror.utils.unmodifiable
+import com.teamwizardry.mirror.utils.unmodifiableCopy
 import java.util.concurrent.ConcurrentHashMap
 
 internal class TypeMirrorCache(private val cache: MirrorCache) {
@@ -59,7 +59,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                 specialized = ClassMirror(cache, type)
                 assert(raw.typeParameters.size == arguments.size)
                 specialized.raw = raw
-                specialized.typeParameters = arguments.unmodifiable()
+                specialized.typeParameters = arguments.unmodifiableCopy()
             }
 
             return@getOrPut specialized
