@@ -74,4 +74,17 @@ internal class MethodMirrorTest: MirrorTestBase() {
             Mirror.reflect<Exception2>()
         ), method.exceptionTypes)
     }
+
+    @Test
+    @DisplayName("A method with checked exceptions should have corresponding type mirrors")
+    fun voidMethodWithTypeParameters() {
+        class MethodHolder {
+            fun <T> method() {}
+        }
+        val javaMethod = MethodHolder::class.java.getDeclaredMethod("method")
+        val method = Mirror.reflect(javaMethod)
+        assertSameList(listOf(
+            Mirror.reflect(javaMethod.typeParameters[0])
+        ), method.typeParameters)
+    }
 }

@@ -15,8 +15,10 @@ internal class MethodMirrorCache(private val cache: MirrorCache) {
         return rawCache.getOrPut(method) { MethodMirror(cache, method) }
     }
 
-    fun getMethodMirror(method: AbstractMethod, returnType: TypeMirror, paramTypes: List<TypeMirror>, exceptionTypes: List<TypeMirror>): MethodMirror {
-        val signature = MirrorSignature(method, returnType, paramTypes, exceptionTypes)
+    fun getMethodMirror(method: AbstractMethod, returnType: TypeMirror, paramTypes: List<TypeMirror>,
+        exceptionTypes: List<TypeMirror>, typeParameters: List<TypeMirror>): MethodMirror {
+        val signature = MirrorSignature(method, returnType, paramTypes.unmodifiableCopy(),
+            exceptionTypes.unmodifiableCopy(), typeParameters.unmodifiableCopy())
         return specializedCache.getOrPut(signature) {
             val raw = reflect(method)
             val specialized: MethodMirror
@@ -26,7 +28,8 @@ internal class MethodMirrorCache(private val cache: MirrorCache) {
             if (
                 raw.returnType == returnType &&
                 raw.parameterTypes == paramTypes &&
-                raw.exceptionTypes == exceptionTypes
+                raw.exceptionTypes == exceptionTypes &&
+                raw.typeParameters == typeParameters
             ) {
                 specialized = raw
             } else {
@@ -36,6 +39,7 @@ internal class MethodMirrorCache(private val cache: MirrorCache) {
                     cache.parameters.getParameterMirror(it.first.abstractParameter, it.second)
                 }.unmodifiable()
                 specialized.exceptionTypes = exceptionTypes.unmodifiableCopy()
+                specialized.typeParameters = typeParameters.unmodifiableCopy()
                 specialized.raw = raw
             }
             return@getOrPut specialized
@@ -46,6 +50,7 @@ internal class MethodMirrorCache(private val cache: MirrorCache) {
         val method: AbstractMethod,
         val returnType: TypeMirror,
         val paramTypes: List<TypeMirror>,
-        val exceptions: List<TypeMirror>
+        val exceptions: List<TypeMirror>,
+        val typeParameters: List<TypeMirror>
     )
 }

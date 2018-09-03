@@ -161,7 +161,8 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
             newExceptionTypes == raw.exceptionTypes
         ) return raw
 
-        return cache.methods.getMethodMirror(raw.abstractMethod, newReturnType, newParamTypes, newExceptionTypes)
+        return cache.methods.getMethodMirror(raw.abstractMethod,
+            newReturnType, newParamTypes, newExceptionTypes, raw.typeParameters)
     }
 
     override fun equals(other: Any?): Boolean {

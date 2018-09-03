@@ -2,6 +2,9 @@ package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
+import com.teamwizardry.mirror.type.ArrayMirror
+import com.teamwizardry.mirror.type.ClassMirror
+import com.teamwizardry.mirror.type.ConcreteTypeMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
 import com.teamwizardry.mirror.utils.unmodifiable
@@ -37,6 +40,48 @@ class MethodMirror internal constructor(internal val cache: MirrorCache, interna
         }.unmodifiable()
     }
         internal set
+
+    var typeParameters: List<TypeMirror> by lazyOrSet {
+        abstractMethod.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
+    }
+        internal set
+
+    fun specialize(vararg parameters: TypeMirror): MethodMirror {
+        if(parameters.size != typeParameters.size)
+            throw IllegalArgumentException("Passed parameter count ${parameters.size} is different from class type " +
+                "parameter count ${typeParameters.size}")
+        val mapping = raw.typeParameters.zip(parameters).associate { it }
+
+        val newReturnType = this.map(returnType, mapping)
+        val newParamTypes = this.parameterTypes.map { this.map(it, mapping) }
+        val newExceptionTypes= this.exceptionTypes.map { this.map(it, mapping) }
+
+        return cache.methods.getMethodMirror(abstractMethod,
+            newReturnType, newParamTypes, newExceptionTypes, parameters.asList())
+    }
+
+    private fun map(type: TypeMirror, mapping: Map<TypeMirror, TypeMirror>): TypeMirror {
+        mapping[type]?.let {
+            return it
+        }
+
+        when (type) {
+            is ArrayMirror -> {
+                val component = this.map(type.component, mapping)
+                if(component != type.component) {
+                    return cache.types.getArrayMirror(component as ConcreteTypeMirror)
+                }
+            }
+            is ClassMirror -> {
+                val parameters = type.typeParameters.map { this.map(it, mapping) }
+                if(parameters != type.typeParameters) {
+                    return cache.types.getClassMirror(type.raw.abstractType, parameters)
+                }
+            }
+        }
+
+        return type
+    }
 
     override fun toString(): String {
         var str = ""
