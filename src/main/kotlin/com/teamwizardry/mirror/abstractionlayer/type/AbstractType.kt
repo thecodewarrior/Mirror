@@ -24,8 +24,12 @@ internal abstract class AbstractType<T: Type>(val type: T) {
         fun create(type: Type): AbstractType<*> {
             if(type == Void.TYPE) return AbstractVoid
             return when(type) {
-                is Class<*> -> AbstractClass(type)
-                is GenericArrayType -> AbstractGenericArrayType(type)
+                is Class<*> ->
+                    if(type.isArray)
+                        AbstractArrayType(type)
+                    else
+                        AbstractClass(type)
+                is GenericArrayType -> AbstractArrayType(type)
                 is ParameterizedType -> AbstractParameterizedType(type)
                 is TypeVariable<*> -> AbstractTypeVariable(type)
                 is WildcardType -> AbstractWildcardType(type)

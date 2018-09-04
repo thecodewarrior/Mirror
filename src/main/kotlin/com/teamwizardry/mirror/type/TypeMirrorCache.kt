@@ -1,8 +1,8 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
+import com.teamwizardry.mirror.abstractionlayer.type.AbstractArrayType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractGenericArrayType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractParameterizedType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractTypeVariable
@@ -24,13 +24,9 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                 is AbstractVoid ->
                     mirror = VoidMirror(cache, type)
                 is AbstractClass -> {
-                    if (type.isArray) {
-                        mirror = ArrayMirror(cache, type)
-                    } else {
-                        mirror = ClassMirror(cache, type)
-                    }
+                    mirror = ClassMirror(cache, type)
                 }
-                is AbstractGenericArrayType -> {
+                is AbstractArrayType -> {
                     mirror = ArrayMirror(cache, type)
                 }
                 is AbstractParameterizedType -> {
@@ -68,7 +64,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
 
     internal fun getArrayMirror(component: ConcreteTypeMirror): ArrayMirror {
         return specializedArrays.getOrPut(component) {
-            val arrayType = AbstractClass(java.lang.reflect.Array.newInstance(component.java, 0).javaClass)
+            val arrayType = AbstractArrayType(java.lang.reflect.Array.newInstance(component.java, 0).javaClass)
             val raw = reflect(arrayType) as ArrayMirror
             val specialized: ArrayMirror
             if (raw.component == component) {

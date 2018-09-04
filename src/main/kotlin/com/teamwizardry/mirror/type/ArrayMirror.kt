@@ -1,31 +1,20 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractGenericArrayType
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
+import com.teamwizardry.mirror.abstractionlayer.type.AbstractArrayType
 import com.teamwizardry.mirror.utils.lazyOrSet
 
 /**
  * A mirror that represents an array type
  */
-class ArrayMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractType<*>): ConcreteTypeMirror() {
-    override var java: Class<*> = when(abstractType) {
-        is AbstractClass -> abstractType.type
-        is AbstractGenericArrayType -> Array<Any>::class.java
-        else -> throw IllegalArgumentException("ArrayMirror type not a Class or GenericArrayType. It is a ${abstractType.javaClass.simpleName}")
-    }
+class ArrayMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractArrayType): ConcreteTypeMirror() {
+    override var java: Class<*> = abstractType.javaArrayClass
 
     /**
      * The component type of this mirror. `String` in `[String]`, `int` in `[int]`, `T` in `[T]`, etc.
      */
     var component: TypeMirror by lazyOrSet {
-        when(abstractType) {
-            is AbstractClass -> abstractType.componentType?.let { cache.types.reflect(it) }
-                    ?: throw IllegalArgumentException("ArrayMirror type is a non-array Class")
-            is AbstractGenericArrayType -> cache.types.reflect(abstractType.genericComponentType)
-            else -> throw IllegalArgumentException("ArrayMirror type not a Class or GenericArrayType. It is a ${abstractType.javaClass.simpleName}")
-        }
+        cache.types.reflect(abstractType.componentType)
     }
         internal set
 
