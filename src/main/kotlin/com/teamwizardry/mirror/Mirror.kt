@@ -7,6 +7,7 @@ import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
+import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Type
@@ -22,6 +23,12 @@ object Mirror {
      */
     @JvmStatic
     fun reflect(type: Type): TypeMirror {
+        val abstract = AbstractType.create(type)
+        return cache.types.reflect(abstract)
+    }
+
+    @JvmStatic
+    fun reflect(type: AnnotatedType): TypeMirror {
         val abstract = AbstractType.create(type)
         return cache.types.reflect(abstract)
     }

@@ -5,7 +5,7 @@ import java.lang.reflect.Parameter
 
 internal class AbstractParameter(val parameter: Parameter) {
     val name: String? = if(parameter.isNamePresent) parameter.name else null
-    val type by lazy { AbstractType.create(parameter.parameterizedType) }
+    val type by lazy { AbstractType.create(parameter.annotatedType) }
     val varArgs = parameter.isVarArgs
 
     override fun equals(other: Any?): Boolean {

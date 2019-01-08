@@ -16,7 +16,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
     private val specializedClasses = ConcurrentHashMap<Pair<AbstractClass, List<TypeMirror>>, ClassMirror>()
     private val specializedArrays = ConcurrentHashMap<TypeMirror, ArrayMirror>()
 
-    fun reflect(type: AbstractType<*>): TypeMirror {
+    fun reflect(type: AbstractType<*, *>): TypeMirror {
         return rawCache.getOrPut(type) {
 
             val mirror: TypeMirror
@@ -64,7 +64,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
 
     internal fun getArrayMirror(component: ConcreteTypeMirror): ArrayMirror {
         return specializedArrays.getOrPut(component) {
-            val arrayType = AbstractArrayType(java.lang.reflect.Array.newInstance(component.java, 0).javaClass)
+            val arrayType = AbstractArrayType(java.lang.reflect.Array.newInstance(component.java, 0).javaClass, null)
             val raw = reflect(arrayType) as ArrayMirror
             val specialized: ArrayMirror
             if (raw.component == component) {

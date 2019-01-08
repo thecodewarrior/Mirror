@@ -6,7 +6,7 @@ import java.lang.reflect.Field
 internal class AbstractField(val field: Field) {
     val name: String = field.name
     val isEnumConstant = field.isEnumConstant
-    val type by lazy { AbstractType.create(field.genericType) }
+    val type by lazy { AbstractType.create(field.annotatedType) }
     val modifiers = field.modifiers
 
     override fun equals(other: Any?): Boolean {

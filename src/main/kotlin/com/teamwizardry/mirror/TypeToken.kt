@@ -1,14 +1,14 @@
 package com.teamwizardry.mirror
 
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
+import java.lang.reflect.AnnotatedParameterizedType
+import java.lang.reflect.AnnotatedType
 
 abstract class TypeToken<T> {
-    fun get(): Type {
-        return (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
+    fun get(): AnnotatedType {
+        return (javaClass.annotatedSuperclass as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
     }
 }
 
-inline fun <reified T> typeToken(): Type {
+inline fun <reified T> typeToken(): AnnotatedType {
     return (object : TypeToken<T>() {}).get()
 }

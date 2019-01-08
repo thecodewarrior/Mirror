@@ -31,7 +31,7 @@ abstract class TypeMirror {
      * The abstract type this mirror represents. Abstract types are used to make explicit the reflection APIs used and
      * sometimes to do some pre-processing of reflection data
      */
-    internal abstract val abstractType: AbstractType<*>
+    internal abstract val abstractType: AbstractType<*, *>
 
     /**
      * The Java Core Reflection type this mirror represents

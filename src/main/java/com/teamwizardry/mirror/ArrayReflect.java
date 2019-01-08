@@ -3,7 +3,7 @@ package com.teamwizardry.mirror;
 /**
  * Modified by TheCodeWarrior
  */
-class ArrayReflect {
+public class ArrayReflect {
     /*
      * Legal conversions:
      * From \ To | boolean | byte | char | short | int | long | float | double

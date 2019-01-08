@@ -1,40 +1,43 @@
 package com.teamwizardry.mirror.abstractionlayer.type
 
+import java.lang.reflect.AnnotatedType
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.TypeVariable
 import java.lang.reflect.WildcardType
 
-internal abstract class AbstractType<T: Type>(val type: T) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is AbstractType<*>) return false
-
-        if (type != other.type) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return type.hashCode()
-    }
+internal abstract class AbstractType<T: Type, A: AnnotatedType>(val type: T, annotated: AnnotatedType?) {
+    @Suppress("UNCHECKED_CAST")
+    val annotated: A? = annotated as A?
+    val annotations: List<Annotation>? = annotated?.annotations?.toList()
+    val declaredAnnotations: List<Annotation>? = annotated?.declaredAnnotations?.toList()
 
     internal companion object {
-        fun create(type: Type): AbstractType<*> {
-            if(type == Void.TYPE) return AbstractVoid
+        fun create(annotated: AnnotatedType): AbstractType<*, *> = create(annotated.type, annotated)
+
+        @JvmOverloads
+        fun create(type: Type, annotated: AnnotatedType? = null): AbstractType<*, *> {
+            if(type == Void.TYPE) return AbstractVoid(type, annotated)
             return when(type) {
                 is Class<*> ->
                     if(type.isArray)
-                        AbstractArrayType(type)
+                        AbstractArrayType(type, annotated)
                     else
-                        AbstractClass(type)
-                is GenericArrayType -> AbstractArrayType(type)
-                is ParameterizedType -> AbstractParameterizedType(type)
-                is TypeVariable<*> -> AbstractTypeVariable(type)
-                is WildcardType -> AbstractWildcardType(type)
+                        AbstractClass(type, annotated)
+                is GenericArrayType -> AbstractArrayType(type, annotated)
+                is ParameterizedType -> AbstractParameterizedType(type, annotated)
+                is TypeVariable<*> -> AbstractTypeVariable(type, annotated)
+                is WildcardType -> AbstractWildcardType(type, annotated)
                 else -> throw IllegalArgumentException("Unknown type $type")
             }
         }
+
+        @Suppress("UNCHECKED_CAST")
+        fun <T: AbstractType<*, *>> createCast(annotated: AnnotatedType)
+            : T = create(annotated) as T
+        @Suppress("UNCHECKED_CAST")
+        fun <T: AbstractType<*, *>> createCast(type: Type, annotated: AnnotatedType? = null)
+            : T = create(type, annotated) as T
     }
 }
