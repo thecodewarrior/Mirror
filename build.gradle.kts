@@ -6,7 +6,7 @@ import java.util.concurrent.Callable
 
 plugins {
     java
-    kotlin("jvm") version "1.2.51"
+    kotlin("jvm") version "1.3.11"
     id("org.jetbrains.dokka")
 }
 
