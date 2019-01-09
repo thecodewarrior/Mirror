@@ -15,7 +15,7 @@ internal class AbstractClass(type: Class<*>, annotated: AnnotatedType?)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is AbstractWildcardType) return false
+        if (other !is AbstractClass) return false
 
         if (type != other.type) return false
         if (declaredAnnotations != other.declaredAnnotations) return false

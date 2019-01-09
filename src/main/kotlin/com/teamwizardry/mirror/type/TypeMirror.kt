@@ -37,5 +37,7 @@ abstract class TypeMirror {
      * The Java Core Reflection type this mirror represents
      */
     abstract val java: Type
+
+    abstract val annotations: List<Annotation>
 }
 

@@ -5,46 +5,57 @@ import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
+import com.teamwizardry.mirror.testsupport.TypeAnnotation1
+import com.teamwizardry.mirror.testsupport.TypeAnnotation2
 import com.teamwizardry.mirror.testsupport.assertSameList
 import com.teamwizardry.mirror.testsupport.assertSameSet
 import com.teamwizardry.mirror.typeParameter
+import io.leangen.geantyref.TypeToken
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class ClassMirrorTest: MirrorTestBase() {
+
     @Test
+    @DisplayName("Getting the raw class of a ClassMirror should return the original class")
     fun getRawClass_ofType_shouldReturnOriginalClass() {
         val type = Mirror.reflectClass<Object1>()
         assertEquals(Object1::class.java, type.java)
     }
 
     @Test
+    @DisplayName("Getting the superclass of a ClassMirror should return the correct supertype")
     fun getSuperclass_ofType_shouldReturnSupertype() {
-        val type = Mirror.reflectClass<Object1>().superclass
-        assertEquals(Mirror.reflect<Any>(), type)
+        class Object1Subclass: Object1()
+        val type = Mirror.reflectClass<Object1Subclass>().superclass
+        assertEquals(Mirror.reflect<Object1>(), type)
     }
 
     @Test
+    @DisplayName("Getting the superclass of Object should return null")
     fun getSuperclass_ofObject_shouldReturnNull() {
         val type = Mirror.reflectClass<Any>().superclass
         assertEquals(null, type)
     }
 
     @Test
+    @DisplayName("Getting the superclass an interface should return null")
     fun getSuperclass_ofInterface_shouldReturnNull() {
         val type = Mirror.reflectClass<Interface1>().superclass
         assertEquals(null, type)
     }
 
     @Test
+    @DisplayName("Getting the interfaces of a type without interfaces should return an empty list")
     fun getInterfaces_ofTypeWithoutInterfaces_shouldReturnEmptyList() {
         val type = Mirror.reflectClass<Object1>().interfaces
         assertEquals(emptyList<TypeMirror>(), type)
     }
 
     @Test
+    @DisplayName("Getting the interfaces of a type with interfaces should return its interfaces in declaration order")
     fun getInterfaces_ofTypeWithInterfaces_shouldReturnInterfacesInOrder() {
         class TestType: Interface2, Interface1
         val type = Mirror.reflectClass<TestType>().interfaces
@@ -55,12 +66,14 @@ internal class ClassMirrorTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("Getting the type parameters of a nongeneric type should return an empty list")
     fun getTypeParameters_ofNonGenericType_shouldReturnEmptyList() {
         val type = Mirror.reflectClass<Object1>().typeParameters
         assertEquals(emptyList<TypeMirror>(), type)
     }
 
     @Test
+    @DisplayName("Getting the type parameters of a generic type should return the correct types")
     fun getTypeParameters_ofGenericType_shouldReturnTypes() {
         class GenericType<A, B>
         val type = Mirror.reflectClass(GenericType::class.java).typeParameters
@@ -71,9 +84,36 @@ internal class ClassMirrorTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("Getting the raw type of a raw ClassMirror should return itself")
     fun getRaw_ofType_returnsItself() {
         val type = Mirror.reflectClass<Object1>()
         assertSame(type, type.raw)
+    }
+
+    @Test
+    @DisplayName("Getting the annotations of an unannotated type should return an empty list")
+    fun getAnnotation_ofUnannotatedType_shouldReturnEmptyList() {
+        val type = Mirror.reflect<Object1>()
+        assertEquals(emptyList<Annotation>(), type.annotations)
+    }
+
+    @Test
+    @DisplayName("Getting the annotations of type with one annotation should return that annotation")
+    fun getAnnotation_ofAnnotatedType_shouldReturnAnnotation() {
+        val type = Mirror.reflect<@TypeAnnotation1 Object1>()
+        assertEquals(listOf(
+            Mirror.newAnnotation<TypeAnnotation1>()
+        ), type.annotations)
+    }
+
+    @Test
+    @DisplayName("Getting the annotations of a type with multiple annotations should return the correct annotations")
+    fun getAnnotation_ofMultiAnnotatedType_shouldReturnAnnotations() {
+        val type = Mirror.reflect(object : TypeToken<@TypeAnnotation1 @TypeAnnotation2(arg = 1) Object1>() {}.annotatedType)
+        assertEquals(listOf(
+            Mirror.newAnnotation<TypeAnnotation1>(),
+            Mirror.newAnnotation<TypeAnnotation2>(mapOf("arg" to 1))
+        ), type.annotations)
     }
 
     @Test

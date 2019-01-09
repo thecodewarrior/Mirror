@@ -5,7 +5,7 @@ import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.typeToken
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.lang.reflect.GenericArrayType
+import java.lang.reflect.AnnotatedArrayType
 
 internal class ArrayMirrorTest: MirrorTestBase() {
 
@@ -24,7 +24,8 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun getComponent_onPrimitiveArray_shouldReturnPrimitiveComponent() {
         val type = Mirror.reflect<IntArray>() as ArrayMirror
-        assertEquals(Mirror.reflect(Int::class.javaPrimitiveType!!), type.component)
+        val component = Mirror.reflect(Int::class.javaPrimitiveType!!)
+        assertEquals(component, type.component)
     }
 
     @Test
@@ -33,9 +34,10 @@ internal class ArrayMirrorTest: MirrorTestBase() {
             @JvmField
             val field: Array<T>? = null
         }
-        val genericArray = FieldHolder::class.java.getField("field").genericType as GenericArrayType
+        val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
         val type = Mirror.reflect(genericArray) as ArrayMirror
-        assertEquals(Mirror.reflect(genericArray.genericComponentType), type.component)
+        val component = Mirror.reflect(genericArray.annotatedGenericComponentType)
+        assertEquals(component, type.component)
     }
 
     @Test

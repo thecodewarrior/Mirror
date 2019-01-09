@@ -10,8 +10,8 @@ import java.lang.reflect.WildcardType
 internal abstract class AbstractType<T: Type, A: AnnotatedType>(val type: T, annotated: AnnotatedType?) {
     @Suppress("UNCHECKED_CAST")
     val annotated: A? = annotated as A?
-    val annotations: List<Annotation>? = annotated?.annotations?.toList()
-    val declaredAnnotations: List<Annotation>? = annotated?.declaredAnnotations?.toList()
+    val annotations: List<Annotation> = annotated?.annotations?.toList() ?: emptyList()
+    val declaredAnnotations: List<Annotation> = annotated?.declaredAnnotations?.toList() ?: emptyList()
 
     internal companion object {
         fun create(annotated: AnnotatedType): AbstractType<*, *> = create(annotated.type, annotated)

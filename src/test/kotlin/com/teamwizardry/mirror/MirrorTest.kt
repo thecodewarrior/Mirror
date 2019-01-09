@@ -81,4 +81,9 @@ internal class MirrorTest: MirrorTestBase() {
         val fieldType = fieldMirror.type
         assertEquals(Mirror.reflect<String>(), fieldType)
     }
+
+    @Test
+    @DisplayName("newAnnotation delegates to an external tested library")
+    fun newAnnotation_needsNoTests() {
+    }
 }

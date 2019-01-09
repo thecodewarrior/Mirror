@@ -3,10 +3,13 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractWildcardType
 import com.teamwizardry.mirror.utils.lazyOrSet
+import com.teamwizardry.mirror.utils.unmodifiable
 import java.lang.reflect.WildcardType
 
 class WildcardMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractWildcardType): TypeMirror() {
     override val java: WildcardType = abstractType.type
+    override val annotations: List<Annotation> = abstractType.annotations.unmodifiable()
+
     /**
      * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
      * of `T`.

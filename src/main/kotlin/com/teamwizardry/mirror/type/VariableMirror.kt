@@ -2,6 +2,7 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.type.AbstractTypeVariable
+import com.teamwizardry.mirror.utils.unmodifiable
 import java.lang.reflect.TypeVariable
 
 /**
@@ -9,6 +10,7 @@ import java.lang.reflect.TypeVariable
  */
 class VariableMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractTypeVariable): TypeMirror() {
     override val java: TypeVariable<*> = abstractType.type
+    override val annotations: List<Annotation> = abstractType.annotations.unmodifiable()
 
     /**
      * The bounds of this variable. Types specializing this variable must extend all of these.

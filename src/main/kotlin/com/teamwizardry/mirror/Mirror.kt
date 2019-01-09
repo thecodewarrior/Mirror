@@ -7,6 +7,7 @@ import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
+import io.leangen.geantyref.TypeFactory
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -34,7 +35,7 @@ object Mirror {
     }
 
     inline fun <reified T> reflect(): TypeMirror {
-        return reflect(typeToken<T>())
+        return reflect(annotatedTypeToken<T>())
     }
 
     /**
@@ -70,5 +71,15 @@ object Mirror {
     fun reflect(method: Method): MethodMirror {
         val abstract = AbstractMethod(method)
         return cache.methods.reflect(abstract)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
+        return TypeFactory.annotation(clazz, arguments)
+    }
+
+    inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
+        return TypeFactory.annotation(T::class.java, arguments)
     }
 }
