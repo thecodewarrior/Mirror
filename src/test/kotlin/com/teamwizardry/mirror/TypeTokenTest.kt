@@ -1,12 +1,13 @@
 package com.teamwizardry.mirror
 
+import com.teamwizardry.mirror.annotations.TypeAnnotation1
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.Object1
-import com.teamwizardry.mirror.testsupport.TypeAnnotation1
 import com.teamwizardry.mirror.testsupport.assertInstanceOf
 import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.lang.reflect.ParameterizedType
@@ -31,6 +32,7 @@ class TypeTokenTest {
         assertSameList(listOf(Object1::class.java), type.actualTypeArguments.toList())
     }
 
+    @Disabled("Pending further investigation in Byte Buddy: https://github.com/raphw/byte-buddy/issues/583")
     @Test
     @DisplayName("Getting the annotated type from an annotated type TypeToken should return a type with the correct annotations")
     fun getAnnotatedType_withAnnotated_shouldHaveAnnotations() {

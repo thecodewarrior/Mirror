@@ -1,11 +1,12 @@
-package com.teamwizardry.mirror.testsupport;
+package com.teamwizardry.mirror.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)
-public @interface FuckingTypeAnnotation {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TypeAnnotationArg1 {
+    int arg();
 }

@@ -5,12 +5,9 @@ import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
-import com.teamwizardry.mirror.testsupport.TypeAnnotation1
-import com.teamwizardry.mirror.testsupport.TypeAnnotation2
 import com.teamwizardry.mirror.testsupport.assertSameList
 import com.teamwizardry.mirror.testsupport.assertSameSet
 import com.teamwizardry.mirror.typeParameter
-import io.leangen.geantyref.TypeToken
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
@@ -88,32 +85,6 @@ internal class ClassMirrorTest: MirrorTestBase() {
     fun getRaw_ofType_returnsItself() {
         val type = Mirror.reflectClass<Object1>()
         assertSame(type, type.raw)
-    }
-
-    @Test
-    @DisplayName("Getting the annotations of an unannotated type should return an empty list")
-    fun getAnnotation_ofUnannotatedType_shouldReturnEmptyList() {
-        val type = Mirror.reflect<Object1>()
-        assertEquals(emptyList<Annotation>(), type.annotations)
-    }
-
-    @Test
-    @DisplayName("Getting the annotations of type with one annotation should return that annotation")
-    fun getAnnotation_ofAnnotatedType_shouldReturnAnnotation() {
-        val type = Mirror.reflect<@TypeAnnotation1 Object1>()
-        assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>()
-        ), type.annotations)
-    }
-
-    @Test
-    @DisplayName("Getting the annotations of a type with multiple annotations should return the correct annotations")
-    fun getAnnotation_ofMultiAnnotatedType_shouldReturnAnnotations() {
-        val type = Mirror.reflect(object : TypeToken<@TypeAnnotation1 @TypeAnnotation2(arg = 1) Object1>() {}.annotatedType)
-        assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>(),
-            Mirror.newAnnotation<TypeAnnotation2>(mapOf("arg" to 1))
-        ), type.annotations)
     }
 
     @Test
