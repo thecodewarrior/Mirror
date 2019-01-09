@@ -1,14 +1,17 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractWildcardType
-import com.teamwizardry.mirror.utils.lazyOrSet
-import com.teamwizardry.mirror.utils.unmodifiable
+import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.WildcardType
 
-class WildcardMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractWildcardType): TypeMirror() {
-    override val java: WildcardType = abstractType.type
-    override val annotations: List<Annotation> = abstractType.annotations.unmodifiable()
+class WildcardMirror internal constructor(
+    override val cache: MirrorCache,
+    override val java: WildcardType,
+    // type annotations are ignored, all we care about are the annotated bounds
+    val annotated: AnnotatedWildcardType?,
+    raw: WildcardMirror?,
+    override val specialization: TypeSpecialization.Common?
+): TypeMirror() {
 
     /**
      * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
@@ -23,10 +26,10 @@ class WildcardMirror internal constructor(override val cache: MirrorCache, overr
      * * AbstractList<T> - Valid
      * - ArrayList<>     - Invalid. `anArrayList = superAbstractListVariable` will throw
      */
-    var lowerBounds: List<TypeMirror> by lazyOrSet {
-        abstractType.lowerBounds.map { cache.types.reflect(it) }
+    val lowerBounds: List<TypeMirror> by lazy {
+        annotated?.annotatedLowerBounds?.map { cache.types.reflect(it) }
+            ?: this.java.lowerBounds.map { cache.types.reflect(it) }
     }
-        internal set
 
     /**
      * `? extends T` or `in T`. The uppermost type in the hierarchy that is valid. Any valid type must be a subclass
@@ -42,31 +45,49 @@ class WildcardMirror internal constructor(override val cache: MirrorCache, overr
      * - ArrayList<T>    - Valid
      * ```
      */
-    var upperBounds: List<TypeMirror> by lazyOrSet {
-        abstractType.upperBounds.map { cache.types.reflect(it) }
+    val upperBounds: List<TypeMirror> by lazy {
+        annotated?.annotatedUpperBounds?.map { cache.types.reflect(it) }
+            ?: this.java.upperBounds.map { cache.types.reflect(it) }
     }
-        internal set
 
-    var raw: WildcardMirror = this
-        internal set
+    override val raw: WildcardMirror = raw ?: this
+
+    override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
+
+    override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
+        return defaultApplySpecialization<TypeSpecialization.Common>(
+            specialization,
+            { true }
+        ) {
+            WildcardMirror(cache, java, annotated, this, it)
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is WildcardMirror) return false
 
         if (cache != other.cache) return false
-        if (abstractType != other.abstractType) return false
-        if (upperBounds != other.upperBounds) return false
-        if (lowerBounds != other.lowerBounds) return false
+        if (java != other.java) return false
+        val annotated = this.annotated
+        val otherAnnotated = other.annotated
+        if (annotated != null && otherAnnotated != null && annotated != otherAnnotated) {
+            if (
+                !annotated.annotatedUpperBounds!!.contentEquals(otherAnnotated.annotatedUpperBounds) ||
+                !annotated.annotatedLowerBounds!!.contentEquals(otherAnnotated.annotatedLowerBounds)
+            ) return false
+        }
+        if (specialization != other.specialization) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = cache.hashCode()
-        result = 31 * result + abstractType.hashCode()
-        result = 31 * result + upperBounds.hashCode()
-        result = 31 * result + lowerBounds.hashCode()
+        result = 31 * result + java.hashCode()
+        result = 31 * result + annotated?.annotatedUpperBounds.hashCode()
+        result = 31 * result + annotated?.annotatedUpperBounds.hashCode()
+        result = 31 * result + specialization.hashCode()
         return result
     }
 

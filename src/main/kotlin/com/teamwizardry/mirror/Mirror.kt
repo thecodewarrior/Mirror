@@ -2,7 +2,6 @@ package com.teamwizardry.mirror
 
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
 import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ClassMirror
@@ -24,14 +23,12 @@ object Mirror {
      */
     @JvmStatic
     fun reflect(type: Type): TypeMirror {
-        val abstract = AbstractType.create(type)
-        return cache.types.reflect(abstract)
+        return cache.types.reflect(type)
     }
 
     @JvmStatic
     fun reflect(type: AnnotatedType): TypeMirror {
-        val abstract = AbstractType.create(type)
-        return cache.types.reflect(abstract)
+        return cache.types.reflect(type)
     }
 
     inline fun <reified T> reflect(): TypeMirror {

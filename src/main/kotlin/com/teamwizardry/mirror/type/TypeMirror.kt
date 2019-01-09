@@ -1,7 +1,7 @@
 package com.teamwizardry.mirror.type
 
+import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
 import java.lang.reflect.Type
 
 /**
@@ -19,7 +19,7 @@ import java.lang.reflect.Type
  * @see VariableMirror
  * @see WildcardMirror
  */
-abstract class TypeMirror {
+abstract class TypeMirror internal constructor() {
     /**
      * The cache this mirror was created by. Mirrors from other caches will not be considered equal even if they
      * represent the same type. However, no production code should use anything but
@@ -28,16 +28,72 @@ abstract class TypeMirror {
     internal abstract val cache: MirrorCache
 
     /**
-     * The abstract type this mirror represents. Abstract types are used to make explicit the reflection APIs used and
-     * sometimes to do some pre-processing of reflection data
-     */
-    internal abstract val abstractType: AbstractType<*, *>
-
-    /**
      * The Java Core Reflection type this mirror represents
      */
     abstract val java: Type
 
-    abstract val annotations: List<Annotation>
+    internal abstract val specialization: TypeSpecialization?
+    internal abstract fun defaultSpecialization(): TypeSpecialization
+
+    abstract val raw: TypeMirror
+
+    internal abstract fun applySpecialization(specialization: TypeSpecialization): TypeMirror
+
+    internal inline fun <reified T: TypeSpecialization> defaultApplySpecialization(
+        specialization: TypeSpecialization,
+        rawTest: (T) -> Boolean,
+        crossinline specializedConstructor: (T) -> TypeMirror
+    ): TypeMirror {
+        if(this.specialization != null)
+            throw InvalidSpecializationException("Can't apply specialization to specialized mirror $this")
+        if(specialization !is T)
+            throw InvalidSpecializationException("Can't apply ${specialization.javaClass}" +
+                " to ${this.javaClass.simpleName } $this")
+        if(specialization.markedNull == this.specialization?.markedNull ?: false &&
+            specialization.annotations == this.specialization?.annotations ?: emptyList<Annotation>() &&
+            rawTest(specialization)
+        )
+            return raw
+
+        return specializedConstructor(specialization)
+    }
+
+    val typeAnnotations: List<Annotation>
+        get() = specialization?.annotations ?: emptyList()
+
+    fun annotate(annotations: List<Annotation>): TypeMirror {
+        return cache.types.specialize(raw,
+            (this.specialization ?: this.defaultSpecialization()).copy(
+                annotations = annotations
+            )
+        )
+    }
+
+    fun markNullable(nullable: Boolean): TypeMirror {
+        return cache.types.specialize(raw,
+            (this.specialization ?: this.defaultSpecialization()).copy(
+                markedNull = nullable
+            )
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TypeMirror) return false
+        if (other.javaClass != this.javaClass) return false
+
+        if (cache != other.cache) return false
+        if (java != other.java) return false
+        if (specialization != other.specialization) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = cache.hashCode()
+        result = 31 * result + java.hashCode()
+        result = 31 * result + specialization.hashCode()
+        return result
+    }
 }
 

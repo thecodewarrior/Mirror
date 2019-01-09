@@ -1,11 +1,24 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
-import com.teamwizardry.mirror.utils.unmodifiable
-import java.lang.reflect.Type
 
-class VoidMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractType<*, *>): TypeMirror() {
-    override val java: Type = Void.TYPE
-    override val annotations: List<Annotation> = abstractType.annotations.unmodifiable()
+class VoidMirror internal constructor(
+    override val cache: MirrorCache,
+    override val java: Class<*>,
+    raw: VoidMirror?,
+    override val specialization: TypeSpecialization.Common?
+): TypeMirror() {
+
+    override val raw: TypeMirror = raw ?: this
+
+    override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
+
+    override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
+        return defaultApplySpecialization<TypeSpecialization.Common>(
+            specialization,
+            { true }
+        ) {
+            VoidMirror(cache, java, this, it)
+        }
+    }
 }

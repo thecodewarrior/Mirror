@@ -21,7 +21,7 @@ class ExampleTests {
             type = Mirror.reflect(ExampleTests.class.getDeclaredMethod("holder", Object1.class).getAnnotatedParameterTypes()[0]);
             assertEquals(Arrays.asList(
                     Mirror.newAnnotation(TypeAnnotation1.class)
-            ), type.getAnnotations());
+            ), type.getTypeAnnotations());
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }

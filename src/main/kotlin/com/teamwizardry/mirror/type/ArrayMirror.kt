@@ -1,45 +1,59 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractArrayType
-import com.teamwizardry.mirror.utils.lazyOrSet
-import com.teamwizardry.mirror.utils.unmodifiable
+import java.lang.reflect.GenericArrayType
+import java.lang.reflect.Type
 
 /**
  * A mirror that represents an array type
  */
-class ArrayMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractArrayType): ConcreteTypeMirror() {
-    override var java: Class<*> = abstractType.javaArrayClass
-    override val annotations: List<Annotation> = abstractType.annotations.unmodifiable()
+class ArrayMirror internal constructor(
+    override val cache: MirrorCache,
+    private val type: Type,
+    raw: ArrayMirror?,
+    override val specialization: TypeSpecialization.Array?
+): ConcreteTypeMirror() {
 
+    override var java: Class<*> = when(type) {
+        is Class<*> -> type
+        is GenericArrayType -> Array<Any>::class.java
+        else -> throw IllegalArgumentException("The `type` parameter of ArrayMirrors must be either a Class or " +
+            "a GenericArrayType. It was a ${type.javaClass}")
+    }
     /**
      * The component type of this mirror. `String` in `[String]`, `int` in `[int]`, `T` in `[T]`, etc.
      */
-    var component: TypeMirror by lazyOrSet {
-        cache.types.reflect(abstractType.componentType)
-    }
-        internal set
-
-    var raw: ArrayMirror = this
-        internal set
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ArrayMirror) return false
-
-        if (cache != other.cache) return false
-        if (component != other.component) return false
-
-        return true
+    val component: TypeMirror by lazy {
+        specialization?.component
+            ?: cache.types.reflect(
+                (type as? GenericArrayType)?.genericComponentType ?: java.componentType
+            )
     }
 
-    override fun hashCode(): Int {
-        var result = cache.hashCode()
-        result = 31 * result + component.hashCode()
-        return result
+    override val raw: ArrayMirror = raw ?: this
+
+    override fun defaultSpecialization() = TypeSpecialization.Array.DEFAULT
+
+    fun specialize(component: TypeMirror): ArrayMirror {
+        val newSpecialization = (specialization ?: defaultSpecialization()).copy(component = component)
+        return cache.types.specialize(this, newSpecialization) as ArrayMirror
+    }
+
+    override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
+        return defaultApplySpecialization<TypeSpecialization.Array>(
+            specialization,
+            { it.component == this.component || it.component == null}
+        ) {
+            ArrayMirror(cache, java, this, it)
+        }
     }
 
     override fun toString(): String {
-        return "[$component]"
+        var str = "$component"
+        if(specialization?.annotations?.isNotEmpty() == true) {
+            str += " " + specialization.annotations.joinToString(" ") + " "
+        }
+        str += "[]"
+        return str
     }
 }

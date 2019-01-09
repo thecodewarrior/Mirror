@@ -15,7 +15,7 @@ internal class TypeMirrorTest: MirrorTestBase() {
     @DisplayName("Getting the annotations of an unannotated type should return an empty list")
     fun getAnnotation_ofUnannotatedType_shouldReturnEmptyList() {
         val type = Mirror.reflect(holder["getAnnotation_ofUnannotatedType_shouldReturnEmptyList_1"])
-        assertEquals(emptyList<Annotation>(), type.annotations)
+        assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
@@ -24,7 +24,7 @@ internal class TypeMirrorTest: MirrorTestBase() {
         val type = Mirror.reflect(holder["getAnnotation_ofAnnotatedType_shouldReturnAnnotation_1"])
         assertEquals(listOf(
             Mirror.newAnnotation<TypeAnnotation1>()
-        ), type.annotations)
+        ), type.typeAnnotations)
     }
 
     @Test
@@ -34,7 +34,7 @@ internal class TypeMirrorTest: MirrorTestBase() {
         assertEquals(listOf(
             Mirror.newAnnotation<TypeAnnotation1>(),
             Mirror.newAnnotation<TypeAnnotationArg1>(mapOf("arg" to 1))
-        ), type.annotations)
+        ), type.typeAnnotations)
     }
 
     @Test
@@ -44,7 +44,7 @@ internal class TypeMirrorTest: MirrorTestBase() {
         val type = outer.typeParameters[0]
         assertEquals(listOf(
             Mirror.newAnnotation<TypeAnnotation1>()
-        ), type.annotations)
+        ), type.typeAnnotations)
     }
 
     @Test
@@ -54,14 +54,14 @@ internal class TypeMirrorTest: MirrorTestBase() {
         val type = array.component
         assertEquals(listOf(
             Mirror.newAnnotation<TypeAnnotation1>()
-        ), type.annotations)
+        ), type.typeAnnotations)
     }
 
     @Test
     @DisplayName("Getting the annotations of an array with an annotated component should return an empty list")
     fun getAnnotation_ofArrayWithAnnotatedComponent_shouldReturnEmptyList() {
         val type = Mirror.reflect(holder["getAnnotation_ofArrayWithAnnotatedComponent_shouldReturnAnnotations_1"]) as ArrayMirror
-        assertEquals(emptyList<Annotation>(), type.annotations)
+        assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
@@ -70,7 +70,7 @@ internal class TypeMirrorTest: MirrorTestBase() {
         val type = Mirror.reflect(holder["getAnnotation_ofAnnotatedArrayWithUnannotatedComponent_shouldReturnAnnotations_1"]) as ArrayMirror
         assertEquals(listOf(
             Mirror.newAnnotation<TypeAnnotation1>()
-        ), type.annotations)
+        ), type.typeAnnotations)
     }
 
     @Test
@@ -78,6 +78,6 @@ internal class TypeMirrorTest: MirrorTestBase() {
     fun getAnnotation_ofUnannotatedComponentOfAnnotatedArray_shouldReturnEmptyList() {
         val array = Mirror.reflect(holder["getAnnotation_ofUnannotatedComponentOfAnnotatedArray_shouldReturnAnnotations_1"]) as ArrayMirror
         val type = array.component
-        assertEquals(emptyList<Annotation>(), type.annotations)
+        assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 }

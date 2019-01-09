@@ -4,7 +4,6 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
-import com.teamwizardry.mirror.type.ConcreteTypeMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.lazyOrSet
 import com.teamwizardry.mirror.utils.unmodifiable
@@ -19,7 +18,8 @@ class MethodMirror internal constructor(internal val cache: MirrorCache, interna
     val name: String = abstractMethod.name
 
     var returnType: TypeMirror by lazyOrSet {
-        cache.types.reflect(abstractMethod.returnType)
+        abstractMethod.returnType.annotated?.let { cache.types.reflect(it) }
+            ?: cache.types.reflect(abstractMethod.returnType.type)
     }
         internal set
 
@@ -36,13 +36,17 @@ class MethodMirror internal constructor(internal val cache: MirrorCache, interna
 
     var exceptionTypes: List<TypeMirror> by lazyOrSet {
         abstractMethod.exceptionTypes.map {
-            cache.types.reflect(it)
+            it.annotated?.let { cache.types.reflect(it) }
+                ?: cache.types.reflect(it.type)
         }.unmodifiable()
     }
         internal set
 
     var typeParameters: List<TypeMirror> by lazyOrSet {
-        abstractMethod.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
+        abstractMethod.typeParameters.map {
+            it.annotated?.let { cache.types.reflect(it) }
+                ?: cache.types.reflect(it.type)
+        }.unmodifiable()
     }
         internal set
 
@@ -69,13 +73,13 @@ class MethodMirror internal constructor(internal val cache: MirrorCache, interna
             is ArrayMirror -> {
                 val component = this.map(type.component, mapping)
                 if(component != type.component) {
-                    return cache.types.getArrayMirror(component as ConcreteTypeMirror)
+                    return type.specialize(component)
                 }
             }
             is ClassMirror -> {
                 val parameters = type.typeParameters.map { this.map(it, mapping) }
                 if(parameters != type.typeParameters) {
-                    return cache.types.getClassMirror(type.raw.abstractType, parameters)
+                    return type.specialize(*parameters.toTypedArray())
                 }
             }
         }

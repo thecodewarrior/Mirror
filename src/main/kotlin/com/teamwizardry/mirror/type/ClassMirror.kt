@@ -1,12 +1,11 @@
 package com.teamwizardry.mirror.type
 
+import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
 import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
-import com.teamwizardry.mirror.utils.lazyOrSet
 import com.teamwizardry.mirror.utils.unmodifiable
 import java.util.concurrent.ConcurrentHashMap
 
@@ -16,9 +15,19 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @see TypeMirror
  */
-class ClassMirror internal constructor(override val cache: MirrorCache, override val abstractType: AbstractClass): ConcreteTypeMirror() {
-    override val java = abstractType.type
-    override val annotations: List<Annotation> = abstractType.annotations.unmodifiable()
+class ClassMirror internal constructor(
+    override val cache: MirrorCache,
+    override val java: Class<*>,
+    raw: ClassMirror?,
+    override val specialization: TypeSpecialization.Class?
+): ConcreteTypeMirror() {
+
+    init {
+        val specialization = specialization
+        if(specialization?.arguments != null && specialization.arguments.size != java.typeParameters.size)
+            throw InvalidSpecializationException("Invalid number of type arguments for ClassMirror ${raw ?: this}. " +
+                "Expected ${java.typeParameters.size}, received ${specialization.arguments.size}")
+    }
 
 //region Supertypes
     /**
@@ -27,7 +36,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * explicit parameters set in the source code.
      */
     val superclass: ClassMirror? by lazy {
-        abstractType.genericSuperclass?.let {
+        java.annotatedSuperclass?.let {
             this.map(cache.types.reflect(it)) as ClassMirror
         }
     }
@@ -38,7 +47,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * source code.
      */
     val interfaces: List<ClassMirror> by lazy {
-        abstractType.genericInterfaces.map {
+        java.annotatedInterfaces.map {
             this.map(cache.types.reflect(it)) as ClassMirror
         }.unmodifiable()
     }
@@ -47,16 +56,16 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * The list of type parameters defined by this mirror. These will be replaced when specializing, so you should use
      * [raw] to get the actual type parameters of the class as opposed to their specializations.
      */
-    var typeParameters: List<TypeMirror> by lazyOrSet {
-        abstractType.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
+    val typeParameters: List<TypeMirror> by lazy {
+        specialization?.arguments ?: java.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
     }
-        internal set
 
     /**
      * The raw, unspecialized version of this mirror.
      */
-    var raw: ClassMirror = this
-        internal set
+    override val raw: ClassMirror = raw ?: this
+
+    override fun defaultSpecialization() = TypeSpecialization.Class.DEFAULT
 
     /**
      * Specializes this class replacing its type parameters the given types. This will ripple the changes down to
@@ -67,9 +76,19 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      */
     fun specialize(vararg parameters: TypeMirror): ClassMirror {
         if(parameters.size != typeParameters.size)
-            throw IllegalArgumentException("Passed parameter count ${parameters.size} is different from class type " +
+            throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from class type " +
                     "parameter count ${typeParameters.size}")
-        return cache.types.getClassMirror(raw.abstractType, parameters.toList())
+        val newSpecialization = (specialization ?: defaultSpecialization()).copy(arguments = parameters.toList())
+        return cache.types.specialize(raw, newSpecialization) as ClassMirror
+    }
+
+    override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
+        return defaultApplySpecialization<TypeSpecialization.Class>(
+            specialization,
+            { it.arguments == this.typeParameters || it.arguments == null }
+        ) {
+            ClassMirror(cache, java, this, it)
+        }
     }
 //endregion
 
@@ -81,8 +100,8 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * This list is created when it is first accessed and is thread safe.
      */
     val declaredFields: List<FieldMirror> by lazy {
-        abstractType.declaredFields.map {
-            this.map(it)
+        java.declaredFields.map {
+            this.map(AbstractField(it))
         }.unmodifiable()
     }
 
@@ -106,8 +125,8 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
      * This list is created when it is first accessed and is thread safe.
      */
     val declaredMethods: List<MethodMirror> by lazy {
-        abstractType.declaredMethods.map {
-            this.map(it)
+        java.declaredMethods.map {
+            this.map(AbstractMethod(it))
         }.unmodifiable()
     }
 //endregion
@@ -121,13 +140,13 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
             is ArrayMirror -> {
                 val component = this.map(type.component)
                 if(component != type.component) {
-                    return cache.types.getArrayMirror(component as ConcreteTypeMirror)
+                    return type.specialize(component)
                 }
             }
             is ClassMirror -> {
                 val parameters = type.typeParameters.map { this.map(it) }
                 if(parameters != type.typeParameters) {
-                    return cache.types.getClassMirror(type.raw.abstractType, parameters)
+                    return type.specialize(*parameters.toTypedArray())
                 }
             }
         }
@@ -136,7 +155,7 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
     }
 
     private val genericMapping: Map<TypeMirror, TypeMirror> by lazy {
-        raw.typeParameters.zip(typeParameters).associate { it }
+        this.raw.typeParameters.zip(typeParameters).associate { it }
     }
 
     private fun map(field: AbstractField): FieldMirror {
@@ -166,49 +185,39 @@ class ClassMirror internal constructor(override val cache: MirrorCache, override
             newReturnType, newParamTypes, newExceptionTypes, raw.typeParameters)
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ClassMirror) return false
-
-        if (cache != other.cache) return false
-        if (abstractType != other.abstractType) return false
-        if (typeParameters != other.typeParameters) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = cache.hashCode()
-        result = 31 * result + abstractType.hashCode()
-        result = 31 * result + typeParameters.hashCode()
-        return result
-    }
-
     /**
-     * Returns a string representing the full declaration of this mirror, as opposed to [toString] which returns only
-     * the type name and generic parameters
+     * Returns a string representing the declaration of this type with type parameters substituted in,
+     * as opposed to [toString] which returns the string representing the usage of this type
      */
-    fun toFullString(): String {
-        var str = ""
-        str += abstractType.type.simpleName
-        if(typeParameters.isNotEmpty()) {
-            str += "<${typeParameters.joinToString(", ")}>"
-        }
-        superclass?.let { superclass ->
-            str += " extends $superclass"
-        }
-        if(interfaces.isNotEmpty()) {
-            str += " implements ${interfaces.joinToString(", ")}"
-        }
+    val declarationString: String
+        get() {
+            var str = ""
+            str += java.simpleName
+            if(typeParameters.isNotEmpty()) {
+                str += "<${typeParameters.joinToString(", ")}>"
+            }
+            superclass?.let { superclass ->
+                str += " extends $superclass"
+            }
+            if(interfaces.isNotEmpty()) {
+                str += " implements ${interfaces.joinToString(", ")}"
+            }
 
-        return str
-    }
+            return str
+        }
 
     override fun toString(): String {
+        val specialization = this.specialization
         var str = ""
-        str += abstractType.type.simpleName
+        if(specialization?.annotations?.isNotEmpty() == true) {
+            str += specialization.annotations.joinToString(" ") + " "
+        }
+        str += java.canonicalName
         if(typeParameters.isNotEmpty()) {
             str += "<${typeParameters.joinToString(", ")}>"
+        }
+        if(specialization?.markedNull == true) {
+            str += "?"
         }
         return str
     }

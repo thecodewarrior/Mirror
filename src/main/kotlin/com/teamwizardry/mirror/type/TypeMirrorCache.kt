@@ -1,42 +1,44 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractArrayType
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractClass
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractParameterizedType
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractType
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractTypeVariable
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractVoid
-import com.teamwizardry.mirror.abstractionlayer.type.AbstractWildcardType
-import com.teamwizardry.mirror.utils.unmodifiableCopy
+import java.lang.reflect.AnnotatedArrayType
+import java.lang.reflect.AnnotatedParameterizedType
+import java.lang.reflect.AnnotatedType
+import java.lang.reflect.AnnotatedWildcardType
+import java.lang.reflect.GenericArrayType
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import java.lang.reflect.TypeVariable
+import java.lang.reflect.WildcardType
 import java.util.concurrent.ConcurrentHashMap
 
 internal class TypeMirrorCache(private val cache: MirrorCache) {
     private val rawCache = ConcurrentHashMap<Any, TypeMirror>()
-    private val specializedClasses = ConcurrentHashMap<Pair<AbstractClass, List<TypeMirror>>, ClassMirror>()
-    private val specializedArrays = ConcurrentHashMap<TypeMirror, ArrayMirror>()
+    private val specializedCache = ConcurrentHashMap<Pair<TypeMirror, TypeSpecialization>, TypeMirror>()
 
-    fun reflect(type: AbstractType<*, *>): TypeMirror {
+    fun reflect(type: Type): TypeMirror {
         return rawCache.getOrPut(type) {
-
             val mirror: TypeMirror
             when (type) {
-                is AbstractVoid ->
-                    mirror = VoidMirror(cache, type)
-                is AbstractClass -> {
-                    mirror = ClassMirror(cache, type)
+                is Class<*> -> {
+                    when {
+                        type == Void.TYPE -> mirror = VoidMirror(cache, type, null, null)
+                        type.isArray -> mirror = ArrayMirror(cache, type, null, null)
+                        else -> mirror = ClassMirror(cache, type, null, null)
+                    }
                 }
-                is AbstractArrayType -> {
-                    mirror = ArrayMirror(cache, type)
+                is GenericArrayType -> {
+                    mirror = ArrayMirror(cache, type, null, null)
                 }
-                is AbstractParameterizedType -> {
-                    mirror = getClassMirror(type.rawType, type.actualTypeArguments.map { this.reflect(it) })
+                is ParameterizedType -> {
+                    mirror = (reflect(type.rawType) as ClassMirror)
+                        .specialize(*type.actualTypeArguments.map { reflect(it) }.toTypedArray())
                 }
-                is AbstractTypeVariable -> {
-                    mirror = VariableMirror(cache, type)
+                is TypeVariable<*> -> {
+                    mirror = VariableMirror(cache, type, null, null)
                 }
-                is AbstractWildcardType -> {
-                    mirror = WildcardMirror(cache, type)
+                is WildcardType -> {
+                    mirror = WildcardMirror(cache, type, null, null, null)
                 }
                 else -> throw IllegalArgumentException("Unknown type $type")
             }
@@ -45,37 +47,33 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
         }
     }
 
-    internal fun getClassMirror(type: AbstractClass, arguments: List<TypeMirror>): ClassMirror {
-        return specializedClasses.getOrPut(type to arguments) {
-            val raw = reflect(type) as ClassMirror
-            val specialized: ClassMirror
-            if (raw.typeParameters == arguments) {
-                specialized = raw
-            } else {
-                specialized = ClassMirror(cache, type)
-                assert(raw.typeParameters.size == arguments.size)
-                specialized.raw = raw
-                specialized.typeParameters = arguments.unmodifiableCopy()
+    fun reflect(type: AnnotatedType): TypeMirror {
+        return rawCache.getOrPut(type) {
+            val mirror: TypeMirror
+            val java = type.type
+            when (type) {
+                is AnnotatedArrayType -> {
+                    mirror = (reflect(java) as ArrayMirror)
+                        .specialize(reflect(type.annotatedGenericComponentType))
+                }
+                is AnnotatedParameterizedType -> {
+                    java as ParameterizedType
+                    mirror = (reflect(java.rawType) as ClassMirror)
+                        .specialize(*type.annotatedActualTypeArguments.map { reflect(it) }.toTypedArray())
+                }
+                is AnnotatedWildcardType -> {
+                    mirror = WildcardMirror(cache, java as WildcardType, type, null, null)
+                }
+                else -> mirror = reflect(java)
             }
 
-            return@getOrPut specialized
+            return@getOrPut mirror.annotate(type.annotations.toList())
         }
     }
 
-    internal fun getArrayMirror(component: ConcreteTypeMirror): ArrayMirror {
-        return specializedArrays.getOrPut(component) {
-            val arrayType = AbstractArrayType(java.lang.reflect.Array.newInstance(component.java, 0).javaClass, null)
-            val raw = reflect(arrayType) as ArrayMirror
-            val specialized: ArrayMirror
-            if (raw.component == component) {
-                specialized = raw
-            } else {
-                specialized = ArrayMirror(cache, arrayType)
-                specialized.raw = raw
-                specialized.component = component
-            }
-
-            return@getOrPut specialized
+    internal fun specialize(type: TypeMirror, specialization: TypeSpecialization): TypeMirror {
+        return specializedCache.getOrPut(type.raw to specialization) {
+            type.raw.applySpecialization(specialization)
         }
     }
 }

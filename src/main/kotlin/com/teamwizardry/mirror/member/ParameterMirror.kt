@@ -15,7 +15,8 @@ class ParameterMirror internal constructor(internal val cache: MirrorCache, inte
         internal set
 
     var type: TypeMirror by lazyOrSet {
-        cache.types.reflect(abstractParameter.type)
+        abstractParameter.type.annotated?.let { cache.types.reflect(it) }
+            ?: cache.types.reflect(abstractParameter.type.type)
     }
         internal set
 

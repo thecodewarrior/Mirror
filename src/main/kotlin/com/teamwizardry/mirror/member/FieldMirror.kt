@@ -22,7 +22,8 @@ class FieldMirror internal constructor(internal val cache: MirrorCache, internal
     val accessLevel: AccessLevel = AccessLevel.fromModifiers(abstractField.modifiers)
 
     var type: TypeMirror by lazyOrSet {
-        cache.types.reflect(abstractField.type)
+        abstractField.type.annotated?.let { cache.types.reflect(it) }
+            ?: cache.types.reflect(abstractField.type.type)
     }
         internal set
 

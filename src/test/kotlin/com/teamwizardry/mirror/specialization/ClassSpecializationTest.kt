@@ -1,5 +1,6 @@
 package com.teamwizardry.mirror.specialization
 
+import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
@@ -7,6 +8,7 @@ import com.teamwizardry.mirror.testsupport.Object1
 import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -25,12 +27,26 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Specializing type with wrong number of arguments should throw IllegalArgumentException")
-    fun specializingWrongParameterCount() {
+    @DisplayName("Specializing type with wrong number of arguments should throw InvalidSpecializationException")
+    fun specialize_withWrongArgumentCount_shouldThrow() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidSpecializationException> {
             genericType.specialize(specializeWith, specializeWith)
         }
+    }
+
+    @Test
+    @DisplayName("Specializing a type with its own type parameters should return the raw type")
+    fun specialize_withOwnTypeParameters_shouldReturnRawType() {
+        val genericType = Mirror.reflectClass(GenericObject1::class.java)
+        assertSame(genericType, genericType.specialize(genericType.typeParameters[0]))
+    }
+
+    @Test
+    @DisplayName("Specializing a non-generic type with no type arguments should return the raw type")
+    fun specialize_nonGenericWithNoArguments_shouldReturnRawType() {
+        val nonGenericType = Mirror.reflectClass(Object1::class.java)
+        assertSame(nonGenericType, nonGenericType.specialize())
     }
 }
