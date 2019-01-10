@@ -49,8 +49,7 @@ abstract class TypeMirror internal constructor() {
         if(specialization !is T)
             throw InvalidSpecializationException("Can't apply ${specialization.javaClass}" +
                 " to ${this.javaClass.simpleName } $this")
-        if(specialization.markedNull == this.specialization?.markedNull ?: false &&
-            specialization.annotations == this.specialization?.annotations ?: emptyList<Annotation>() &&
+        if(specialization.annotations == this.specialization?.annotations ?: emptyList<Annotation>() &&
             rawTest(specialization)
         )
             return raw
@@ -65,14 +64,6 @@ abstract class TypeMirror internal constructor() {
         return cache.types.specialize(raw,
             (this.specialization ?: this.defaultSpecialization()).copy(
                 annotations = annotations
-            )
-        )
-    }
-
-    fun markNullable(nullable: Boolean): TypeMirror {
-        return cache.types.specialize(raw,
-            (this.specialization ?: this.defaultSpecialization()).copy(
-                markedNull = nullable
             )
         )
     }

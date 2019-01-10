@@ -2,28 +2,24 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.utils.unmodifiableCopy
 
-internal abstract class TypeSpecialization private constructor(annotations: List<Annotation>, markedNull: Boolean) {
+internal abstract class TypeSpecialization private constructor(annotations: List<Annotation>) {
     val annotations: List<Annotation> = annotations.unmodifiableCopy()
-    val markedNull: Boolean = markedNull
 
     abstract fun copy(
-        annotations: List<Annotation> = this.annotations,
-        markedNull: Boolean = this.markedNull
+        annotations: List<Annotation> = this.annotations
     ): TypeSpecialization
 
-    class Common(annotations: List<Annotation>, markedNull: Boolean): TypeSpecialization(annotations, markedNull) {
+    class Common(annotations: List<Annotation>): TypeSpecialization(annotations) {
         override fun copy(
-            annotations: List<Annotation>,
-            markedNull: Boolean
+            annotations: List<Annotation>
         ): Common {
-            return Common(annotations, markedNull)
+            return Common(annotations)
         }
 
         override fun toString(): String {
             return ( "" +
                 annotations.joinToString(", ") { "@$it" } +
-                " ___ " +
-                (if(markedNull) "?" else "")
+                " ___"
                 ).trim()
         }
 
@@ -32,46 +28,41 @@ internal abstract class TypeSpecialization private constructor(annotations: List
             if (other !is Common) return false
 
             if (annotations != other.annotations) return false
-            if (markedNull != other.markedNull) return false
 
             return true
         }
 
         override fun hashCode(): Int {
             var result = annotations.hashCode()
-            result = 31 * result + markedNull.hashCode()
             return result
         }
 
         companion object {
-            val DEFAULT = Common(emptyList(), false)
+            val DEFAULT = Common(emptyList())
         }
     }
 
-    class Class(annotations: List<Annotation>, markedNull: Boolean, arguments: List<TypeMirror>?): TypeSpecialization(annotations, markedNull) {
+    class Class(annotations: List<Annotation>, arguments: List<TypeMirror>?): TypeSpecialization(annotations) {
         val arguments: List<TypeMirror>? = if(arguments?.isNotEmpty() == true) arguments.unmodifiableCopy() else null
 
         override fun copy(
-            annotations: List<Annotation>,
-            markedNull: Boolean
+            annotations: List<Annotation>
         ): Class {
-            return Class(annotations, markedNull, arguments)
+            return Class(annotations, arguments)
         }
 
         fun copy(
             annotations: List<Annotation> = this.annotations,
-            markedNull: Boolean = this.markedNull,
             arguments: List<TypeMirror>? = this.arguments
         ): Class {
-            return Class(annotations, markedNull, arguments)
+            return Class(annotations, arguments)
         }
 
         override fun toString(): String {
             return ( "" +
                 annotations.joinToString(", ") { "@$it" } +
                 " ___" +
-                (arguments?.let { "<${arguments.joinToString(", ")}> " } ?: "") +
-                (if(markedNull) "?" else "")
+                (arguments?.let { "<${arguments.joinToString(", ")}>" } ?: "")
                 ).trim()
         }
 
@@ -81,7 +72,6 @@ internal abstract class TypeSpecialization private constructor(annotations: List
 
             if (annotations != other.annotations) return false
             if (arguments != other.arguments) return false
-            if (markedNull != other.markedNull) return false
 
             return true
         }
@@ -89,36 +79,32 @@ internal abstract class TypeSpecialization private constructor(annotations: List
         override fun hashCode(): Int {
             var result = annotations.hashCode()
             result = 31 * result + arguments.hashCode()
-            result = 31 * result + markedNull.hashCode()
             return result
         }
 
         companion object {
-            val DEFAULT = Class(emptyList(), false, null)
+            val DEFAULT = Class(emptyList(), null)
         }
     }
 
-    class Array(annotations: List<Annotation>, markedNull: Boolean, val component: TypeMirror?): TypeSpecialization(annotations, markedNull) {
+    class Array(annotations: List<Annotation>, val component: TypeMirror?): TypeSpecialization(annotations) {
         override fun copy(
-            annotations: List<Annotation>,
-            markedNull: Boolean
+            annotations: List<Annotation>
         ): Array {
-            return Array(annotations, markedNull, component)
+            return Array(annotations, component)
         }
 
         fun copy(
             annotations: List<Annotation> = this.annotations,
-            markedNull: Boolean = this.markedNull,
             component: TypeMirror? = this.component
         ): Array {
-            return Array(annotations, markedNull, component)
+            return Array(annotations, component)
         }
 
         override fun toString(): String {
             return ( "" +
                 annotations.joinToString(", ") +
-                "$component[]" +
-                (if(markedNull) "?" else "")
+                "$component[]"
                 ).trim()
         }
 
@@ -128,7 +114,6 @@ internal abstract class TypeSpecialization private constructor(annotations: List
 
             if (annotations != other.annotations) return false
             if (component != other.component) return false
-            if (markedNull != other.markedNull) return false
 
             return true
         }
@@ -136,12 +121,11 @@ internal abstract class TypeSpecialization private constructor(annotations: List
         override fun hashCode(): Int {
             var result = annotations.hashCode()
             result = 31 * result + component.hashCode()
-            result = 31 * result + markedNull.hashCode()
             return result
         }
 
         companion object {
-            val DEFAULT = Array(emptyList(), false, null)
+            val DEFAULT = Array(emptyList(), null)
         }
     }
 }

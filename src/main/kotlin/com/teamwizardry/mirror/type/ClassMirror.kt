@@ -216,9 +216,6 @@ class ClassMirror internal constructor(
         if(typeParameters.isNotEmpty()) {
             str += "<${typeParameters.joinToString(", ")}>"
         }
-        if(specialization?.markedNull == true) {
-            str += "?"
-        }
         return str
     }
 }
