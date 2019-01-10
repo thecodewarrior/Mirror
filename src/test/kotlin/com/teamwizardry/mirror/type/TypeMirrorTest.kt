@@ -3,6 +3,7 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.annotations.TypeAnnotation1
 import com.teamwizardry.mirror.annotations.TypeAnnotationArg1
+import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.typeToken
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -135,4 +136,13 @@ internal class TypeMirrorTest: MirrorTestBase() {
         val type = array.component
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
+
+    @Test
+    @DisplayName("Reflecting a self-referential type should not infinitely recurse")
+    fun reflect_onSelfReferentialType_shouldNotRecurse() {
+        class TestType<T: TestType<T>>: GenericObject1<TestType<T>>()
+
+        Mirror.reflect(typeToken<TestType<*>>())
+    }
+
 }
