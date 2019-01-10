@@ -12,9 +12,9 @@ internal class ArraySpecializationTest: MirrorTestBase() {
     @Test
     @DisplayName("Specializing generic array should return an array mirror with the new type")
     fun basicSpecialization() {
-        class GenericArrayHolder<T> {
-            val array: Array<T>? = null
-        }
+        class GenericArrayHolder<T>(
+            val array: Array<T>
+        )
         val genericType = Mirror.reflectClass(GenericArrayHolder::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
         val specialized = genericType.specialize(specializeWith)

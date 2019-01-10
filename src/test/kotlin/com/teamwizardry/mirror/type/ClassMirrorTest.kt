@@ -1,6 +1,7 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.Mirror
+import com.teamwizardry.mirror.testsupport.GenericPairObject1
 import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
@@ -72,11 +73,10 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("Getting the type parameters of a generic type should return the correct types")
     fun getTypeParameters_ofGenericType_shouldReturnTypes() {
-        class GenericType<A, B>
-        val type = Mirror.reflectClass(GenericType::class.java).typeParameters
+        val type = Mirror.reflectClass(GenericPairObject1::class.java).typeParameters
         assertSameList(listOf(
-                Mirror.reflect(GenericType::class.java.typeParameter(0)!!),
-                Mirror.reflect(GenericType::class.java.typeParameter(1)!!)
+                Mirror.reflect(GenericPairObject1::class.java.typeParameter(0)!!),
+                Mirror.reflect(GenericPairObject1::class.java.typeParameter(1)!!)
         ), type)
     }
 
@@ -90,10 +90,10 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("Getting declared fields of a class should return the correct mirrors in order")
     fun getFields() {
-        class FieldHolder {
-            @JvmField var foo: String? = null
-            @JvmField var bar: String? = null
-        }
+        class FieldHolder(
+            @JvmField var foo: String,
+            @JvmField var bar: String
+        )
         val fooJvmField = FieldHolder::class.java.getField("foo")
         val barJvmField = FieldHolder::class.java.getField("bar")
         val holderMirror = Mirror.reflectClass<FieldHolder>()

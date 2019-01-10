@@ -14,6 +14,22 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("Reflecting a field should return a field mirror with the correct name and type")
+    fun reflectingBasicField() {
+        class FieldHolder(
+            @JvmField
+            var field: String
+        )
+
+        val field = FieldHolder::class.java.getField("field")
+
+        val fieldMirror = Mirror.reflect(field)
+        assertEquals("field", fieldMirror.name)
+        val fieldType = fieldMirror.type
+        assertEquals(Mirror.reflect<String>(), fieldType)
+    }
+
+    @Test
     @DisplayName("Getting the declared fields of an enum type should return fields with the `isEnumConstant` flag " +
             "set to true")
     fun declaredFields_onEnumType() {

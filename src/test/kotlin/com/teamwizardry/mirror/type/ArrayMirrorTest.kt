@@ -30,10 +30,10 @@ internal class ArrayMirrorTest: MirrorTestBase() {
 
     @Test
     fun getComponent_onGenericArray_shouldReturnVariable() {
-        class FieldHolder<T> {
+        class FieldHolder<T>(
             @JvmField
-            val field: Array<T>? = null
-        }
+            val field: Array<T>
+        )
         val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
         val type = Mirror.reflect(genericArray) as ArrayMirror
         val component = Mirror.reflect(genericArray.annotatedGenericComponentType)

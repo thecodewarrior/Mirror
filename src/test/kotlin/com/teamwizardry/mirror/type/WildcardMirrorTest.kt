@@ -13,10 +13,10 @@ internal class WildcardMirrorTest {
 
     @Test
     fun getLowerBounds_onLowerBoundedWildcard_shouldReturnLowerBound() {
-        class FieldHolder {
+        class FieldHolder(
             @JvmField
-            var field: LowerBounded<Interface1>? = null
-        }
+            var field: LowerBounded<Interface1>
+        )
 
         val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
         val type = Mirror.reflect(wildcard) as WildcardMirror
@@ -25,10 +25,10 @@ internal class WildcardMirrorTest {
 
     @Test
     fun getUpperBounds_onUpperBoundedWildcard_shouldReturnUpperBound() {
-        class FieldHolder {
+        class FieldHolder(
             @JvmField
-            var field: UpperBounded<Interface1>? = null
-        }
+            var field: UpperBounded<Interface1>
+        )
 
         val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
         val type = Mirror.reflect(wildcard) as WildcardMirror
@@ -37,10 +37,10 @@ internal class WildcardMirrorTest {
 
     @Test
     fun getRaw_onWildcard_shouldReturnItself() {
-        class FieldHolder {
+        class FieldHolder(
             @JvmField
-            var field: UpperBounded<Interface1>? = null
-        }
+            var field: UpperBounded<Interface1>
+        )
 
         val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
         val type = Mirror.reflect(wildcard) as WildcardMirror
