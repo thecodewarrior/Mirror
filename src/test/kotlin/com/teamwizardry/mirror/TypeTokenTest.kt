@@ -32,7 +32,7 @@ class TypeTokenTest {
         assertSameList(listOf(Object1::class.java), type.actualTypeArguments.toList())
     }
 
-    @Disabled("Pending further investigation in Byte Buddy: https://github.com/raphw/byte-buddy/issues/583")
+    @Disabled("Only works when written in java in Java 10+ https://github.com/raphw/byte-buddy/issues/583")
     @Test
     @DisplayName("Getting the annotated type from an annotated type TypeToken should return a type with the correct annotations")
     fun getAnnotatedType_withAnnotated_shouldHaveAnnotations() {
