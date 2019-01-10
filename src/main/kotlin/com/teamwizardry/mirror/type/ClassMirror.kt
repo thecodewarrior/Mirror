@@ -2,7 +2,6 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
 import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
@@ -37,7 +36,7 @@ class ClassMirror internal constructor(
      */
     val superclass: ClassMirror? by lazy {
         java.annotatedSuperclass?.let {
-            this.map(cache.types.reflect(it)) as ClassMirror
+            this.genericMapping[cache.types.reflect(it)] as ClassMirror
         }
     }
 
@@ -48,7 +47,7 @@ class ClassMirror internal constructor(
      */
     val interfaces: List<ClassMirror> by lazy {
         java.annotatedInterfaces.map {
-            this.map(cache.types.reflect(it)) as ClassMirror
+            this.genericMapping[cache.types.reflect(it)] as ClassMirror
         }.unmodifiable()
     }
 
@@ -101,7 +100,7 @@ class ClassMirror internal constructor(
      */
     val declaredFields: List<FieldMirror> by lazy {
         java.declaredFields.map {
-            this.map(AbstractField(it))
+            cache.fields.reflect(it).specialize(genericMapping)
         }.unmodifiable()
     }
 
@@ -131,49 +130,16 @@ class ClassMirror internal constructor(
     }
 //endregion
 
-    private fun map(type: TypeMirror): TypeMirror {
-        genericMapping[type]?.let {
-            return it
-        }
-
-        when (type) {
-            is ArrayMirror -> {
-                val component = this.map(type.component)
-                if(component != type.component) {
-                    return type.specialize(component)
-                }
-            }
-            is ClassMirror -> {
-                val parameters = type.typeParameters.map { this.map(it) }
-                if(parameters != type.typeParameters) {
-                    return type.specialize(*parameters.toTypedArray())
-                }
-            }
-        }
-
-        return type
-    }
-
-    private val genericMapping: Map<TypeMirror, TypeMirror> by lazy {
-        this.raw.typeParameters.zip(typeParameters).associate { it }
-    }
-
-    private fun map(field: AbstractField): FieldMirror {
-        val raw = cache.fields.reflect(field)
-        if (this.raw == this) return raw
-
-        val newType = this.map(raw.type)
-        if(newType == raw.type) return raw
-
-        return cache.fields.getFieldMirror(raw.abstractField, newType)
+    private val genericMapping: TypeMapping by lazy {
+        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it })
     }
 
     private fun map(method: AbstractMethod): MethodMirror {
         val raw = cache.methods.reflect(method)
         if (this.raw == this) return raw
-        val newReturnType = this.map(raw.returnType)
-        val newParamTypes = raw.parameterTypes.map { this.map(it) }
-        val newExceptionTypes = raw.exceptionTypes.map { this.map(it) }
+        val newReturnType = this.genericMapping[raw.returnType]
+        val newParamTypes = raw.parameterTypes.map { this.genericMapping[it] }
+        val newExceptionTypes = raw.exceptionTypes.map { this.genericMapping[it] }
 
         if(
             newReturnType == raw.returnType &&

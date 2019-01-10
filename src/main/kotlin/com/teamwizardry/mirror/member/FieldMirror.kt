@@ -1,38 +1,44 @@
 package com.teamwizardry.mirror.member
 
+import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.field.AbstractField
+import com.teamwizardry.mirror.type.TypeMapping
 import com.teamwizardry.mirror.type.TypeMirror
-import com.teamwizardry.mirror.utils.lazyOrSet
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
-class FieldMirror internal constructor(internal val cache: MirrorCache, internal val abstractField: AbstractField) {
+class FieldMirror internal constructor(
+    internal val cache: MirrorCache,
+    raw: FieldMirror?,
+    val java: Field,
+    val specialization: TypeMirror?
+) {
 
-    val java: Field = abstractField.field
+    var raw: FieldMirror = raw ?: this
+    val isEnumConstant: Boolean = java.isEnumConstant
 
-    var raw: FieldMirror = this
-        internal set
-    val isEnumConstant: Boolean = abstractField.isEnumConstant
+    val name: String = java.name
+    val isStatic: Boolean = Modifier.isStatic(java.modifiers)
+    val isTransient: Boolean = Modifier.isTransient(java.modifiers)
+    val isVolatile: Boolean = Modifier.isVolatile(java.modifiers)
+    val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
 
-    val name: String = abstractField.name
-    val isStatic: Boolean = Modifier.isStatic(abstractField.modifiers)
-    val isTransient: Boolean = Modifier.isTransient(abstractField.modifiers)
-    val isVolatile: Boolean = Modifier.isVolatile(abstractField.modifiers)
-    val accessLevel: AccessLevel = AccessLevel.fromModifiers(abstractField.modifiers)
-
-    var type: TypeMirror by lazyOrSet {
-        abstractField.type.annotated?.let { cache.types.reflect(it) }
-            ?: cache.types.reflect(abstractField.type.type)
+    val type: TypeMirror by lazy {
+        specialization ?: java.annotatedType.let { cache.types.reflect(it) }
     }
-        internal set
+
+    fun specialize(mapping: TypeMapping): FieldMirror {
+        if(this.specialization != null)
+            throw InvalidSpecializationException("Can't apply specialization to specialized mirror $this")
+        return cache.fields.specialize(this, mapping[type])
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is FieldMirror) return false
 
         if (cache != other.cache) return false
-        if (abstractField != other.abstractField) return false
+        if (java != other.java) return false
         if (type != other.type) return false
 
         return true
@@ -40,7 +46,7 @@ class FieldMirror internal constructor(internal val cache: MirrorCache, internal
 
     override fun hashCode(): Int {
         var result = cache.hashCode()
-        result = 31 * result + abstractField.hashCode()
+        result = 31 * result + java.hashCode()
         result = 31 * result + type.hashCode()
         return result
     }
