@@ -48,6 +48,10 @@ class MethodMirror internal constructor(
         }.unmodifiable()
     }
 
+    val enclosingClass: ClassMirror by lazy {
+        specialization?.enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
+    }
+
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
     }

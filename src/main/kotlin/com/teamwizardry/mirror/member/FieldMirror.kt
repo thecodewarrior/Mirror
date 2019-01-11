@@ -11,7 +11,7 @@ class FieldMirror internal constructor(
     internal val cache: MirrorCache,
     raw: FieldMirror?,
     val java: Field,
-    val enclosing: ClassMirror?
+    _enclosing: ClassMirror?
 ) {
 
     var raw: FieldMirror = raw ?: this
@@ -23,9 +23,12 @@ class FieldMirror internal constructor(
     val isVolatile: Boolean = Modifier.isVolatile(java.modifiers)
     val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
 
+    val enclosingClass: ClassMirror by lazy {
+        _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
+    }
+
     val type: TypeMirror by lazy {
-        val rawType = java.annotatedType.let { cache.types.reflect(it) }
-        enclosing?.let { it.genericMapping[rawType] } ?: rawType
+        enclosingClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
     fun specialize(enclosing: ClassMirror): FieldMirror {
