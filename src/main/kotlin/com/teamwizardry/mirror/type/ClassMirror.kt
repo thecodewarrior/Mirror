@@ -2,7 +2,6 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.utils.unmodifiable
@@ -86,7 +85,7 @@ class ClassMirror internal constructor(
             specialization,
             { it.arguments == this.typeParameters || it.arguments == null }
         ) {
-            ClassMirror(cache, java, this, it)
+            ClassMirror(cache, java, raw, it)
         }
     }
 //endregion
@@ -100,7 +99,7 @@ class ClassMirror internal constructor(
      */
     val declaredFields: List<FieldMirror> by lazy {
         java.declaredFields.map {
-            cache.fields.reflect(it).specialize(genericMapping)
+            cache.fields.reflect(it).specialize(this)
         }.unmodifiable()
     }
 
@@ -125,30 +124,13 @@ class ClassMirror internal constructor(
      */
     val declaredMethods: List<MethodMirror> by lazy {
         java.declaredMethods.map {
-            this.map(AbstractMethod(it))
+            cache.methods.reflect(it).enclose(this)
         }.unmodifiable()
     }
 //endregion
 
-    private val genericMapping: TypeMapping by lazy {
+    val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it })
-    }
-
-    private fun map(method: AbstractMethod): MethodMirror {
-        val raw = cache.methods.reflect(method)
-        if (this.raw == this) return raw
-        val newReturnType = this.genericMapping[raw.returnType]
-        val newParamTypes = raw.parameterTypes.map { this.genericMapping[it] }
-        val newExceptionTypes = raw.exceptionTypes.map { this.genericMapping[it] }
-
-        if(
-            newReturnType == raw.returnType &&
-            newParamTypes == raw.parameterTypes &&
-            newExceptionTypes == raw.exceptionTypes
-        ) return raw
-
-        return cache.methods.getMethodMirror(raw.abstractMethod,
-            newReturnType, newParamTypes, newExceptionTypes, raw.typeParameters)
     }
 
     /**

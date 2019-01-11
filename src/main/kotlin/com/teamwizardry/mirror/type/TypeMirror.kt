@@ -44,8 +44,6 @@ abstract class TypeMirror internal constructor() {
         rawTest: (T) -> Boolean,
         crossinline specializedConstructor: (T) -> TypeMirror
     ): TypeMirror {
-        if(this.specialization != null)
-            throw InvalidSpecializationException("Can't apply specialization to specialized mirror $this")
         if(specialization !is T)
             throw InvalidSpecializationException("Can't apply ${specialization.javaClass}" +
                 " to ${this.javaClass.simpleName } $this")

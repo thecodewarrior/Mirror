@@ -22,7 +22,7 @@ class VariableMirror internal constructor(
         java.annotatedBounds.map { cache.types.reflect(it) }
     }
 
-    override val raw: TypeMirror = raw ?: this
+    override val raw: VariableMirror = raw ?: this
 
     override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
 
@@ -31,7 +31,7 @@ class VariableMirror internal constructor(
             specialization,
             { true }
         ) {
-            VariableMirror(cache, java, this, it)
+            VariableMirror(cache, java, raw, it)
         }
     }
 

@@ -9,7 +9,7 @@ class VoidMirror internal constructor(
     override val specialization: TypeSpecialization.Common?
 ): TypeMirror() {
 
-    override val raw: TypeMirror = raw ?: this
+    override val raw: VoidMirror = raw ?: this
 
     override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
 
@@ -18,7 +18,7 @@ class VoidMirror internal constructor(
             specialization,
             { true }
         ) {
-            VoidMirror(cache, java, this, it)
+            VoidMirror(cache, java, raw, it)
         }
     }
 }

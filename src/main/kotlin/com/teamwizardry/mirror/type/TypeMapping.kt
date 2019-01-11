@@ -1,10 +1,14 @@
 package com.teamwizardry.mirror.type
 
+import com.teamwizardry.mirror.utils.unmodifiableCopy
+
 class TypeMapping(
-    private val genericMapping: Map<TypeMirror, TypeMirror>
+    genericMapping: Map<TypeMirror, TypeMirror>
 ) {
+    val typeMap = genericMapping.filter { it.key != it.value }.unmodifiableCopy()
+
     operator fun get(type: TypeMirror): TypeMirror {
-        genericMapping[type]?.let {
+        typeMap[type]?.let {
             return it
         }
 
@@ -26,4 +30,21 @@ class TypeMapping(
         return type
     }
 
+    operator fun plus(other: TypeMapping?): TypeMapping {
+        if(other == null) return this
+        return TypeMapping(this.typeMap + other.typeMap)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TypeMapping) return false
+
+        if (typeMap != other.typeMap) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return typeMap.hashCode()
+    }
 }

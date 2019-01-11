@@ -2,7 +2,7 @@ package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.type.TypeMapping
+import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -11,7 +11,7 @@ class FieldMirror internal constructor(
     internal val cache: MirrorCache,
     raw: FieldMirror?,
     val java: Field,
-    val specialization: TypeMirror?
+    val enclosing: ClassMirror?
 ) {
 
     var raw: FieldMirror = raw ?: this
@@ -24,13 +24,15 @@ class FieldMirror internal constructor(
     val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
 
     val type: TypeMirror by lazy {
-        specialization ?: java.annotatedType.let { cache.types.reflect(it) }
+        val rawType = java.annotatedType.let { cache.types.reflect(it) }
+        enclosing?.let { it.genericMapping[rawType] } ?: rawType
     }
 
-    fun specialize(mapping: TypeMapping): FieldMirror {
-        if(this.specialization != null)
-            throw InvalidSpecializationException("Can't apply specialization to specialized mirror $this")
-        return cache.fields.specialize(this, mapping[type])
+    fun specialize(enclosing: ClassMirror): FieldMirror {
+        if(enclosing.java != java.declaringClass)
+            throw InvalidSpecializationException("Invalid enclosing class $type. " +
+                "$this is declared in ${java.declaringClass}")
+        return cache.fields.specialize(this, enclosing)
     }
 
     override fun equals(other: Any?): Boolean {

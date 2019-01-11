@@ -1,6 +1,5 @@
 package com.teamwizardry.mirror
 
-import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ClassMirror
@@ -31,7 +30,7 @@ object Mirror {
     }
 
     inline fun <reified T> reflect(): TypeMirror {
-        return reflect(annotatedTypeToken<T>())
+        return reflect(typeToken<T>())
     }
 
     /**
@@ -64,8 +63,7 @@ object Mirror {
 
     @JvmStatic
     fun reflect(method: Method): MethodMirror {
-        val abstract = AbstractMethod(method)
-        return cache.methods.reflect(abstract)
+        return cache.methods.reflect(method)
     }
 
     @JvmStatic

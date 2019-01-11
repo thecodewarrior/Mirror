@@ -44,7 +44,7 @@ class ArrayMirror internal constructor(
             specialization,
             { it.component == this.component || it.component == null}
         ) {
-            ArrayMirror(cache, java, this, it)
+            ArrayMirror(cache, java, raw, it)
         }
     }
 

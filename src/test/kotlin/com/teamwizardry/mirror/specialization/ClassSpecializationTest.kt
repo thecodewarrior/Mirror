@@ -5,6 +5,7 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
+import com.teamwizardry.mirror.testsupport.Object2
 import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -48,5 +49,16 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     fun specialize_nonGenericWithNoArguments_shouldReturnRawType() {
         val nonGenericType = Mirror.reflectClass(Object1::class.java)
         assertSame(nonGenericType, nonGenericType.specialize())
+    }
+
+    @Test
+    @DisplayName("Re-specializing a type that has already been specialized shouldn't throw an exception")
+    fun specialize_withAlreadySpecializedType_shouldHaveSameRaw() {
+        val genericType = Mirror.reflectClass(GenericObject1::class.java)
+        val specializeWith1 = Mirror.reflectClass<Object1>()
+        val specializeWith2 = Mirror.reflectClass<Object2>()
+        val specialized1 = genericType.specialize(specializeWith1)
+        val specialized2 = specialized1.specialize(specializeWith2)
+        assertSame(specialized1.raw, specialized2.raw)
     }
 }

@@ -1,6 +1,7 @@
 package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.MirrorCache
+import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentHashMap
@@ -15,11 +16,12 @@ internal class FieldMirrorCache(private val cache: MirrorCache) {
         }
     }
 
-    fun specialize(raw: FieldMirror, newType: TypeMirror): FieldMirror {
-        return specializedCache.getOrPut(raw to newType) {
-            if(raw.type == newType)
+    fun specialize(field: FieldMirror, enclosing: ClassMirror): FieldMirror {
+        val raw = field.raw
+        return specializedCache.getOrPut(raw to enclosing) {
+            if(enclosing.raw == enclosing)
                 return raw
-            return FieldMirror(cache, raw, raw.java, newType)
+            return FieldMirror(cache, raw, raw.java, enclosing)
         }
     }
 }

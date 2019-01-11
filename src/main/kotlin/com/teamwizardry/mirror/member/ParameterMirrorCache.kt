@@ -1,30 +1,25 @@
 package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.method.AbstractParameter
-import com.teamwizardry.mirror.type.TypeMirror
+import java.lang.reflect.Parameter
 import java.util.concurrent.ConcurrentHashMap
 
 internal class ParameterMirrorCache(private val cache: MirrorCache) {
-    private val rawCache = ConcurrentHashMap<AbstractParameter, ParameterMirror>()
-    private val specializedCache = ConcurrentHashMap<Pair<AbstractParameter, TypeMirror>, ParameterMirror>()
+    private val rawCache = ConcurrentHashMap<Parameter, ParameterMirror>()
+    private val specializedCache = ConcurrentHashMap<Pair<ParameterMirror, MethodMirror>, ParameterMirror>()
 
-    fun reflect(parameter: AbstractParameter): ParameterMirror {
-        return rawCache.getOrPut(parameter) { ParameterMirror(cache, parameter) }
+    fun reflect(parameter: Parameter): ParameterMirror {
+        return rawCache.getOrPut(parameter) {
+            ParameterMirror(cache, null, null, parameter)
+        }
     }
 
-    fun getParameterMirror(parameter: AbstractParameter, type: TypeMirror): ParameterMirror {
-        return specializedCache.getOrPut(parameter to type) {
-            val raw = reflect(parameter)
-            val specialized: ParameterMirror
-            if (raw.type == type) {
-                specialized = raw
-            } else {
-                specialized = ParameterMirror(cache, parameter)
-                specialized.type = type
-                specialized.raw = raw
-            }
-            return@getOrPut specialized
+    fun specialize(parameter: ParameterMirror, method: MethodMirror): ParameterMirror {
+        val raw = parameter.raw
+        return specializedCache.getOrPut(raw to method) {
+            if(method.raw == method)
+                return raw
+            return ParameterMirror(cache, raw, method, raw.java)
         }
     }
 }

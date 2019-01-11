@@ -1,67 +1,72 @@
 package com.teamwizardry.mirror.member
 
+import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
 import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
+import com.teamwizardry.mirror.type.TypeMapping
 import com.teamwizardry.mirror.type.TypeMirror
-import com.teamwizardry.mirror.utils.lazyOrSet
 import com.teamwizardry.mirror.utils.unmodifiable
 import java.lang.reflect.Method
 
-class MethodMirror internal constructor(internal val cache: MirrorCache, internal val abstractMethod: AbstractMethod) {
-    val java: Method = abstractMethod.method
+class MethodMirror internal constructor(
+    internal val cache: MirrorCache,
+    val java: Method,
+    raw: MethodMirror?,
+    val specialization: MethodSpecialization?
+) {
 
-    var raw: MethodMirror = this
-        internal set
+    val raw: MethodMirror = raw ?: this
 
-    val name: String = abstractMethod.name
+    val name: String = java.name
 
-    var returnType: TypeMirror by lazyOrSet {
-        abstractMethod.returnType.annotated?.let { cache.types.reflect(it) }
-            ?: cache.types.reflect(abstractMethod.returnType.type)
+    val returnType: TypeMirror by lazy {
+        java.annotatedReturnType.let {
+            genericMapping[cache.types.reflect(it)]
+        }
     }
-        internal set
 
-    var parameters: List<ParameterMirror> by lazyOrSet {
-        abstractMethod.parameters.map {
-            cache.parameters.reflect(it)
+    val parameters: List<ParameterMirror> by lazy {
+        java.parameters.map {
+            cache.parameters.reflect(it).specialize(this)
         }.unmodifiable()
     }
-        internal set
 
     val parameterTypes: List<TypeMirror> by lazy {
         parameters.map { it.type }.unmodifiable()
     }
 
-    var exceptionTypes: List<TypeMirror> by lazyOrSet {
-        abstractMethod.exceptionTypes.map {
-            it.annotated?.let { cache.types.reflect(it) }
-                ?: cache.types.reflect(it.type)
+    val exceptionTypes: List<TypeMirror> by lazy {
+        java.annotatedExceptionTypes.map {
+             genericMapping[cache.types.reflect(it)]
         }.unmodifiable()
     }
-        internal set
 
-    var typeParameters: List<TypeMirror> by lazyOrSet {
-        abstractMethod.typeParameters.map {
-            it.annotated?.let { cache.types.reflect(it) }
-                ?: cache.types.reflect(it.type)
+    val typeParameters: List<TypeMirror> by lazy {
+        specialization?.arguments ?: java.typeParameters.map {
+            cache.types.reflect(it)
         }.unmodifiable()
     }
-        internal set
+
+    val genericMapping: TypeMapping by lazy {
+        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
+    }
 
     fun specialize(vararg parameters: TypeMirror): MethodMirror {
         if(parameters.size != typeParameters.size)
-            throw IllegalArgumentException("Passed parameter count ${parameters.size} is different from class type " +
+            throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from class type " +
                 "parameter count ${typeParameters.size}")
-        val mapping = raw.typeParameters.zip(parameters).associate { it }
+        val newSpecialization = specialization?.copy(arguments = parameters.toList())
+            ?: MethodSpecialization(null, parameters.toList())
+        return cache.methods.specialize(raw, newSpecialization)
+    }
 
-        val newReturnType = this.map(returnType, mapping)
-        val newParamTypes = this.parameterTypes.map { this.map(it, mapping) }
-        val newExceptionTypes= this.exceptionTypes.map { this.map(it, mapping) }
-
-        return cache.methods.getMethodMirror(abstractMethod,
-            newReturnType, newParamTypes, newExceptionTypes, parameters.asList())
+    fun enclose(type: ClassMirror): MethodMirror {
+        if(type.java != java.declaringClass)
+            throw InvalidSpecializationException("Invalid enclosing class $type. " +
+                "$this is declared in ${java.declaringClass}")
+        val newSpecialization = this.specialization?.copy(enclosing = type) ?: MethodSpecialization(type, null)
+        return cache.methods.specialize(raw, newSpecialization)
     }
 
     private fun map(type: TypeMirror, mapping: Map<TypeMirror, TypeMirror>): TypeMirror {

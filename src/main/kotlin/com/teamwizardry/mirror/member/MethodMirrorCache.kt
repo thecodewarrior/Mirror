@@ -1,56 +1,25 @@
 package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.abstractionlayer.method.AbstractMethod
-import com.teamwizardry.mirror.type.TypeMirror
-import com.teamwizardry.mirror.utils.unmodifiable
-import com.teamwizardry.mirror.utils.unmodifiableCopy
+import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 internal class MethodMirrorCache(private val cache: MirrorCache) {
-    private val rawCache = ConcurrentHashMap<AbstractMethod, MethodMirror>()
-    private val specializedCache = ConcurrentHashMap<MirrorSignature, MethodMirror>()
+    private val rawCache = ConcurrentHashMap<Method, MethodMirror>()
+    private val specializedCache = ConcurrentHashMap<Pair<MethodMirror, MethodSpecialization>, MethodMirror>()
 
-    fun reflect(method: AbstractMethod): MethodMirror {
-        return rawCache.getOrPut(method) { MethodMirror(cache, method) }
+    fun reflect(method: Method): MethodMirror {
+        return rawCache.getOrPut(method) { MethodMirror(cache, method, null, null) }
     }
 
-    fun getMethodMirror(method: AbstractMethod, returnType: TypeMirror, paramTypes: List<TypeMirror>,
-        exceptionTypes: List<TypeMirror>, typeParameters: List<TypeMirror>): MethodMirror {
-        val signature = MirrorSignature(method, returnType, paramTypes.unmodifiableCopy(),
-            exceptionTypes.unmodifiableCopy(), typeParameters.unmodifiableCopy())
-        return specializedCache.getOrPut(signature) {
-            val raw = reflect(method)
-            val specialized: MethodMirror
-            if(raw.parameters.size != paramTypes.size)
-                throw IllegalArgumentException("Mismatched param type count specializing method. " +
-                    "Parameter count: ${raw.parameters.size}, passed param type count: ${paramTypes.size}")
-            if (
-                raw.returnType == returnType &&
-                raw.parameterTypes == paramTypes &&
-                raw.exceptionTypes == exceptionTypes &&
-                raw.typeParameters == typeParameters
-            ) {
-                specialized = raw
-            } else {
-                specialized = MethodMirror(cache, method)
-                specialized.returnType = returnType
-                specialized.parameters = raw.parameters.zip(paramTypes).map {
-                    cache.parameters.getParameterMirror(it.first.abstractParameter, it.second)
-                }.unmodifiable()
-                specialized.exceptionTypes = exceptionTypes.unmodifiableCopy()
-                specialized.typeParameters = typeParameters.unmodifiableCopy()
-                specialized.raw = raw
+    fun specialize(method: MethodMirror, specialization: MethodSpecialization): MethodMirror {
+        val raw = method.raw
+        return specializedCache.getOrPut(raw to specialization) {
+            if(specialization.enclosing?.raw == specialization.enclosing &&
+                (specialization.arguments == null || raw.typeParameters == specialization.arguments)) {
+                return raw
             }
-            return@getOrPut specialized
+            return MethodMirror(cache, raw.java, raw.raw, specialization)
         }
     }
-
-    data class MirrorSignature(
-        val method: AbstractMethod,
-        val returnType: TypeMirror,
-        val paramTypes: List<TypeMirror>,
-        val exceptions: List<TypeMirror>,
-        val typeParameters: List<TypeMirror>
-    )
 }

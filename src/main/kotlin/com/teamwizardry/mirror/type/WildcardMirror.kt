@@ -59,7 +59,7 @@ class WildcardMirror internal constructor(
             specialization,
             { true }
         ) {
-            WildcardMirror(cache, java, annotated, this, it)
+            WildcardMirror(cache, java, annotated, raw, it)
         }
     }
 
