@@ -69,3 +69,7 @@ private fun Any?.toStringWithIdentity(): String {
     else
         return "$value@$hashCode"
 }
+
+fun nothing(): Nothing {
+    throw NotImplementedError("Nothing")
+}

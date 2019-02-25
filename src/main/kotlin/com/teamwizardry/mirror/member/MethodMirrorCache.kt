@@ -17,9 +17,10 @@ internal class MethodMirrorCache(private val cache: MirrorCache) {
         return specializedCache.getOrPut(raw to specialization) {
             if(specialization.enclosing?.raw == specialization.enclosing &&
                 (specialization.arguments == null || raw.typeParameters == specialization.arguments)) {
-                return raw
+                raw
+            } else {
+                MethodMirror(cache, raw.java, raw.raw, specialization)
             }
-            return MethodMirror(cache, raw.java, raw.raw, specialization)
         }
     }
 }

@@ -20,8 +20,9 @@ internal class FieldMirrorCache(private val cache: MirrorCache) {
         val raw = field.raw
         return specializedCache.getOrPut(raw to enclosing) {
             if(enclosing.raw == enclosing)
-                return raw
-            return FieldMirror(cache, raw, raw.java, enclosing)
+                raw
+            else
+                FieldMirror(cache, raw, raw.java, enclosing)
         }
     }
 }

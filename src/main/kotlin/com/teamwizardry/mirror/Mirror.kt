@@ -2,6 +2,7 @@ package com.teamwizardry.mirror
 
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
+import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import io.leangen.geantyref.TypeFactory
@@ -9,6 +10,7 @@ import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Type
+import kotlin.reflect.KClass
 
 /**
  * Provides access to the Mirrors for various reflective types.
@@ -75,4 +77,9 @@ object Mirror {
     inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
         return TypeFactory.annotation(T::class.java, arguments)
     }
+
+    val Class<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this) as ArrayMirror
+    val Class<*>.mirror: ClassMirror get() = Mirror.reflect(this) as ClassMirror
+    val KClass<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this.java) as ArrayMirror
+    val KClass<*>.mirror: ClassMirror get() = Mirror.reflect(this.java) as ClassMirror
 }

@@ -6,10 +6,13 @@ import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
+import com.teamwizardry.mirror.testsupport.OuterClass1
+import com.teamwizardry.mirror.testsupport.OuterGenericClass1
 import com.teamwizardry.mirror.testsupport.assertSameList
 import com.teamwizardry.mirror.testsupport.assertSameSet
 import com.teamwizardry.mirror.typeParameter
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -85,6 +88,43 @@ internal class ClassMirrorTest: MirrorTestBase() {
     fun getRaw_ofType_returnsItself() {
         val type = Mirror.reflectClass<Object1>()
         assertSame(type, type.raw)
+    }
+
+    @Test
+    @DisplayName("Getting the enclosing class of a ClassMirror not nested within another should return null")
+    fun enclosingClass_ofNonNestedClass_shouldReturnNull() {
+        val type = Mirror.reflectClass<Object1>()
+        assertNull(type.enclosingClass)
+    }
+
+    @Test
+    @DisplayName("Getting the enclosing class of a ClassMirror statically nested within another should return the outer class")
+    fun enclosingClass_ofStaticNestedClass_shouldReturnClassMirror() {
+        val type = Mirror.reflectClass<OuterClass1.OuterClass1_InnerStaticClass>()
+        assertSame(Mirror.reflectClass<OuterClass1>(), type.enclosingClass)
+    }
+
+    @Test
+    @DisplayName("Getting the enclosing class of a ClassMirror nested within another should return the outer class")
+    fun enclosingClass_ofNestedClass_shouldReturnClassMirror() {
+        val type = Mirror.reflectClass<OuterClass1.OuterClass1_InnerClass>()
+        assertSame(Mirror.reflectClass<OuterClass1>(), type.enclosingClass)
+    }
+
+    @Test
+    @DisplayName("Field types of inner classes that use outer generics should have outer generic types")
+    fun fieldType_ofInnerClassFieldWithOuterGenericType_shouldReturnOuterGenericType() {
+        val innerClass = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val fieldType = innerClass.field("innerField")?.type
+        assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], fieldType)
+    }
+
+    @Test
+    @DisplayName("Method types of inner classes that use outer generics should have outer generic types")
+    fun returnType_ofMethodInNestedClassWithOuterGenericType_shouldReturnOuterGenericType() {
+        val innerClass = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val methodType = innerClass.methods("innerMethod")[0].returnType
+        assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], methodType)
     }
 
     @Test

@@ -18,8 +18,9 @@ internal class ParameterMirrorCache(private val cache: MirrorCache) {
         val raw = parameter.raw
         return specializedCache.getOrPut(raw to method) {
             if(method.raw == method)
-                return raw
-            return ParameterMirror(cache, raw, method, raw.java)
+                raw
+            else
+                ParameterMirror(cache, raw, method, raw.java)
         }
     }
 }

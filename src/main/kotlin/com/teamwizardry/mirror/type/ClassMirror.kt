@@ -25,6 +25,12 @@ class ClassMirror internal constructor(
         if(specialization?.arguments != null && specialization.arguments.size != java.typeParameters.size)
             throw InvalidSpecializationException("Invalid number of type arguments for ClassMirror ${raw ?: this}. " +
                 "Expected ${java.typeParameters.size}, received ${specialization.arguments.size}")
+        if(specialization?.enclosingClass != null && specialization.enclosingClass.java != java.enclosingClass)
+            throw InvalidSpecializationException("Invalid enclosing class ${specialization.enclosingClass} " +
+                "for type $java. Expected enclosing class is ${java.enclosingClass}")
+        if(specialization?.enclosingMethod != null && specialization.enclosingMethod.java != java.enclosingMethod)
+            throw InvalidSpecializationException("Invalid enclosing method ${specialization.enclosingMethod} " +
+                "for type $java. Expected enclosing method is ${java.enclosingMethod}")
     }
 
 //region Supertypes
@@ -66,10 +72,10 @@ class ClassMirror internal constructor(
     override fun defaultSpecialization() = TypeSpecialization.Class.DEFAULT
 
     /**
-     * Specializes this class replacing its type parameters the given types. This will ripple the changes down to
+     * Specializes this class, replacing its type parameters the given types. This will ripple the changes down to
      * supertypes/interfaces, method and field signatures, etc.
      *
-     * @throws IllegalArgumentException if the passed type list is not the same length as [typeParameters]
+     * @throws InvalidSpecializationException if the passed type list is not the same length as [typeParameters]
      * @return The specialized version of this type
      */
     fun specialize(vararg parameters: TypeMirror): ClassMirror {
@@ -80,10 +86,56 @@ class ClassMirror internal constructor(
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
     }
 
+    /**
+     * Specializes this class, replacing its enclosing class with the passed class. If the passed class is null this
+     * method removes any enclosing class specialization.
+     *
+     * @throws InvalidSpecializationException if the passed class is not equal to or a specialization of this class's
+     * raw enclosing class, or if this class has no enclosing class and the passed class is not null
+     * @return The specialized version of this class
+     */
+    fun enclose(enclosing: ClassMirror?): ClassMirror {
+        if(enclosing == null) {
+            val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingClass = null)
+            return cache.types.specialize(raw, newSpecialization) as ClassMirror
+        }
+        if(enclosing.raw != raw.enclosingClass)
+            throw InvalidSpecializationException("Passed enclosing class ($enclosing) is not equal to or a " +
+                "specialization of this class's enclosing class (${raw.enclosingClass})")
+        val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingClass = enclosing)
+        return cache.types.specialize(raw, newSpecialization) as ClassMirror
+    }
+
+    /**
+     * Specializes this class, replacing its enclosing method with the passed method and its enclosing class with the
+     * passed method's enclosing class. If the passed method is null this method removes any enclosing method
+     * specialization but leaves the enclosing class specialization alone. To remove the enclosing class
+     * specialization, pass null to [enclose].
+     *
+     * @throws InvalidSpecializationException if the passed method is not equal to or a specialization of this class's
+     * raw enclosing method, or if this class has no enclosing method and the passed method is not null
+     * @return The specialized version of this class
+     */
+    fun specializeEnclosingMethod(enclosing: MethodMirror?): ClassMirror {
+        if(enclosing == null) {
+            val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingMethod = null)
+            return cache.types.specialize(raw, newSpecialization) as ClassMirror
+        }
+        if(enclosing.raw != raw.enclosingMethod)
+            throw InvalidSpecializationException("Passed enclosing method ($enclosing) is not equal to or a " +
+                "specialization of this class's enclosing method (${raw.enclosingMethod})")
+        val newSpecialization = (specialization ?: defaultSpecialization()).copy(
+            enclosingClass = enclosing.enclosingClass, enclosingMethod = enclosing)
+        return cache.types.specialize(raw, newSpecialization) as ClassMirror
+    }
+
     override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
         return defaultApplySpecialization<TypeSpecialization.Class>(
             specialization,
-            { it.arguments == this.typeParameters || it.arguments == null }
+            { (it.arguments == this.typeParameters || it.arguments == null ) &&
+                (it.enclosingClass == raw.enclosingClass || it.enclosingClass == null) &&
+                (it.enclosingMethod == raw.enclosingMethod || it.enclosingMethod == null)
+            }
         ) {
             ClassMirror(cache, java, raw, it)
         }
@@ -127,10 +179,30 @@ class ClassMirror internal constructor(
             cache.methods.reflect(it).enclose(this)
         }.unmodifiable()
     }
+
+    private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
+
+    fun methods(name: String): List<MethodMirror> {
+        return methodNameCache.getOrPut(name) {
+            val methods = mutableListOf<MethodMirror>()
+            methods.addAll(declaredMethods.filter { it.name == name })
+            methods.addAll(superclass?.methods(name) ?: emptyList())
+            return@getOrPut methods.unmodifiable()
+        }
+    }
 //endregion
 
+    val enclosingClass: ClassMirror? by lazy {
+        specialization?.enclosingClass ?: java.enclosingClass?.let { cache.types.reflect(it) as ClassMirror }
+    }
+
+    val enclosingMethod: MethodMirror? by lazy {
+        specialization?.enclosingMethod ?: java.enclosingMethod?.let { cache.methods.reflect(it) }
+    }
+
     val genericMapping: TypeMapping by lazy {
-        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it })
+        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
+            enclosingClass?.genericMapping + enclosingMethod?.genericMapping
     }
 
     /**

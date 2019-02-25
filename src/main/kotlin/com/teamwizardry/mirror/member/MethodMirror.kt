@@ -97,8 +97,11 @@ class MethodMirror internal constructor(
     }
 
     override fun toString(): String {
-        var str = ""
-        str += "$returnType $name()"
+        var str = "$returnType $name"
+        if(typeParameters.isNotEmpty()) {
+            str += "<${typeParameters.joinToString(", ")}>"
+        }
+        str += "(${parameters.joinToString(", ")})"
         return str
     }
 }

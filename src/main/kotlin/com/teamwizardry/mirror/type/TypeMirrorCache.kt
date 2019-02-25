@@ -31,8 +31,12 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                     mirror = ArrayMirror(cache, type, null, null)
                 }
                 is ParameterizedType -> {
-                    mirror = (reflect(type.rawType) as ClassMirror)
-                        .specialize(*type.actualTypeArguments.map { reflect(it) }.toTypedArray())
+                    var theMirror = reflect(type.rawType) as ClassMirror
+                    theMirror = theMirror.specialize(*type.actualTypeArguments.map { reflect(it) }.toTypedArray())
+                    type.ownerType?.let {
+                        theMirror = theMirror.enclose(reflect(it) as ClassMirror)
+                    }
+                    mirror = theMirror
                 }
                 is TypeVariable<*> -> {
                     mirror = VariableMirror(cache, type, null, null)

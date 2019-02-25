@@ -9,4 +9,3 @@ internal fun Class<*>.typeParameter(name: String): TypeVariable<*>? {
 internal fun Class<*>.typeParameter(index: Int): TypeVariable<*>? {
     return this.typeParameters.getOrNull(index)
 }
-

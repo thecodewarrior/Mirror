@@ -1,5 +1,6 @@
 package com.teamwizardry.mirror.type
 
+import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.utils.unmodifiableCopy
 
 internal abstract class TypeSpecialization private constructor(annotations: List<Annotation>) {
@@ -14,13 +15,6 @@ internal abstract class TypeSpecialization private constructor(annotations: List
             annotations: List<Annotation>
         ): Common {
             return Common(annotations)
-        }
-
-        override fun toString(): String {
-            return ( "" +
-                annotations.joinToString(", ") { "@$it" } +
-                " ___"
-                ).trim()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -42,28 +36,22 @@ internal abstract class TypeSpecialization private constructor(annotations: List
         }
     }
 
-    class Class(annotations: List<Annotation>, arguments: List<TypeMirror>?): TypeSpecialization(annotations) {
+    class Class(annotations: List<Annotation>, arguments: List<TypeMirror>?, val enclosingClass: ClassMirror?, val enclosingMethod: MethodMirror?): TypeSpecialization(annotations) {
         val arguments: List<TypeMirror>? = if(arguments?.isNotEmpty() == true) arguments.unmodifiableCopy() else null
 
         override fun copy(
             annotations: List<Annotation>
         ): Class {
-            return Class(annotations, arguments)
+            return Class(annotations, arguments, enclosingClass, enclosingMethod)
         }
 
         fun copy(
             annotations: List<Annotation> = this.annotations,
-            arguments: List<TypeMirror>? = this.arguments
+            arguments: List<TypeMirror>? = this.arguments,
+            enclosingClass: ClassMirror? = this.enclosingClass,
+            enclosingMethod: MethodMirror? = this.enclosingMethod
         ): Class {
-            return Class(annotations, arguments)
-        }
-
-        override fun toString(): String {
-            return ( "" +
-                annotations.joinToString(", ") { "@$it" } +
-                " ___" +
-                (arguments?.let { "<${arguments.joinToString(", ")}>" } ?: "")
-                ).trim()
+            return Class(annotations, arguments, enclosingClass, enclosingMethod)
         }
 
         override fun equals(other: Any?): Boolean {
@@ -72,6 +60,8 @@ internal abstract class TypeSpecialization private constructor(annotations: List
 
             if (annotations != other.annotations) return false
             if (arguments != other.arguments) return false
+            if (enclosingClass != other.enclosingClass) return false
+            if (enclosingMethod != other.enclosingMethod) return false
 
             return true
         }
@@ -79,11 +69,13 @@ internal abstract class TypeSpecialization private constructor(annotations: List
         override fun hashCode(): Int {
             var result = annotations.hashCode()
             result = 31 * result + arguments.hashCode()
+            result = 31 * result + enclosingClass.hashCode()
+            result = 31 * result + enclosingMethod.hashCode()
             return result
         }
 
         companion object {
-            val DEFAULT = Class(emptyList(), null)
+            val DEFAULT = Class(emptyList(), null, null, null)
         }
     }
 
@@ -99,13 +91,6 @@ internal abstract class TypeSpecialization private constructor(annotations: List
             component: TypeMirror? = this.component
         ): Array {
             return Array(annotations, component)
-        }
-
-        override fun toString(): String {
-            return ( "" +
-                annotations.joinToString(", ") +
-                "$component[]"
-                ).trim()
         }
 
         override fun equals(other: Any?): Boolean {
