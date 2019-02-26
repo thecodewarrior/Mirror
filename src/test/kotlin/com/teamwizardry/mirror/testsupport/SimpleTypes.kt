@@ -6,10 +6,14 @@ import com.teamwizardry.mirror.typeToken
 import java.lang.reflect.Type
 
 interface Interface1
+interface Interface1Sub1: Interface1
+interface Interface1Sub2: Interface1Sub1
 interface GenericInterface1<T>
 interface GenericPairInterface1<A, B>
 
 interface Interface2
+interface Interface2Sub1: Interface2
+interface Interface2Sub2: Interface2Sub1
 interface GenericInterface2<T>
 interface GenericPairInterface2<A, B>
 

@@ -21,4 +21,8 @@ class VoidMirror internal constructor(
             VoidMirror(cache, java, raw, it)
         }
     }
+
+    override fun isAssignableFrom(other: TypeMirror): Boolean {
+        return other == this
+    }
 }

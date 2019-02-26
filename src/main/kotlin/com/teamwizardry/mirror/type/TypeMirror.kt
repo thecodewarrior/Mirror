@@ -39,6 +39,8 @@ abstract class TypeMirror internal constructor() {
 
     internal abstract fun applySpecialization(specialization: TypeSpecialization): TypeMirror
 
+    abstract fun isAssignableFrom(other: TypeMirror): Boolean
+
     internal inline fun <reified T: TypeSpecialization> defaultApplySpecialization(
         specialization: TypeSpecialization,
         rawTest: (T) -> Boolean,

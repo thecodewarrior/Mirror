@@ -5,6 +5,7 @@ import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
+import com.teamwizardry.mirror.type.VoidMirror
 import io.leangen.geantyref.TypeFactory
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Field
@@ -17,6 +18,13 @@ import kotlin.reflect.KClass
  */
 object Mirror {
     internal var cache = MirrorCache()
+
+    @JvmField
+    val void: VoidMirror = reflect(Void.TYPE) as VoidMirror
+    @JvmField
+    val `object`: ClassMirror = reflectClass<Any>()
+    @get:JvmSynthetic
+    val any: ClassMirror get() = this.`object`
 
     /**
      * Create a mirror of the passed type.

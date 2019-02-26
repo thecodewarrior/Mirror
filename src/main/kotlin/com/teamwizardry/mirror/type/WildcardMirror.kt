@@ -63,6 +63,18 @@ class WildcardMirror internal constructor(
         }
     }
 
+    override fun isAssignableFrom(other: TypeMirror): Boolean {
+        if(other == this) return true
+        if(other is WildcardMirror)
+            return this.upperBounds.zip(other.upperBounds).all { (ours, theirs) -> ours.isAssignableFrom(theirs) } &&
+                this.lowerBounds.zip(other.lowerBounds).all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
+        return upperBounds.all {
+            it.isAssignableFrom(other)
+        } && lowerBounds.all {
+            other.isAssignableFrom(it)
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is WildcardMirror) return false

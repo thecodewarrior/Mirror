@@ -86,6 +86,32 @@ class ClassMirror internal constructor(
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
     }
 
+    private val isAssignableCache = ConcurrentHashMap<TypeMirror, Boolean>()
+
+    override fun isAssignableFrom(other: TypeMirror): Boolean {
+        if(other == this || this.java == Any::class.java) return true
+        if(other !is ClassMirror)
+            return false
+
+        return isAssignableCache.getOrPut(other) {
+            if(other == this) {
+                return@getOrPut true
+            }
+            if(other.raw == this.raw) {
+                return@getOrPut this.typeParameters.zip(other.typeParameters)
+                    .all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
+            }
+
+            if(other.superclass?.let { this.isAssignableFrom(it) } == true)
+                return@getOrPut true
+
+            if(other.interfaces.any { this.isAssignableFrom(it) })
+                return@getOrPut true
+
+            return@getOrPut false
+        }
+    }
+
     /**
      * Specializes this class, replacing its enclosing class with the passed class. If the passed class is null this
      * method removes any enclosing class specialization.

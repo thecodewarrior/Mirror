@@ -48,6 +48,13 @@ class ArrayMirror internal constructor(
         }
     }
 
+    override fun isAssignableFrom(other: TypeMirror): Boolean {
+        if(other == this) return true
+        if (other !is ArrayMirror)
+            return false
+        return component.isAssignableFrom(other.component)
+    }
+
     override fun toString(): String {
         var str = "$component"
         if(specialization?.annotations?.isNotEmpty() == true) {
