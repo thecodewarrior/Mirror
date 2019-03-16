@@ -8,6 +8,7 @@ plugins {
     java
     kotlin("jvm") version "1.3.11"
     id("org.jetbrains.dokka")
+    maven
 }
 
 group = "com.teamwizardry.mirror"
