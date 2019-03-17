@@ -1,5 +1,6 @@
 package com.teamwizardry.mirror.type
 
+import com.teamwizardry.mirror.ArrayReflect
 import com.teamwizardry.mirror.MirrorCache
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.Type
@@ -62,5 +63,27 @@ class ArrayMirror internal constructor(
         }
         str += "[]"
         return str
+    }
+
+    /**
+     * Create a new instance of this array type with the given length. Returns an [Object] because there is no
+     * common superclass for primitive arrays. Use [ArrayReflect] to access this array's values generically.
+     * If this mirror represents a non-primitive array, the returned array is filled with null values.
+     */
+    fun newInstance(length: Int): Any {
+        val rawComponent = this.component.raw as? ConcreteTypeMirror
+
+        return when {
+            this.java == BooleanArray::class.java -> BooleanArray(length)
+            this.java == ByteArray::class.java -> ByteArray(length)
+            this.java == CharArray::class.java -> CharArray(length)
+            this.java == ShortArray::class.java -> ShortArray(length)
+            this.java == IntArray::class.java -> IntArray(length)
+            this.java == LongArray::class.java -> LongArray(length)
+            this.java == FloatArray::class.java -> FloatArray(length)
+            this.java == DoubleArray::class.java -> DoubleArray(length)
+            rawComponent == null -> Array<Any?>(length) { null }
+            else -> ArrayReflect.newInstanceRaw(rawComponent.java, length)
+        }
     }
 }
