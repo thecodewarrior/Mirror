@@ -9,7 +9,7 @@ import java.lang.reflect.Parameter
 class ParameterMirror internal constructor(
     internal val cache: MirrorCache,
     raw: ParameterMirror?,
-    val specialization: MethodMirror?,
+    val specialization: ExecutableMirror?,
     internal val java: Parameter
 ) {
     val name: String? = if(java.isNamePresent) java.name else null
@@ -26,11 +26,12 @@ class ParameterMirror internal constructor(
         TypeMapping(emptyMap()) + specialization?.genericMapping
     }
 
-    fun specialize(method: MethodMirror): ParameterMirror {
-        if(method.java != java.declaringExecutable)
-            throw InvalidSpecializationException("Invalid enclosing method $method. " +
-                "$this is declared in ${java.declaringExecutable}")
-        return cache.parameters.specialize(this, method)
+    fun specialize(executable: ExecutableMirror): ParameterMirror {
+        if(executable.java != java.declaringExecutable)
+            throw InvalidSpecializationException("Invalid enclosing " +
+                (if(executable is ConstructorMirror) "constructor" else "method") +
+                " $executable. $this is declared in ${java.declaringExecutable}")
+        return cache.parameters.specialize(this, executable)
     }
 
     override fun equals(other: Any?): Boolean {

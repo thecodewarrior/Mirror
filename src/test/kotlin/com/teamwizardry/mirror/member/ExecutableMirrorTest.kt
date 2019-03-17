@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-internal class MethodMirrorTest: MirrorTestBase() {
+internal class ExecutableMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("A void method should have no parameters and a VoidMirror return type")
     fun voidMethod() {

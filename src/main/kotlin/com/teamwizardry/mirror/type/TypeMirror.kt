@@ -11,8 +11,8 @@ import java.lang.reflect.Type
  * Mirrors can be "specialized", which results in the generic type arguments being substituted all the way down the
  * chain. This substitution means that the mirror of [java.util.HashMap]`<Foo, Bar>` would have a superclass
  * [java.util.AbstractMap]`<Foo, Bar>` and a [java.util.Map.get] method whose return value is `Bar`. This "trickle down"
- * approach makes generic reflection dead easy and is much better than the mind-numbingly complex task of tracing type
- * parameters upward to figure out where they are defined.
+ * approach is much easier than the mind-numbingly complex task of tracing type parameters upward to figure out where
+ * they are defined.
  *
  * @see ClassMirror
  * @see ArrayMirror

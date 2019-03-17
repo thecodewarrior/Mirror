@@ -1,6 +1,6 @@
 package com.teamwizardry.mirror.type
 
-import com.teamwizardry.mirror.member.MethodMirror
+import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.utils.unmodifiableCopy
 
 internal abstract class TypeSpecialization private constructor(annotations: List<Annotation>) {
@@ -36,22 +36,22 @@ internal abstract class TypeSpecialization private constructor(annotations: List
         }
     }
 
-    class Class(annotations: List<Annotation>, arguments: List<TypeMirror>?, val enclosingClass: ClassMirror?, val enclosingMethod: MethodMirror?): TypeSpecialization(annotations) {
+    class Class(annotations: List<Annotation>, arguments: List<TypeMirror>?, val enclosingClass: ClassMirror?, val enclosingExecutable: ExecutableMirror?): TypeSpecialization(annotations) {
         val arguments: List<TypeMirror>? = if(arguments?.isNotEmpty() == true) arguments.unmodifiableCopy() else null
 
         override fun copy(
             annotations: List<Annotation>
         ): Class {
-            return Class(annotations, arguments, enclosingClass, enclosingMethod)
+            return Class(annotations, arguments, enclosingClass, enclosingExecutable)
         }
 
         fun copy(
             annotations: List<Annotation> = this.annotations,
             arguments: List<TypeMirror>? = this.arguments,
             enclosingClass: ClassMirror? = this.enclosingClass,
-            enclosingMethod: MethodMirror? = this.enclosingMethod
+            enclosingExecutable: ExecutableMirror? = this.enclosingExecutable
         ): Class {
-            return Class(annotations, arguments, enclosingClass, enclosingMethod)
+            return Class(annotations, arguments, enclosingClass, enclosingExecutable)
         }
 
         override fun equals(other: Any?): Boolean {
@@ -61,7 +61,7 @@ internal abstract class TypeSpecialization private constructor(annotations: List
             if (annotations != other.annotations) return false
             if (arguments != other.arguments) return false
             if (enclosingClass != other.enclosingClass) return false
-            if (enclosingMethod != other.enclosingMethod) return false
+            if (enclosingExecutable != other.enclosingExecutable) return false
 
             return true
         }
@@ -70,7 +70,7 @@ internal abstract class TypeSpecialization private constructor(annotations: List
             var result = annotations.hashCode()
             result = 31 * result + arguments.hashCode()
             result = 31 * result + enclosingClass.hashCode()
-            result = 31 * result + enclosingMethod.hashCode()
+            result = 31 * result + enclosingExecutable.hashCode()
             return result
         }
 

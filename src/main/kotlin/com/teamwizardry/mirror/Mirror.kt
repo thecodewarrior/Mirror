@@ -1,5 +1,7 @@
 package com.teamwizardry.mirror
 
+import com.teamwizardry.mirror.member.ConstructorMirror
+import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.type.ArrayMirror
@@ -8,6 +10,8 @@ import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.type.VoidMirror
 import io.leangen.geantyref.TypeFactory
 import java.lang.reflect.AnnotatedType
+import java.lang.reflect.Constructor
+import java.lang.reflect.Executable
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Type
@@ -47,7 +51,7 @@ object Mirror {
      * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
      * or void.
      *
-     * @throws IllegalArgumentException if the input class is an array type
+     * @throws IllegalArgumentException if the input class is an array type or void
      */
     @JvmStatic
     fun reflectClass(clazz: Class<*>): ClassMirror {
@@ -59,7 +63,7 @@ object Mirror {
      * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
      * or void.
      *
-     * @throws IllegalArgumentException if the input class is an array type
+     * @throws IllegalArgumentException if the input class is an array type or void
      */
     inline fun <reified T> reflectClass(): ClassMirror {
         if(T::class.java.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
@@ -73,7 +77,17 @@ object Mirror {
 
     @JvmStatic
     fun reflect(method: Method): MethodMirror {
-        return cache.methods.reflect(method)
+        return cache.executables.reflect(method) as MethodMirror
+    }
+
+    @JvmStatic
+    fun reflect(constructor: Constructor<*>): ConstructorMirror {
+        return cache.executables.reflect(constructor) as ConstructorMirror
+    }
+
+    @JvmStatic
+    fun reflect(executable: Executable): ExecutableMirror {
+        return cache.executables.reflect(executable)
     }
 
     @JvmStatic

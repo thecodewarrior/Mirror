@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal class ParameterMirrorCache(private val cache: MirrorCache) {
     private val rawCache = ConcurrentHashMap<Parameter, ParameterMirror>()
-    private val specializedCache = ConcurrentHashMap<Pair<ParameterMirror, MethodMirror>, ParameterMirror>()
+    private val specializedCache = ConcurrentHashMap<Pair<ParameterMirror, ExecutableMirror>, ParameterMirror>()
 
     fun reflect(parameter: Parameter): ParameterMirror {
         return rawCache.getOrPut(parameter) {
@@ -14,13 +14,13 @@ internal class ParameterMirrorCache(private val cache: MirrorCache) {
         }
     }
 
-    fun specialize(parameter: ParameterMirror, method: MethodMirror): ParameterMirror {
+    fun specialize(parameter: ParameterMirror, executable: ExecutableMirror): ParameterMirror {
         val raw = parameter.raw
-        return specializedCache.getOrPut(raw to method) {
-            if(method.raw == method)
+        return specializedCache.getOrPut(raw to executable) {
+            if(executable.raw == executable)
                 raw
             else
-                ParameterMirror(cache, raw, method, raw.java)
+                ParameterMirror(cache, raw, executable, raw.java)
         }
     }
 }

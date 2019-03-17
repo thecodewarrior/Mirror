@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-internal class MethodSpecializationTest: MirrorTestBase() {
+internal class ExecutableSpecializationTest: MirrorTestBase() {
     //region Class generic
     @Test
     @DisplayName("Specializing a class should specialize the return types of each of its declared methods")

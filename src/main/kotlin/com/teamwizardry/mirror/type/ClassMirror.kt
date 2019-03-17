@@ -2,6 +2,8 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
+import com.teamwizardry.mirror.member.ConstructorMirror
+import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.utils.unmodifiable
@@ -28,9 +30,11 @@ class ClassMirror internal constructor(
         if(specialization?.enclosingClass != null && specialization.enclosingClass.java != java.enclosingClass)
             throw InvalidSpecializationException("Invalid enclosing class ${specialization.enclosingClass} " +
                 "for type $java. Expected enclosing class is ${java.enclosingClass}")
-        if(specialization?.enclosingMethod != null && specialization.enclosingMethod.java != java.enclosingMethod)
-            throw InvalidSpecializationException("Invalid enclosing method ${specialization.enclosingMethod} " +
-                "for type $java. Expected enclosing method is ${java.enclosingMethod}")
+        val enclosingExecutable = java.enclosingMethod ?: java.enclosingConstructor
+        if(specialization?.enclosingExecutable != null && specialization.enclosingExecutable.java != enclosingExecutable) {
+            throw InvalidSpecializationException("Invalid enclosing executable ${specialization.enclosingExecutable} " +
+                "for type $java. Expected enclosing executable is $enclosingExecutable")
+        }
     }
 
 //region Supertypes
@@ -133,25 +137,25 @@ class ClassMirror internal constructor(
     }
 
     /**
-     * Specializes this class, replacing its enclosing method with the passed method and its enclosing class with the
-     * passed method's enclosing class. If the passed method is null this method removes any enclosing method
-     * specialization but leaves the enclosing class specialization alone. To remove the enclosing class
-     * specialization, pass null to [enclose].
+     * Specializes this class, replacing its enclosing method/constructor with the passed executable and its
+     * enclosing class with the passed executable's enclosing class. If the passed executable is null this method
+     * removes any enclosing executable specialization but leaves the enclosing class specialization alone. To remove
+     * the enclosing class specialization, pass null to [enclose].
      *
-     * @throws InvalidSpecializationException if the passed method is not equal to or a specialization of this class's
-     * raw enclosing method, or if this class has no enclosing method and the passed method is not null
+     * @throws InvalidSpecializationException if the passed executable is not equal to or a specialization of this
+     * class's raw enclosing method, or if this class has no enclosing executable and the passed method is not null
      * @return The specialized version of this class
      */
-    fun specializeEnclosingMethod(enclosing: MethodMirror?): ClassMirror {
+    fun specializeEnclosingExecutable(enclosing: ExecutableMirror?): ClassMirror {
         if(enclosing == null) {
-            val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingMethod = null)
+            val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingExecutable = null)
             return cache.types.specialize(raw, newSpecialization) as ClassMirror
         }
-        if(enclosing.raw != raw.enclosingMethod)
-            throw InvalidSpecializationException("Passed enclosing method ($enclosing) is not equal to or a " +
-                "specialization of this class's enclosing method (${raw.enclosingMethod})")
+        if(enclosing.raw != raw.enclosingExecutable)
+            throw InvalidSpecializationException("Passed enclosing executable ($enclosing) is not equal to or a " +
+                "specialization of this class's enclosing executable (${raw.enclosingExecutable})")
         val newSpecialization = (specialization ?: defaultSpecialization()).copy(
-            enclosingClass = enclosing.enclosingClass, enclosingMethod = enclosing)
+            enclosingClass = enclosing.enclosingClass, enclosingExecutable = enclosing)
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
     }
 
@@ -160,7 +164,7 @@ class ClassMirror internal constructor(
             specialization,
             { (it.arguments == this.typeParameters || it.arguments == null ) &&
                 (it.enclosingClass == raw.enclosingClass || it.enclosingClass == null) &&
-                (it.enclosingMethod == raw.enclosingMethod || it.enclosingMethod == null)
+                (it.enclosingExecutable == raw.enclosingExecutable || it.enclosingExecutable == null)
             }
         ) {
             ClassMirror(cache, java, raw, it)
@@ -202,7 +206,7 @@ class ClassMirror internal constructor(
      */
     val declaredMethods: List<MethodMirror> by lazy {
         java.declaredMethods.map {
-            cache.methods.reflect(it).enclose(this)
+            cache.executables.reflect(it).enclose(this) as MethodMirror
         }.unmodifiable()
     }
 
@@ -218,17 +222,41 @@ class ClassMirror internal constructor(
     }
 //endregion
 
+//region Constructors
+    /**
+     * The constructors declared directly inside this class
+     *
+     * This list is created when it is first accessed and is thread safe.
+     */
+    val declaredConstructors: List<ConstructorMirror> by lazy {
+        java.declaredConstructors.map {
+            cache.executables.reflect(it).enclose(this) as ConstructorMirror
+        }.unmodifiable()
+    }
+
+    private val constructorNameCache = ConcurrentHashMap<String, List<ConstructorMirror>>()
+
+    fun constructors(name: String): List<ConstructorMirror> {
+        return constructorNameCache.getOrPut(name) {
+            val constructors = mutableListOf<ConstructorMirror>()
+            constructors.addAll(declaredConstructors.filter { it.name == name })
+            constructors.addAll(superclass?.constructors(name) ?: emptyList())
+            return@getOrPut constructors.unmodifiable()
+        }
+    }
+//endregion
+
     val enclosingClass: ClassMirror? by lazy {
         specialization?.enclosingClass ?: java.enclosingClass?.let { cache.types.reflect(it) as ClassMirror }
     }
 
-    val enclosingMethod: MethodMirror? by lazy {
-        specialization?.enclosingMethod ?: java.enclosingMethod?.let { cache.methods.reflect(it) }
+    val enclosingExecutable: ExecutableMirror? by lazy {
+        specialization?.enclosingExecutable ?: (java.enclosingMethod ?: java.enclosingConstructor)?.let { cache.executables.reflect(it) }
     }
 
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
-            enclosingClass?.genericMapping + enclosingMethod?.genericMapping
+            enclosingClass?.genericMapping + enclosingExecutable?.genericMapping
     }
 
     /**
