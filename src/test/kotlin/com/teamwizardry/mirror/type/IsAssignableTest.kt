@@ -84,6 +84,16 @@ internal class IsAssignableTest: MirrorTestBase() {
         )
     }
 
+    @Test
+    @DisplayName("The Object mirror should not be assignable from a primitive")
+    fun objectNotAssignableFromPrimitive() {
+        assertFalse(
+            Mirror.reflect<Any>().isAssignableFrom(
+                Mirror.reflect(Int::class.javaPrimitiveType!!)
+            )
+        )
+    }
+
     interface ClassASuperInterface
     interface ClassAInterface
     interface ClassASubInterface

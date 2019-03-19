@@ -2,32 +2,21 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.ArrayReflect
 import com.teamwizardry.mirror.MirrorCache
-import java.lang.reflect.GenericArrayType
-import java.lang.reflect.Type
 
 /**
  * A mirror that represents an array type
  */
 class ArrayMirror internal constructor(
     override val cache: MirrorCache,
-    private val type: Type,
+    override val java: Class<*>,
     raw: ArrayMirror?,
     override val specialization: TypeSpecialization.Array?
 ): ConcreteTypeMirror() {
 
-    override var java: Class<*> = when(type) {
-        is Class<*> -> type
-        is GenericArrayType -> Array<Any>::class.java
-        else -> throw IllegalArgumentException("The `type` parameter of ArrayMirrors must be either a Class or " +
-            "a GenericArrayType. It was a ${type.javaClass}")
-    }
-    /**
-     * The component type of this mirror. `String` in `[String]`, `int` in `[int]`, `T` in `[T]`, etc.
-     */
     val component: TypeMirror by lazy {
         specialization?.component
             ?: cache.types.reflect(
-                (type as? GenericArrayType)?.genericComponentType ?: java.componentType
+                java.componentType
             )
     }
 

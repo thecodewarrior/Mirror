@@ -8,6 +8,9 @@ import com.teamwizardry.mirror.testsupport.Object1
 import com.teamwizardry.mirror.testsupport.Object2
 import com.teamwizardry.mirror.testsupport.OuterClass1
 import com.teamwizardry.mirror.testsupport.OuterGenericClass1
+import com.teamwizardry.mirror.testsupport.assertSameSet
+import com.teamwizardry.mirror.type.ClassMirror
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
@@ -133,5 +136,22 @@ class EnclosingClassTest: MirrorTestBase() {
         val inner = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerGenericClass<Object1>>()
         val withRawOuter = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerGenericClass::class.java).specialize(Mirror.reflectClass<Object1>())
         assertSame(withRawOuter, inner.enclose(null))
+    }
+
+    @Test
+    @DisplayName("Getting the declared classes of a leaf class should return an empty list")
+    fun declaredClasses_ofLeafClass_shouldBeEmpty() {
+        val clazz = Mirror.reflectClass(Object1::class.java)
+        assertEquals(emptyList<ClassMirror>(), clazz.declaredClasses)
+    }
+
+    @Test
+    @DisplayName("Getting the declared classes of a parent class should return a list of the inner classes")
+    fun declaredClasses_ofParentClass_shouldReturnInnerClasses() {
+        val outer = Mirror.reflectClass(OuterClass1::class.java)
+        val innerStatic = Mirror.reflectClass(OuterClass1.OuterClass1_InnerStaticClass::class.java)
+        val inner = Mirror.reflectClass(OuterClass1.OuterClass1_InnerClass::class.java)
+        val inner2 = Mirror.reflectClass(OuterClass1.OuterClass1_InnerClass2::class.java)
+        assertSameSet(listOf(innerStatic, inner, inner2), outer.declaredClasses)
     }
 }

@@ -10,7 +10,6 @@ import java.lang.reflect.Executable
 
 abstract class ExecutableMirror internal constructor(
     internal val cache: MirrorCache,
-    raw: ExecutableMirror?,
     val specialization: ExecutableSpecialization?
 ) {
     abstract val java: Executable

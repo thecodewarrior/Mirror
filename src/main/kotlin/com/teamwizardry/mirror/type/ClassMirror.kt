@@ -93,7 +93,12 @@ class ClassMirror internal constructor(
     private val isAssignableCache = ConcurrentHashMap<TypeMirror, Boolean>()
 
     override fun isAssignableFrom(other: TypeMirror): Boolean {
-        if(other == this || this.java == Any::class.java) return true
+        if(other == this) return true
+        if(this.java == Any::class.java) {
+            if(other is VoidMirror) return false
+            if(other is ClassMirror && other.java.isPrimitive) return false
+            return true
+        }
         if(other !is ClassMirror)
             return false
 
@@ -172,6 +177,34 @@ class ClassMirror internal constructor(
     }
 //endregion
 
+//region Inner Classes
+    /**
+     * The inner classes declared directly inside of this class.
+     *
+     * This list is created when it is first accessed and is thread safe.
+     */
+    val declaredClasses: List<ClassMirror> by lazy {
+        java.declaredClasses.map {
+            (cache.types.reflect(it) as ClassMirror).enclose(this)
+        }.unmodifiable()
+    }
+
+    fun declaredClass(name: String): ClassMirror? {
+        return declaredClasses.find { it.java.simpleName == name }
+    }
+
+    private val declaredClassCache = ConcurrentHashMap<String, List<ClassMirror>>()
+
+    fun innerClasses(name: String): List<ClassMirror> {
+        return declaredClassCache.getOrPut(name) {
+            val list = mutableListOf<ClassMirror>()
+            declaredClasses.find { it.java.simpleName == name }?.also { list.add(it) }
+            superclass?.also { list.addAll(it.innerClasses(name)) }
+            return@getOrPut list.unmodifiable()
+        }
+    }
+//endregion
+
 //region Fields
     /**
      * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
@@ -183,6 +216,10 @@ class ClassMirror internal constructor(
         java.declaredFields.map {
             cache.fields.reflect(it).specialize(this)
         }.unmodifiable()
+    }
+
+    fun declaredField(name: String): FieldMirror? {
+        return declaredFields.find { it.name == name }
     }
 
     private val fieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
@@ -210,6 +247,10 @@ class ClassMirror internal constructor(
         }.unmodifiable()
     }
 
+    fun declaredMethods(name: String): List<MethodMirror> {
+        return declaredMethods.filter { it.name == name }.unmodifiable()
+    }
+
     private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
 
     fun methods(name: String): List<MethodMirror> {
@@ -233,17 +274,6 @@ class ClassMirror internal constructor(
             cache.executables.reflect(it).enclose(this) as ConstructorMirror
         }.unmodifiable()
     }
-
-    private val constructorNameCache = ConcurrentHashMap<String, List<ConstructorMirror>>()
-
-    fun constructors(name: String): List<ConstructorMirror> {
-        return constructorNameCache.getOrPut(name) {
-            val constructors = mutableListOf<ConstructorMirror>()
-            constructors.addAll(declaredConstructors.filter { it.name == name })
-            constructors.addAll(superclass?.constructors(name) ?: emptyList())
-            return@getOrPut constructors.unmodifiable()
-        }
-    }
 //endregion
 
     val enclosingClass: ClassMirror? by lazy {
@@ -257,6 +287,23 @@ class ClassMirror internal constructor(
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
             enclosingClass?.genericMapping + enclosingExecutable?.genericMapping
+    }
+
+    /**
+     * Recursively searches through this class's supertypes to find the [most specific][specificity] superclass
+     * with the specified type. If this class is the specified type this method returns this class.
+     *
+     * @return The specialized superclass with the passed type, or null if none were found.
+     */
+    fun findSuperclass(clazz: Class<*>): ClassMirror? {
+        if(java == clazz) return this
+        var supertype = superclass?.findSuperclass(clazz)
+        for(it in interfaces) {
+            val candidate = it.findSuperclass(clazz)
+            if(candidate != null && (supertype == null || supertype.specificity < candidate.specificity))
+                supertype = candidate
+        }
+        return supertype
     }
 
     /**

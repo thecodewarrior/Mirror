@@ -128,14 +128,14 @@ internal class ClassMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Getting declared fields of a class should return the correct mirrors in order")
+    @DisplayName("Getting declared fields of a class should return the correct mirrors")
     fun getFields() {
         class FieldHolder(
             @JvmField var foo: String,
-            @JvmField var bar: String
+            @JvmField private var bar: String
         )
-        val fooJvmField = FieldHolder::class.java.getField("foo")
-        val barJvmField = FieldHolder::class.java.getField("bar")
+        val fooJvmField = FieldHolder::class.java.getDeclaredField("foo")
+        val barJvmField = FieldHolder::class.java.getDeclaredField("bar")
         val holderMirror = Mirror.reflectClass<FieldHolder>()
         val fields = holderMirror.declaredFields
         assertSameList(listOf(
@@ -145,19 +145,36 @@ internal class ClassMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Getting declared methods of a class should return the correct mirrors in order")
+    @DisplayName("Getting declared methods of a class should return the correct mirrors")
     fun getMethods() {
         class MethodHolder {
             fun foo() {}
-            fun bar() {}
+            private fun bar() {}
         }
-        val fooJvmMethod = MethodHolder::class.java.getMethod("foo")
-        val barJvmMethod = MethodHolder::class.java.getMethod("bar")
+        val fooJvmMethod = MethodHolder::class.java.getDeclaredMethod("foo")
+        val barJvmMethod = MethodHolder::class.java.getDeclaredMethod("bar")
         val holderMirror = Mirror.reflectClass<MethodHolder>()
-        val fields = holderMirror.declaredMethods
+        val methods = holderMirror.declaredMethods
         assertSameSet(listOf(
             Mirror.reflect(fooJvmMethod),
             Mirror.reflect(barJvmMethod)
-        ), fields)
+        ), methods)
+    }
+
+    @Test
+    @DisplayName("Getting declared constructors of a class should return the correct mirrors")
+    fun getConstructors() {
+        class ConstructorHolder {
+            constructor(foo: String)
+            private constructor(bar: Int)
+        }
+        val fooJvmConstructor = ConstructorHolder::class.java.getDeclaredConstructor(String::class.java)
+        val barJvmConstructor = ConstructorHolder::class.java.getDeclaredConstructor(Int::class.javaPrimitiveType)
+        val holderMirror = Mirror.reflectClass<ConstructorHolder>()
+        val constructors = holderMirror.declaredConstructors
+        assertSameSet(listOf(
+            Mirror.reflect(fooJvmConstructor),
+            Mirror.reflect(barJvmConstructor)
+        ), constructors)
     }
 }

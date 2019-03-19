@@ -7,6 +7,7 @@ import com.teamwizardry.mirror.type.ArrayMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.lang.reflect.AnnotatedArrayType
 
 internal class ArraySpecializationTest: MirrorTestBase() {
     @Test
@@ -21,5 +22,16 @@ internal class ArraySpecializationTest: MirrorTestBase() {
         val specializedArray = specialized.field("array")!!.type as ArrayMirror
 
         assertEquals(specializeWith, specializedArray.component)
+    }
+
+    @Test
+    fun getRawClass_onGenericArray_shouldReturnObjectArray() {
+        class FieldHolder<T>(
+            @JvmField
+            val field: Array<T>
+        )
+        val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
+        val type = Mirror.reflect(genericArray) as ArrayMirror
+        assertEquals(Mirror.reflect<Array<Any>>(), type.raw)
     }
 }

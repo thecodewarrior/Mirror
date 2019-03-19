@@ -28,7 +28,10 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                     }
                 }
                 is GenericArrayType -> {
-                    mirror = ArrayMirror(cache, type, null, null)
+                    val component = reflect(type.genericComponentType)
+                    val rawComponent = component.raw.java as? Class<*> ?: Any::class.java
+                    val rawArray = java.lang.reflect.Array.newInstance(rawComponent, 0).javaClass
+                    mirror = (reflect(rawArray) as ArrayMirror).specialize(component)
                 }
                 is ParameterizedType -> {
                     var theMirror = reflect(type.rawType) as ClassMirror

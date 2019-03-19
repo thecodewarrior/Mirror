@@ -100,6 +100,18 @@ object Mirror {
         return TypeFactory.annotation(T::class.java, arguments)
     }
 
+    /**
+     * Create an array of the passed mirror with [depth] dimensions
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun createArrayType(type: TypeMirror, depth: Int = 1): ArrayMirror {
+        if(depth < 1) throw IllegalArgumentException("Depth must be positive, not $depth")
+        val arrayType = (0 until depth).fold(type.java) { t, _ -> TypeFactory.arrayOf(t) }
+        return reflect(arrayType) as ArrayMirror
+    }
+
+
     val Class<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this) as ArrayMirror
     val Class<*>.mirror: ClassMirror get() = Mirror.reflect(this) as ClassMirror
     val KClass<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this.java) as ArrayMirror

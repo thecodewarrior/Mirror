@@ -68,6 +68,12 @@ abstract class TypeMirror internal constructor() {
         )
     }
 
+    /**
+     * The specificity of this type. A more specific type is one where
+     * `lesser.isAssignableFrom(greater) && !greater.isAssignableFrom(lesser)`.
+     */
+    val specificity: Specificity = Specificity(this)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TypeMirror) return false
@@ -85,6 +91,18 @@ abstract class TypeMirror internal constructor() {
         result = 31 * result + java.hashCode()
         result = 31 * result + specialization.hashCode()
         return result
+    }
+
+    class Specificity internal constructor(private val type: TypeMirror): Comparable<Specificity> {
+        override fun compareTo(other: Specificity): Int {
+            val lessThan = type.isAssignableFrom(other.type)
+            val greaterThan = other.type.isAssignableFrom(type)
+            return when {
+                lessThan && !greaterThan -> -1
+                greaterThan && !lessThan -> 1
+                else -> 0
+            }
+        }
     }
 }
 

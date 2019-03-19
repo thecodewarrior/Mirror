@@ -17,8 +17,8 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a class should specialize the return types of each of its declared methods")
     fun specializeMethodReturnsWithClassGeneric() {
         class MethodHolder<T> {
-            fun directGeneric(): T { TODO() }
-            fun indirectGeneric(): GenericInterface1<T> { TODO() }
+            fun directGeneric(): T { null!! }
+            fun indirectGeneric(): GenericInterface1<T> { null!! }
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
@@ -34,8 +34,8 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a class should specialize the parameter types of each of its declared methods")
     fun specializeMethodParamsWithClassGeneric() {
         class MethodHolder<T> {
-            fun directGeneric(param1: T) { TODO() }
-            fun indirectGeneric(param1: GenericInterface1<T>) { TODO() }
+            fun directGeneric(param1: T) { null!! }
+            fun indirectGeneric(param1: GenericInterface1<T>) { null!! }
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
@@ -63,8 +63,8 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a method should specialize its return type")
     fun specializeMethodReturnsWithMethodGeneric() {
         class MethodHolder {
-            fun <T> directGeneric(): T { TODO() }
-            fun <T> indirectGeneric(): GenericInterface1<T> { TODO() }
+            fun <T> directGeneric(): T { null!! }
+            fun <T> indirectGeneric(): GenericInterface1<T> { null!! }
         }
 
         val baseType = Mirror.reflectClass<MethodHolder>()
@@ -81,8 +81,8 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a method should specialize its parameter types")
     fun specializeMethodParamsWithMethodGeneric() {
         class MethodHolder {
-            fun <T> directGeneric(param1: T) { TODO() }
-            fun <T> indirectGeneric(param1: GenericInterface1<T>) { TODO() }
+            fun <T> directGeneric(param1: T) { null!! }
+            fun <T> indirectGeneric(param1: GenericInterface1<T>) { null!! }
         }
 
         val baseType = Mirror.reflectClass<MethodHolder>()
@@ -111,7 +111,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a class and its method should compound the specialization of the method's return types")
     fun specializeMethodReturnsWithClassAndMethodGeneric() {
         class MethodHolder<T> {
-            fun <A> indirectGeneric(): GenericPairInterface1<T, A> { TODO() }
+            fun <A> indirectGeneric(): GenericPairInterface1<T, A> { null!! }
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
@@ -126,8 +126,8 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a class and its method should compound the specialization of the method's parameter types")
     fun specializeMethodParamsWithClassAndMethodGeneric() {
         class MethodHolder<T> {
-            fun <A> directGeneric(param1: T, param2: A) { TODO() }
-            fun <A> indirectGeneric(param1: GenericPairInterface1<T, A>) { TODO() }
+            fun <A> directGeneric(param1: T, param2: A) { null!! }
+            fun <A> indirectGeneric(param1: GenericPairInterface1<T, A>) { null!! }
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()

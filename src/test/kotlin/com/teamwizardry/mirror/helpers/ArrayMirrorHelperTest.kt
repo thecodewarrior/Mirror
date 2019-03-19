@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import java.lang.reflect.AnnotatedArrayType
 
 
-internal class ArrayMirrorTest: MirrorTestBase() {
+internal class ArrayMirrorHelperTest: MirrorTestBase() {
 
     private inline fun <reified T> reflectArray() = Mirror.reflect<T>() as ArrayMirror
 

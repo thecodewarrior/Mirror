@@ -35,6 +35,7 @@ open class Exception2: Exception()
 open class OuterClass1 {
     class OuterClass1_InnerStaticClass
     inner class OuterClass1_InnerClass
+    inner class OuterClass1_InnerClass2
 
     fun getAnonymousClass(): Type {
         class OuterClass1_Method_AnonymousClass

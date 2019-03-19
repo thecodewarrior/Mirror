@@ -4,6 +4,7 @@ import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
+import com.teamwizardry.mirror.utils.MethodHandleHelper
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
@@ -38,22 +39,36 @@ class FieldMirror internal constructor(
         return cache.fields.specialize(this, enclosing)
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is FieldMirror) return false
-
-        if (cache != other.cache) return false
-        if (java != other.java) return false
-        if (type != other.type) return false
-
-        return true
+    private val instanceGetWrapper by lazy {
+        MethodHandleHelper.wrapperForGetter(java)
+    }
+    private val staticGetWrapper by lazy {
+        MethodHandleHelper.wrapperForStaticGetter(java)
     }
 
-    override fun hashCode(): Int {
-        var result = cache.hashCode()
-        result = 31 * result + java.hashCode()
-        result = 31 * result + type.hashCode()
-        return result
+    //TODO test
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> get(receiver: Any): T {
+        if(Modifier.isStatic(java.modifiers))
+            return raw.staticGetWrapper() as T
+        else
+            return raw.instanceGetWrapper(receiver) as T
+    }
+
+    private val instanceSetWrapper by lazy {
+        MethodHandleHelper.wrapperForSetter(java)
+    }
+    private val staticSetWrapper by lazy {
+        MethodHandleHelper.wrapperForStaticSetter(java)
+    }
+
+    //TODO test
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> set(receiver: Any, value: Any?): T {
+        if(Modifier.isStatic(java.modifiers))
+            return raw.staticSetWrapper(value) as T
+        else
+            return raw.instanceSetWrapper(receiver, value) as T
     }
 
     override fun toString(): String {
