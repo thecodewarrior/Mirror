@@ -46,7 +46,7 @@ abstract class ExecutableMirror internal constructor(
         }.unmodifiable()
     }
 
-    val enclosingClass: ClassMirror by lazy {
+    val declaringClass: ClassMirror by lazy {
         specialization?.enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
     }
 

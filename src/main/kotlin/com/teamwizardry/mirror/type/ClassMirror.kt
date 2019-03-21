@@ -157,7 +157,7 @@ class ClassMirror internal constructor(
             throw InvalidSpecializationException("Passed enclosing executable ($enclosing) is not equal to or a " +
                 "specialization of this class's enclosing executable (${raw.enclosingExecutable})")
         val newSpecialization = (specialization ?: defaultSpecialization()).copy(
-            enclosingClass = enclosing.enclosingClass, enclosingExecutable = enclosing)
+            enclosingClass = enclosing.declaringClass, enclosingExecutable = enclosing)
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
     }
 
@@ -270,6 +270,11 @@ class ClassMirror internal constructor(
         java.declaredConstructors.map {
             cache.executables.reflect(it).enclose(this) as ConstructorMirror
         }.unmodifiable()
+    }
+
+    fun declaredConstructor(vararg params: TypeMirror): ConstructorMirror? {
+        val match = params.toList()
+        return declaredConstructors.find { it.parameterTypes == match }
     }
 //endregion
 

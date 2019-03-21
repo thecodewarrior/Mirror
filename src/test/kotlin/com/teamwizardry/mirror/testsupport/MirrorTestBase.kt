@@ -6,7 +6,11 @@ import org.junit.jupiter.api.BeforeEach
 
 open class MirrorTestBase {
     @BeforeEach
-    fun initializeForTest() {
+    fun beforeEachTest() {
+        this.initializeForTest()
+    }
+
+    open fun initializeForTest() {
         Mirror.cache = MirrorCache()
     }
 }

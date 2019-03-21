@@ -70,6 +70,18 @@ object Mirror {
         return reflect<T>() as ClassMirror
     }
 
+    /**
+     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
+     * or void.
+     *
+     * @throws IllegalArgumentException if the input class is an array type or void
+     */
+    inline fun <reified T: Number> reflectPrimitive(): ClassMirror {
+        val primitiveClass = T::class.javaPrimitiveType
+            ?: throw IllegalArgumentException("reflectPrimitive requires a primitive type")
+        return reflect(primitiveClass) as ClassMirror
+    }
+
     @JvmStatic
     fun reflect(field: Field): FieldMirror {
         return cache.fields.reflect(field)

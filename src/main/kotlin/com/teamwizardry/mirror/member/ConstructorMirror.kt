@@ -16,6 +16,7 @@ class ConstructorMirror internal constructor(
 
     override val raw: ConstructorMirror = raw ?: this
     override val name: String = java.name
+    val description: String get() = "${declaringClass.java.simpleName}(${raw.parameterTypes.joinToString(", ")})"
     val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
 
     override fun specialize(vararg parameters: TypeMirror): ConstructorMirror {
@@ -34,8 +35,13 @@ class ConstructorMirror internal constructor(
     //TODO test
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> call(vararg args: Any?): T {
+        if(args.size != parameters.size)
+            throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$description`")
         return raw.wrapper(args as Array<Any?>) as T
     }
+
+    @JvmSynthetic
+    operator fun <T> invoke(vararg args: Any?): T = call(*args)
 
     override fun toString(): String {
         var str = name
