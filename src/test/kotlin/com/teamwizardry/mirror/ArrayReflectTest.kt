@@ -19,26 +19,20 @@ internal class ArrayReflectTest {
     }
 
     @Test
-    fun getLength_withNonArrayType_shouldThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException::class.java) {
-            ArrayReflect.getLength(Any())
-        }
-    }
-
-    @Test
-    fun getLength_withNullArray_shouldThrowIllegalArgumentException() {
-        assertThrows(NullPointerException::class.java) {
-            ArrayReflect.getLength(null)
-        }
+    fun getLength_withIllegalType_shouldThrowIllegalArgumentException() {
+        assertThrows(NullPointerException::class.java) { ArrayReflect.getLength(null) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getLength(Any()) }
     }
 
     @Test
     fun getBoolean_withValidArrayType_shouldReturnBooleanValue() {
         assertEquals(false, ArrayReflect.getBoolean(booleanArrayOf(false), 0))
     }
+
     @Test
     fun getBoolean_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getBoolean(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getBoolean(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getBoolean(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getBoolean(byteArrayOf(0), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getBoolean(charArrayOf(' '), 0) }
@@ -56,6 +50,7 @@ internal class ArrayReflectTest {
     @Test
     fun getByte_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getByte(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getByte(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getByte(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getByte(booleanArrayOf(false), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getByte(charArrayOf(' '), 0) }
@@ -73,6 +68,7 @@ internal class ArrayReflectTest {
     @Test
     fun getChar_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getChar(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getChar(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getChar(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getChar(booleanArrayOf(false), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getChar(byteArrayOf(0), 0) }
@@ -91,6 +87,7 @@ internal class ArrayReflectTest {
     @Test
     fun getShort_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getShort(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getShort(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getShort(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getShort(booleanArrayOf(false), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getShort(charArrayOf(' '), 0) }
@@ -110,6 +107,7 @@ internal class ArrayReflectTest {
     @Test
     fun getInt_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getInt(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getInt(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getInt(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getInt(booleanArrayOf(false), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getInt(longArrayOf(0), 0) }
@@ -128,6 +126,7 @@ internal class ArrayReflectTest {
     @Test
     fun getLong_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getLong(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getLong(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getLong(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getLong(booleanArrayOf(false), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getLong(floatArrayOf(0f), 0) }
@@ -146,6 +145,7 @@ internal class ArrayReflectTest {
     @Test
     fun getFloat_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getFloat(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getFloat(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getFloat(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getFloat(booleanArrayOf(false), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getFloat(doubleArrayOf(0.0), 0) }
@@ -164,6 +164,7 @@ internal class ArrayReflectTest {
     @Test
     fun getDouble_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         assertThrows(NullPointerException::class.java) { ArrayReflect.getDouble(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getDouble(Any(), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getDouble(arrayOf(""), 0) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.getDouble(booleanArrayOf(false), 0) }
     }
@@ -182,14 +183,22 @@ internal class ArrayReflectTest {
     }
 
     @Test
+    fun get_withInvalidArrayType_shouldThrowIllegalArgumentException() {
+        assertThrows(NullPointerException::class.java) { ArrayReflect.get(null, 0) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.get(Any(), 0) }
+    }
+
+    @Test
     fun setBoolean_withValidArrayType_shouldSetValue() {
         val value: Boolean = true
         val booleanArray = booleanArrayOf(false); ArrayReflect.setBoolean(booleanArray, 0, value); assertEquals(value, booleanArray[0])
     }
+
     @Test
     fun setBoolean_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Boolean = true
         assertThrows(NullPointerException::class.java) { ArrayReflect.setBoolean(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setBoolean(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setBoolean(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setBoolean(byteArrayOf(0), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setBoolean(charArrayOf(' '), 0, value) }
@@ -214,6 +223,7 @@ internal class ArrayReflectTest {
     fun setByte_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Byte = 1
         assertThrows(NullPointerException::class.java) { ArrayReflect.setByte(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setByte(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setByte(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setByte(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setByte(charArrayOf(' '), 0, value) }
@@ -232,6 +242,7 @@ internal class ArrayReflectTest {
     fun setChar_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Char = 'x'
         assertThrows(NullPointerException::class.java) { ArrayReflect.setChar(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setChar(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setChar(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setChar(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setChar(byteArrayOf(0), 0, value) }
@@ -251,6 +262,7 @@ internal class ArrayReflectTest {
     fun setShort_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Short = 1
         assertThrows(NullPointerException::class.java) { ArrayReflect.setShort(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setShort(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setShort(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setShort(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setShort(byteArrayOf(0), 0, value) }
@@ -269,6 +281,7 @@ internal class ArrayReflectTest {
     fun setInt_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Int = 1
         assertThrows(NullPointerException::class.java) { ArrayReflect.setInt(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setInt(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setInt(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setInt(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setInt(byteArrayOf(0), 0, value) }
@@ -287,6 +300,7 @@ internal class ArrayReflectTest {
     fun setLong_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Long = 1
         assertThrows(NullPointerException::class.java) { ArrayReflect.setLong(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setLong(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setLong(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setLong(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setLong(byteArrayOf(0), 0, value) }
@@ -305,6 +319,7 @@ internal class ArrayReflectTest {
     fun setFloat_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Float = 1f
         assertThrows(NullPointerException::class.java) { ArrayReflect.setFloat(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setFloat(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setFloat(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setFloat(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setFloat(byteArrayOf(0), 0, value) }
@@ -323,6 +338,7 @@ internal class ArrayReflectTest {
     fun setDouble_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Double = 1.0
         assertThrows(NullPointerException::class.java) { ArrayReflect.setDouble(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setDouble(Any(), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setDouble(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setDouble(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.setDouble(byteArrayOf(0), 0, value) }
@@ -342,6 +358,7 @@ internal class ArrayReflectTest {
     fun set_withInvalidArrayType_shouldThrowIllegalArgumentException() {
         val value: Any = Any()
         assertThrows(NullPointerException::class.java) { ArrayReflect.set(null, 0, value) }
+        assertThrows(IllegalArgumentException::class.java) { ArrayReflect.set(arrayOf(""), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.set(booleanArrayOf(false), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.set(byteArrayOf(0), 0, value) }
         assertThrows(IllegalArgumentException::class.java) { ArrayReflect.set(charArrayOf(' '), 0, value) }

@@ -103,9 +103,6 @@ class ClassMirror internal constructor(
             return false
 
         return isAssignableCache.getOrPut(other) {
-            if(other == this) {
-                return@getOrPut true
-            }
             if(other.raw == this.raw) {
                 return@getOrPut this.typeParameters.zip(other.typeParameters)
                     .all { (ours, theirs) -> ours.isAssignableFrom(theirs) }

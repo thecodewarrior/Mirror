@@ -22,9 +22,17 @@ open class Object1
 open class GenericObject1<T>
 open class GenericPairObject1<A, B>
 
+open class Object1Sub: Object1()
+open class Object1Sub2: Object1()
+open class GenericObject1Sub<T>: GenericObject1<T>()
+
 open class Object2
 open class GenericObject2<T>
 open class GenericPairObject2<A, B>
+
+open class Object2Sub: Object2()
+open class Object2Sub2: Object2()
+open class GenericObject2Sub<T>: GenericObject2<T>()
 
 open class UpperBounded<out T>
 open class LowerBounded<in T>

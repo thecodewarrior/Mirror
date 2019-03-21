@@ -95,11 +95,10 @@ abstract class TypeMirror internal constructor() {
 
     class Specificity internal constructor(private val type: TypeMirror): Comparable<Specificity> {
         override fun compareTo(other: Specificity): Int {
-            val lessThan = type.isAssignableFrom(other.type)
-            val greaterThan = other.type.isAssignableFrom(type)
+            if(this == other) return 0
             return when {
-                lessThan && !greaterThan -> -1
-                greaterThan && !lessThan -> 1
+                type.isAssignableFrom(other.type) -> -1
+                other.type.isAssignableFrom(type) -> 1
                 else -> 0
             }
         }

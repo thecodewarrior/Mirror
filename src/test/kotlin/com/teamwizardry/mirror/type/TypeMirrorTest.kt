@@ -4,7 +4,12 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.annotations.TypeAnnotation1
 import com.teamwizardry.mirror.annotations.TypeAnnotationArg1
 import com.teamwizardry.mirror.testsupport.GenericObject1
+import com.teamwizardry.mirror.testsupport.GenericObject1Sub
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.testsupport.Object1
+import com.teamwizardry.mirror.testsupport.Object1Sub
+import com.teamwizardry.mirror.testsupport.Object1Sub2
+import com.teamwizardry.mirror.testsupport.Object2
 import com.teamwizardry.mirror.typeToken
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
@@ -145,4 +150,57 @@ internal class TypeMirrorTest: MirrorTestBase() {
         Mirror.reflect(typeToken<TestType<*>>())
     }
 
+    @Test
+    fun specificity_ofSelf_shouldBeEqual() {
+        val type = Mirror.reflect<Object1>().specificity
+        assertEquals(0, type.compareTo(type))
+    }
+
+    @Test
+    fun specificity_ofSeparateTypes_shouldBeEqual() {
+        val type1 = Mirror.reflect<Object1>().specificity
+        val type2 = Mirror.reflect<Object2>().specificity
+        assertEquals(0, type1.compareTo(type2))
+        assertEquals(0, type2.compareTo(type1))
+    }
+
+    @Test
+    fun specificity_ofSeparateSubTypes_shouldBeEqual() {
+        val type1 = Mirror.reflect<Object1Sub>().specificity
+        val type2 = Mirror.reflect<Object1Sub2>().specificity
+        assertEquals(0, type1.compareTo(type2))
+        assertEquals(0, type2.compareTo(type1))
+    }
+
+    @Test
+    fun specificity_ofSubclass_shouldBeGreater() {
+        val superClass = Mirror.reflect<Object1>().specificity
+        val subClass = Mirror.reflect<Object1Sub>().specificity
+        assertEquals(-1, superClass.compareTo(subClass))
+        assertEquals(1, subClass.compareTo(superClass))
+    }
+
+    @Test
+    fun specificity_ofSpecifiedGeneric_shouldBeGreater() {
+        val unspecified = Mirror.reflect(GenericObject1::class.java).specificity
+        val specified = Mirror.reflect<GenericObject1<String>>().specificity
+        assertEquals(-1, unspecified.compareTo(specified))
+        assertEquals(1, specified.compareTo(unspecified))
+    }
+
+    @Test
+    fun specificity_ofSubclass_shouldBeEqualTo_specifiedGeneric() {
+        val subclass = Mirror.reflect(GenericObject1Sub::class.java).specificity
+        val specified = Mirror.reflect<GenericObject1<String>>().specificity
+        assertEquals(0, specified.compareTo(subclass))
+        assertEquals(0, subclass.compareTo(specified))
+    }
+
+    @Test
+    fun specificity_ofIncompatibleGenerics_shouldBeEqual() {
+        val list1 = Mirror.reflect<List<Object1>>().specificity
+        val list2 = Mirror.reflect<ArrayList<Object2>>().specificity
+        assertEquals(0, list1.compareTo(list2))
+        assertEquals(0, list2.compareTo(list1))
+    }
 }
