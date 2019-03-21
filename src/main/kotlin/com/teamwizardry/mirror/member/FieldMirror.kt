@@ -24,12 +24,12 @@ class FieldMirror internal constructor(
     val isVolatile: Boolean = Modifier.isVolatile(java.modifiers)
     val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
 
-    val enclosingClass: ClassMirror by lazy {
+    val declaringClass: ClassMirror by lazy {
         _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
     }
 
     val type: TypeMirror by lazy {
-        enclosingClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
+        declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
     fun specialize(enclosing: ClassMirror): FieldMirror {
@@ -40,35 +40,55 @@ class FieldMirror internal constructor(
     }
 
     private val instanceGetWrapper by lazy {
+        java.isAccessible = true
         MethodHandleHelper.wrapperForGetter(java)
     }
     private val staticGetWrapper by lazy {
+        java.isAccessible = true
         MethodHandleHelper.wrapperForStaticGetter(java)
     }
 
-    //TODO test
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> get(receiver: Any): T {
-        if(Modifier.isStatic(java.modifiers))
+    fun <T : Any?> get(receiver: Any?): T {
+        if(Modifier.isStatic(java.modifiers)) {
+            if(receiver != null)
+                throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
             return raw.staticGetWrapper() as T
-        else
+        } else {
+            if (receiver == null)
+                throw NullPointerException("Null receiver for instance field `${declaringClass.java.simpleName}.$name`")
+            if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
+                throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance field `${declaringClass.java.simpleName}.$name`")
             return raw.instanceGetWrapper(receiver) as T
+        }
     }
 
     private val instanceSetWrapper by lazy {
+        java.isAccessible = true
         MethodHandleHelper.wrapperForSetter(java)
     }
     private val staticSetWrapper by lazy {
+        java.isAccessible = true
         MethodHandleHelper.wrapperForStaticSetter(java)
     }
 
-    //TODO test
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> set(receiver: Any, value: Any?): T {
-        if(Modifier.isStatic(java.modifiers))
-            return raw.staticSetWrapper(value) as T
-        else
-            return raw.instanceSetWrapper(receiver, value) as T
+    fun set(receiver: Any?, value: Any?) {
+        if(Modifier.isStatic(java.modifiers)) {
+            if(receiver != null)
+                throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
+            if(Modifier.isFinal(java.modifiers))
+                throw IllegalStateException("Cannot set the value of final static field `${declaringClass.java.simpleName}.$name`")
+            raw.staticSetWrapper(value)
+        } else {
+            if (receiver == null)
+                throw NullPointerException("Null receiver for instance field `${declaringClass.java.simpleName}.$name`")
+            if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
+                throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance field `${declaringClass.java.simpleName}.$name`")
+            if(Modifier.isFinal(java.modifiers))
+                throw IllegalStateException("Cannot set the value of final instance field `${declaringClass.java.simpleName}.$name`")
+            raw.instanceSetWrapper(receiver, value)
+        }
     }
 
     override fun toString(): String {

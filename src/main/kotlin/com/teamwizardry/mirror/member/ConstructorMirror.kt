@@ -28,6 +28,7 @@ class ConstructorMirror internal constructor(
     }
 
     private val wrapper by lazy {
+        java.isAccessible = true
         @Suppress("UNCHECKED_CAST")
         MethodHandleHelper.wrapperForConstructor(java as Constructor<Any>)
     }

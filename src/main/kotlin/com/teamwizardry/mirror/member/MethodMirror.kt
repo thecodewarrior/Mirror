@@ -30,13 +30,16 @@ class MethodMirror internal constructor(
     }
 
     private val instanceWrapper by lazy {
+        java.isAccessible = true
         MethodHandleHelper.wrapperForMethod(java)
     }
     private val staticWrapper by lazy {
+        java.isAccessible = true
         MethodHandleHelper.wrapperForStaticMethod(java)
     }
 
     @Suppress("UNCHECKED_CAST")
+    @Throws(Throwable::class)
     fun <T> call(receiver: Any?, vararg args: Any?): T {
         if(Modifier.isStatic(java.modifiers)) {
             if(receiver != null)

@@ -17,6 +17,14 @@ internal class InstanceMethods: MirrorTestBase() {
     }
 
     @Test
+    fun call_private() {
+        val thisType = Mirror.reflectClass<InstanceMethods>()
+        val method = thisType.declaredMethods("privateIncrementCounter")[0]
+        method<Unit>(this)
+        assertEquals(1, counterValue)
+    }
+
+    @Test
     fun call_withParam() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
         val method = thisType.declaredMethods("addCounter")[0]
@@ -94,6 +102,10 @@ internal class InstanceMethods: MirrorTestBase() {
     var counterValue = 0
 
     fun incrementCounter() {
+        counterValue++
+    }
+
+    private fun privateIncrementCounter() {
         counterValue++
     }
 

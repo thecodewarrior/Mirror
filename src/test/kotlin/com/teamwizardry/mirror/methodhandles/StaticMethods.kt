@@ -17,6 +17,14 @@ internal class StaticMethods: MirrorTestBase() {
     }
 
     @Test
+    fun call_staticPrivate() {
+        val thisType = Mirror.reflectClass<StaticMethods>()
+        val method = thisType.declaredMethods("privateIncrementCounter")[0]
+        method<Unit>(null)
+        assertEquals(1, counterValue)
+    }
+
+    @Test
     fun call_staticWithParam() {
         val thisType = Mirror.reflectClass<StaticMethods>()
         val method = thisType.declaredMethods("addCounter")[0]
@@ -87,6 +95,11 @@ internal class StaticMethods: MirrorTestBase() {
 
         @JvmStatic
         fun incrementCounter() {
+            counterValue++
+        }
+
+        @JvmStatic
+        private fun privateIncrementCounter() {
             counterValue++
         }
 

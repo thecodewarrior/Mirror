@@ -17,6 +17,14 @@ internal class Constructors: MirrorTestBase() {
     }
 
     @Test
+    fun call_private() {
+        val testClass = Mirror.reflectClass<TestClass>()
+        val constructor = testClass.declaredConstructor(Mirror.reflect<String>())!!
+        val obj = constructor<TestClass>("hello")
+        assertEquals("hello".length, obj.v)
+    }
+
+    @Test
     fun call_withParam() {
         val testClass = Mirror.reflectClass<TestClass>()
         val constructor = testClass.declaredConstructor(Mirror.reflectPrimitive<Int>())!!
@@ -68,6 +76,9 @@ internal class Constructors: MirrorTestBase() {
         }
         constructor(initial: Int) {
             v = initial
+        }
+        private constructor(lengthOf: String) {
+            v = lengthOf.length
         }
     }
 }

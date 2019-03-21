@@ -130,7 +130,6 @@ object MethodHandleHelper {
 
     @JvmStatic
     fun wrapperForConstructor(constructor: Constructor<Any>): (Array<Any?>) -> Any {
-        constructor.isAccessible = true
         return wrapperForConstructor(publicLookup().unreflectConstructor(constructor))
     }
 
