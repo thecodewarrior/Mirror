@@ -5,7 +5,7 @@ import com.teamwizardry.mirror.utils.unmodifiableCopy
 class TypeMapping(
     genericMapping: Map<TypeMirror, TypeMirror>
 ) {
-    val typeMap = genericMapping.filter { it.key != it.value }.unmodifiableCopy()
+    val typeMap: Map<TypeMirror, TypeMirror> = genericMapping.filter { it.key != it.value }.unmodifiableCopy()
 
     operator fun get(type: TypeMirror): TypeMirror {
         typeMap[type]?.let {

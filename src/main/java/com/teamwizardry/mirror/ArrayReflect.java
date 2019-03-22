@@ -1,22 +1,22 @@
 package com.teamwizardry.mirror;
 
 /**
- * Modified by TheCodeWarrior
+ * A set of utilities to create, inspect, and access primitive and typed arrays.
+ *
+ * Legal conversions:
+ * From, To: | boolean | byte | char | short | int | long | float | double
+ * ----------|-------------------------------------------------------------
+ * boolean   |    #
+ * byte      |    #       #      #       #      #     #
+ * char      |    #       #      #       #      #
+ * short     |    #       #      #       #      #
+ * int       |    #       #      #       #
+ * long      |    #       #      #
+ * float     |    #       #
+ * double    |    #
  */
+@SuppressWarnings({"Duplicates", "JavaDoc"})
 public class ArrayReflect {
-    /*
-     * Legal conversions:
-     * From \ To | boolean | byte | char | short | int | long | float | double
-     * ----------|-------------------------------------------------------------
-     * boolean   |    #
-     * byte      |    #       #      #       #      #     #
-     * char      |    #       #      #       #      #
-     * short     |    #       #      #       #      #
-     * int       |    #       #      #       #
-     * long      |    #       #      #
-     * float     |    #       #
-     * double    |    #
-     */
     private static RuntimeException badArray(Object array) {
         if (array == null)
             return new NullPointerException("Array argument is null");
@@ -25,7 +25,6 @@ public class ArrayReflect {
         else
             return new IllegalArgumentException("Array is of incompatible type");
     }
-
 
     public static int getLength(Object array) {
         // Note: all types of multidimensional arrays are instanceof Object[]
@@ -40,7 +39,6 @@ public class ArrayReflect {
         if (array instanceof double[]) return ((double[]) array).length;
         throw badArray(array);
     }
-
 
     public static boolean getBoolean(Object array, int index) {
         if (array instanceof boolean[]) return ((boolean[]) array)[index];

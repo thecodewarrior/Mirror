@@ -8,7 +8,7 @@ import java.lang.invoke.MethodHandle;
  * Created at 7:38 PM on 10/22/16.
  */
 /*package-private*/ class InvocationWrapper {
-    private MethodHandle handle;
+    private final MethodHandle handle;
 
     /*package-private*/ InvocationWrapper(MethodHandle handle) {
         this.handle = handle;

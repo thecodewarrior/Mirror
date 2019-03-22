@@ -56,8 +56,8 @@ class ArrayMirror internal constructor(
 
     /**
      * Create a new instance of this array type with the given length. Returns an [Object] because there is no
-     * common superclass for primitive arrays. Use [ArrayReflect] to access this array's values generically.
-     * If this mirror represents a non-primitive array, the returned array is filled with null values.
+     * common superclass for arrays. Use [ArrayReflect] to access this array's values or cast if the result type is
+     * known. If this mirror represents a non-primitive array, the returned array is filled with null values.
      */
     fun newInstance(length: Int): Any {
         val rawComponent = this.component.raw as? ConcreteTypeMirror

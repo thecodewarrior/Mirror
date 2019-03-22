@@ -7,14 +7,15 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-//TODO figure out licensing
-//TODO test
-// Major changes to method signatures in order to decouple from Minecraft code
 /**
- * @author WireSegal
- * Created at 6:49 PM on 8/14/16.
+ * Source: [LibrarianLib](https://github.com/TeamWizardry/LibrarianLib/blob/1.12/src/main/java/com/teamwizardry/librarianlib/features/methodhandles/MethodHandleHelper.kt)
+ *
+ * @author WireSegal, thecodewarrior
+ *
+ * Changes - thecodewarrior:
+ * Stripped down to only the basic Core Reflection -> wrapper methods
  */
-object MethodHandleHelper {
+internal object MethodHandleHelper {
 
     //region getter
 

@@ -22,7 +22,7 @@ class ExampleTests {
             assertEquals(Arrays.asList(
                     Mirror.newAnnotation(TypeAnnotation1.class)
             ), type.getTypeAnnotations());
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException | AnnotationFormatException e) {
             e.printStackTrace();
         }
     }

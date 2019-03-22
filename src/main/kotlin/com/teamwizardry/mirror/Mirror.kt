@@ -8,6 +8,7 @@ import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.type.VoidMirror
+import io.leangen.geantyref.AnnotationFormatException
 import io.leangen.geantyref.TypeFactory
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
@@ -23,80 +24,81 @@ import kotlin.reflect.KClass
 object Mirror {
     internal var cache = MirrorCache()
 
-    @JvmField
-    val void: VoidMirror = reflect(Void.TYPE) as VoidMirror
-    @JvmField
-    val `object`: ClassMirror = reflectClass<Any>()
-    @get:JvmSynthetic
-    val any: ClassMirror get() = this.`object`
-
     /**
-     * Create a mirror of the passed type.
+     * Gets the type mirror representing the passed type
      */
     @JvmStatic
     fun reflect(type: Type): TypeMirror {
         return cache.types.reflect(type)
     }
 
+    /**
+     * Gets the type mirror representing the passed annotated type
+     */
     @JvmStatic
     fun reflect(type: AnnotatedType): TypeMirror {
         return cache.types.reflect(type)
     }
 
+    /**
+     * Gets the type mirror representing the specified type
+     */
     inline fun <reified T> reflect(): TypeMirror {
         return reflect(typeToken<T>())
     }
 
     /**
-     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
-     * or void.
+     * Gets the [ClassMirror] representing the passed class. This is a convenience method for when the type is known
+     * to be a class, rather than an array or void.
      *
-     * @throws IllegalArgumentException if the input class is an array type or void
+     * @throws IllegalArgumentException if the input class is an array or void
      */
     @JvmStatic
     fun reflectClass(clazz: Class<*>): ClassMirror {
         if(clazz.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
+        if(clazz == Void.TYPE) throw IllegalArgumentException("reflectClass cannot reflect the void type")
         return reflect(clazz) as ClassMirror
     }
 
     /**
-     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
-     * or void.
+     * Gets the [ClassMirror] representing the specified type. This is a convenience method for when the type is known
+     * to be a class, rather than an array or void.
      *
-     * @throws IllegalArgumentException if the input class is an array type or void
+     * @throws IllegalArgumentException if the input type is an array or void
      */
     inline fun <reified T> reflectClass(): ClassMirror {
         if(T::class.java.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
+        if(T::class.java == Void.TYPE) throw IllegalArgumentException("reflectClass cannot reflect the void type")
         return reflect<T>() as ClassMirror
     }
 
     /**
-     * Convenience method to reduce unneeded casting when the passed type is known to be a class rather than an array
-     * or void.
-     *
-     * @throws IllegalArgumentException if the input class is an array type or void
+     * Gets the field mirror representing the passed field
      */
-    inline fun <reified T: Number> reflectPrimitive(): ClassMirror {
-        val primitiveClass = T::class.javaPrimitiveType
-            ?: throw IllegalArgumentException("reflectPrimitive requires a primitive type")
-        return reflect(primitiveClass) as ClassMirror
-    }
-
     @JvmStatic
     fun reflect(field: Field): FieldMirror {
         return cache.fields.reflect(field)
     }
 
+    /**
+     * Gets the method mirror representing the passed method
+     */
     @JvmStatic
     fun reflect(method: Method): MethodMirror {
         return cache.executables.reflect(method) as MethodMirror
     }
 
+    /**
+     * Gets the constructor mirror representing the passed constructor
+     */
     @JvmStatic
     fun reflect(constructor: Constructor<*>): ConstructorMirror {
         return cache.executables.reflect(constructor) as ConstructorMirror
     }
 
+    /**
+     * Gets the method or constructor mirror representing the passed method or constructor
+     */
     @JvmStatic
     fun reflect(executable: Executable): ExecutableMirror {
         return cache.executables.reflect(executable)
@@ -104,6 +106,7 @@ object Mirror {
 
     @JvmStatic
     @JvmOverloads
+    @Throws(AnnotationFormatException::class)
     fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
         return TypeFactory.annotation(clazz, arguments)
     }
@@ -113,19 +116,46 @@ object Mirror {
     }
 
     /**
-     * Create an array of the passed mirror with [depth] dimensions
+     * Create an array whose component type is the passed mirror
      */
     @JvmStatic
-    @JvmOverloads
-    fun createArrayType(type: TypeMirror, depth: Int = 1): ArrayMirror {
-        if(depth < 1) throw IllegalArgumentException("Depth must be positive, not $depth")
-        val arrayType = (0 until depth).fold(type.java) { t, _ -> TypeFactory.arrayOf(t) }
-        return reflect(arrayType) as ArrayMirror
+    fun createArrayType(type: TypeMirror): ArrayMirror {
+        return reflect(TypeFactory.arrayOf(type.java)) as ArrayMirror
     }
-
 
     val Class<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this) as ArrayMirror
     val Class<*>.mirror: ClassMirror get() = Mirror.reflect(this) as ClassMirror
     val KClass<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this.java) as ArrayMirror
     val KClass<*>.mirror: ClassMirror get() = Mirror.reflect(this.java) as ClassMirror
+
+    /**
+     * Easy access to core Java types (void + primitives + Object)
+     */
+    object Types {
+        /** The type mirror representing the `void` type */
+        val void: VoidMirror get() = reflect(Void.TYPE) as VoidMirror
+
+        /** The type mirror representing the primitive `boolean` type */
+        val boolean: ClassMirror get() = reflectClass(Boolean::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `byte` type */
+        val byte: ClassMirror get() = reflectClass(Byte::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `char` type */
+        val char: ClassMirror get() = reflectClass(Char::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `short` type */
+        val short: ClassMirror get() = reflectClass(Short::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `int` type */
+        val int: ClassMirror get() = reflectClass(Int::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `long` type */
+        val long: ClassMirror get() = reflectClass(Long::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `float` type */
+        val float: ClassMirror get() = reflectClass(Float::class.javaPrimitiveType!!)
+        /** The type mirror representing the primitive `double` type */
+        val double: ClassMirror get() = reflectClass(Double::class.javaPrimitiveType!!)
+
+        /** The type mirror representing the `Object` type */
+        val `object`: ClassMirror get() = reflectClass<Any>()
+        /** The type mirror representing the `Any` type (synonymous with [object]) */
+        @get:JvmSynthetic
+        val any: ClassMirror get() = reflectClass<Any>()
+    }
 }

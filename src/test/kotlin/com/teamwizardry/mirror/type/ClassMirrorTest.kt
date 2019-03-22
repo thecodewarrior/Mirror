@@ -10,7 +10,6 @@ import com.teamwizardry.mirror.testsupport.OuterClass1
 import com.teamwizardry.mirror.testsupport.OuterGenericClass1
 import com.teamwizardry.mirror.testsupport.assertSameList
 import com.teamwizardry.mirror.testsupport.assertSameSet
-import com.teamwizardry.mirror.typeParameter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
@@ -78,8 +77,8 @@ internal class ClassMirrorTest: MirrorTestBase() {
     fun getTypeParameters_ofGenericType_shouldReturnTypes() {
         val type = Mirror.reflectClass(GenericPairObject1::class.java).typeParameters
         assertSameList(listOf(
-                Mirror.reflect(GenericPairObject1::class.java.typeParameter(0)!!),
-                Mirror.reflect(GenericPairObject1::class.java.typeParameter(1)!!)
+                Mirror.reflect(GenericPairObject1::class.java.typeParameters[0]),
+                Mirror.reflect(GenericPairObject1::class.java.typeParameters[1])
         ), type)
     }
 

@@ -5,7 +5,6 @@ import com.teamwizardry.mirror.testsupport.Object1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.lang.reflect.AnnotatedArrayType
 
 internal class MirrorTest: MirrorTestBase() {
@@ -24,14 +23,6 @@ internal class MirrorTest: MirrorTestBase() {
     }
 
     @Test
-    fun createArrayType_withDepth_shouldReturn2dArray() {
-        assertEquals(
-            Mirror.reflect<Array<Array<Any>>>(),
-            Mirror.createArrayType(Mirror.reflect<Any>(), 2)
-        )
-    }
-
-    @Test
     fun createArrayType_withArray_shouldReturn2dArray() {
         assertEquals(
             Mirror.reflect<Array<Array<Any>>>(),
@@ -46,20 +37,10 @@ internal class MirrorTest: MirrorTestBase() {
             val field: Array<T>
         )
         val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
-        val typeVariable = FieldHolder::class.java.typeParameter(0)!!
+        val typeVariable = FieldHolder::class.java.typeParameters[0]
         assertEquals(
             Mirror.reflect(genericArray),
             Mirror.createArrayType(Mirror.reflect(typeVariable))
         )
-    }
-
-    @Test
-    fun createArrayType_withInvalidDepth_shouldThrow() {
-        assertThrows<IllegalArgumentException> {
-            Mirror.createArrayType(Mirror.reflect<Any>(), 0)
-        }
-        assertThrows<IllegalArgumentException> {
-            Mirror.createArrayType(Mirror.reflect<Any>(), -1)
-        }
     }
 }
