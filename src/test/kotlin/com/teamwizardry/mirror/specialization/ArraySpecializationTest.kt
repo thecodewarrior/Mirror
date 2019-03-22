@@ -1,5 +1,6 @@
 package com.teamwizardry.mirror.specialization
 
+import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
@@ -7,6 +8,7 @@ import com.teamwizardry.mirror.type.ArrayMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.lang.reflect.AnnotatedArrayType
 
 internal class ArraySpecializationTest: MirrorTestBase() {
@@ -18,7 +20,7 @@ internal class ArraySpecializationTest: MirrorTestBase() {
         )
         val genericType = Mirror.reflectClass(GenericArrayHolder::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
-        val specialized = genericType.specialize(specializeWith)
+        val specialized = genericType.withTypeArguments(specializeWith)
         val specializedArray = specialized.field("array")!!.type as ArrayMirror
 
         assertEquals(specializeWith, specializedArray.component)
@@ -33,5 +35,14 @@ internal class ArraySpecializationTest: MirrorTestBase() {
         val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
         val type = Mirror.reflect(genericArray) as ArrayMirror
         assertEquals(Mirror.reflect<Array<Any>>(), type.raw)
+    }
+
+    @Test
+    @DisplayName("Specializing an array with an incompatible type should throw")
+    fun specialize_withIncompatibleType_shouldThrow() {
+        val array = Mirror.reflect<Array<List<*>>>() as ArrayMirror
+        assertThrows<InvalidSpecializationException> {
+            array.specialize(Mirror.reflect<String>())
+        }
     }
 }

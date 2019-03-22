@@ -3,6 +3,7 @@ package com.teamwizardry.mirror;
 import com.teamwizardry.mirror.annotations.TypeAnnotation1;
 import com.teamwizardry.mirror.testsupport.Object1;
 import com.teamwizardry.mirror.type.TypeMirror;
+import io.leangen.geantyref.AnnotationFormatException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

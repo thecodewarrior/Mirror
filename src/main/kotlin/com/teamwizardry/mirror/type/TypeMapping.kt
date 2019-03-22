@@ -22,7 +22,7 @@ class TypeMapping(
             is ClassMirror -> {
                 val parameters = type.typeParameters.map { this[it] }
                 if(parameters != type.typeParameters) {
-                    return type.specialize(*parameters.toTypedArray())
+                    return type.withTypeArguments(*parameters.toTypedArray())
                 }
             }
         }

@@ -18,7 +18,7 @@ class FieldSpecializationTest {
         )
 
         val baseType = Mirror.reflectClass<FieldHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<String>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<String>())
         val specializedDirectField = specializedType.declaredFields.find { it.name == "directGeneric" }!!
         val specializedIndirectField = specializedType.declaredFields.find { it.name == "indirectGeneric" }!!
 

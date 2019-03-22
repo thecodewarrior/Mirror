@@ -48,16 +48,46 @@ object Mirror {
     }
 
     /**
-     * Gets the [ClassMirror] representing the passed class. This is a convenience method for when the type is known
-     * to be a class, rather than an array or void.
+     * Gets the [ClassMirror] representing the passed annotated type. This is a convenience method for when the type
+     * is known to be a class, rather than an array, void, variable, or wildcard.
      *
-     * @throws IllegalArgumentException if the input class is an array or void
+     * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
-    fun reflectClass(clazz: Class<*>): ClassMirror {
-        if(clazz.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
-        if(clazz == Void.TYPE) throw IllegalArgumentException("reflectClass cannot reflect the void type")
-        return reflect(clazz) as ClassMirror
+    fun reflectClass(token: TypeToken<*>): ClassMirror {
+        return reflectClass(token.getAnnotated())
+    }
+
+    /**
+     * Gets the [ClassMirror] representing the passed annotated type. This is a convenience method for when the type
+     * is known to be a class, rather than an array, void, variable, or wildcard.
+     *
+     * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
+     */
+    @JvmStatic
+    fun reflectClass(type: AnnotatedType): ClassMirror {
+        val reflected = reflect(type)
+        if(reflected is ClassMirror) {
+            return reflected
+        } else {
+            throw IllegalArgumentException("Passed type $reflected is not a class")
+        }
+    }
+
+    /**
+     * Gets the [ClassMirror] representing the passed type. This is a convenience method for when the type is known
+     * to be a class, rather than an array, void, variable, or wildcard.
+     *
+     * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
+     */
+    @JvmStatic
+    fun reflectClass(type: Type): ClassMirror {
+        val reflected = reflect(type)
+        if(reflected is ClassMirror) {
+            return reflected
+        } else {
+            throw IllegalArgumentException("Passed type $reflected is not a class")
+        }
     }
 
     /**
@@ -111,8 +141,18 @@ object Mirror {
         return TypeFactory.annotation(clazz, arguments)
     }
 
+    @JvmStatic
+    @Throws(AnnotationFormatException::class)
+    fun <T: Annotation> newAnnotation(clazz: Class<T>, vararg arguments: Pair<String, Any>): T {
+        return newAnnotation(clazz, mapOf(*arguments))
+    }
+
     inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
         return TypeFactory.annotation(T::class.java, arguments)
+    }
+
+    inline fun <reified T: Annotation> newAnnotation(vararg arguments: Pair<String, Any>): T {
+        return TypeFactory.annotation(T::class.java, mapOf(*arguments))
     }
 
     /**
@@ -120,7 +160,7 @@ object Mirror {
      */
     @JvmStatic
     fun createArrayType(type: TypeMirror): ArrayMirror {
-        return reflect(TypeFactory.arrayOf(type.java)) as ArrayMirror
+        return reflect(TypeFactory.arrayOf(type.coreAnnotatedType, emptyArray())) as ArrayMirror
     }
 
     val Class<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this) as ArrayMirror

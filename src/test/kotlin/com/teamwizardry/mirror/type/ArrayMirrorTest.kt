@@ -45,4 +45,10 @@ internal class ArrayMirrorTest: MirrorTestBase() {
         val type = Mirror.reflect<Array<String>>() as ArrayMirror
         assertEquals(type, type.raw)
     }
+
+    @Test
+    fun getRaw_onGenericType_shouldReturnErasure() {
+        val type = Mirror.reflect<Array<List<String>>>() as ArrayMirror
+        assertEquals(type.raw.component, Mirror.reflect(List::class.java))
+    }
 }

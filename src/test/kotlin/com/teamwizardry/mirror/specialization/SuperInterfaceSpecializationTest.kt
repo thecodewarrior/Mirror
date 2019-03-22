@@ -18,7 +18,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
         val interfaces = simpleType.interfaces
 
         val generic = Mirror.reflectClass(GenericInterface1::class.java)
-        assertSameList(listOf(generic.specialize(Mirror.reflect<String>())), interfaces)
+        assertSameList(listOf(generic.withTypeArguments(Mirror.reflect<String>())), interfaces)
     }
 
     @Test
@@ -38,7 +38,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
             "T2 specialized for SomeType as an interface")
     fun specializedHandoffToInterface() {
         class SimpleClass<A>: GenericInterface1<A>
-        val specialized = Mirror.reflectClass(SimpleClass::class.java).specialize(Mirror.reflect<String>())
+        val specialized = Mirror.reflectClass(SimpleClass::class.java).withTypeArguments(Mirror.reflect<String>())
         val superInterface = specialized.interfaces[0]
 
         assertSameList(listOf(Mirror.reflect<String>()), superInterface.typeParameters)
@@ -54,7 +54,7 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
 
         assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface2::class.java)
-                        .specialize(simpleType.typeParameters[0])
+                        .withTypeArguments(simpleType.typeParameters[0])
         ), superInterface.typeParameters)
     }
 
@@ -63,12 +63,12 @@ internal class SuperInterfaceSpecializationTest: MirrorTestBase() {
             "T2 specialized for T3<SomeType> as an interface")
     fun specializeHandoffWrappedToSupertype() {
         class SimpleClass<A>: GenericInterface1<GenericInterface2<A>>
-        val simpleType = Mirror.reflectClass(SimpleClass::class.java).specialize(Mirror.reflect<String>())
+        val simpleType = Mirror.reflectClass(SimpleClass::class.java).withTypeArguments(Mirror.reflect<String>())
         val superInterface = simpleType.interfaces[0]
 
         assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface2::class.java)
-                        .specialize(Mirror.reflect<String>())
+                        .withTypeArguments(Mirror.reflect<String>())
         ), superInterface.typeParameters)
     }
 }

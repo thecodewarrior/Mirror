@@ -1,6 +1,8 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
+import io.leangen.geantyref.GenericTypeReflector
+import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
 /**
@@ -8,10 +10,15 @@ import java.lang.reflect.TypeVariable
  */
 class VariableMirror internal constructor(
     override val cache: MirrorCache,
-    override val java: TypeVariable<*>,
+    override val coreType: TypeVariable<*>,
     raw: VariableMirror?,
     override val specialization: TypeSpecialization.Common?
 ): TypeMirror() {
+
+    override val coreAnnotatedType: AnnotatedTypeVariable
+        = GenericTypeReflector.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedTypeVariable
+
+    override val raw: VariableMirror = raw ?: this
 
     /**
      * The bounds of this variable. Types specializing this variable must extend all of these.
@@ -19,10 +26,8 @@ class VariableMirror internal constructor(
      * By default it contains the [Object] mirror.
      */
     val bounds: List<TypeMirror> by lazy {
-        java.annotatedBounds.map { cache.types.reflect(it) }
+        coreType.annotatedBounds.map { cache.types.reflect(it) }
     }
-
-    override val raw: VariableMirror = raw ?: this
 
     override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
 
@@ -31,7 +36,7 @@ class VariableMirror internal constructor(
             specialization,
             { true }
         ) {
-            VariableMirror(cache, java, raw, it)
+            VariableMirror(cache, coreType, raw, it)
         }
     }
 
@@ -46,7 +51,7 @@ class VariableMirror internal constructor(
 
     override fun toString(): String {
         var str = ""
-        str += java.name
+        str += coreType.name
         if(bounds.isNotEmpty()) {
             str += " extends ${bounds.joinToString(" & ")}"
         }

@@ -1,6 +1,7 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
+import io.leangen.geantyref.GenericTypeReflector
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
@@ -29,15 +30,14 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                 }
                 is GenericArrayType -> {
                     val component = reflect(type.genericComponentType)
-                    val rawComponent = component.raw.java as? Class<*> ?: Any::class.java
-                    val rawArray = java.lang.reflect.Array.newInstance(rawComponent, 0).javaClass
+                    val rawArray = java.lang.reflect.Array.newInstance(component.erasure, 0).javaClass
                     mirror = (reflect(rawArray) as ArrayMirror).specialize(component)
                 }
                 is ParameterizedType -> {
                     var theMirror = reflect(type.rawType) as ClassMirror
-                    theMirror = theMirror.specialize(*type.actualTypeArguments.map { reflect(it) }.toTypedArray())
+                    theMirror = theMirror.withTypeArguments(*type.actualTypeArguments.map { reflect(it) }.toTypedArray())
                     type.ownerType?.let {
-                        theMirror = theMirror.enclose(reflect(it) as ClassMirror)
+                        theMirror = theMirror.withEnclosingClass(reflect(it) as ClassMirror)
                     }
                     mirror = theMirror
                 }
@@ -57,24 +57,25 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
     fun reflect(type: AnnotatedType): TypeMirror {
         return rawCache.getOrPut(type) {
             val mirror: TypeMirror
-            val java = type.type
             when (type) {
                 is AnnotatedArrayType -> {
-                    mirror = (reflect(java) as ArrayMirror)
+                    mirror = (reflect(type.type) as ArrayMirror)
                         .specialize(reflect(type.annotatedGenericComponentType))
                 }
                 is AnnotatedParameterizedType -> {
-                    java as ParameterizedType
-                    mirror = (reflect(java.rawType) as ClassMirror)
-                        .specialize(*type.annotatedActualTypeArguments.map { reflect(it) }.toTypedArray())
+                    mirror = (reflect(type.type as ParameterizedType) as ClassMirror)
+                        .withTypeArguments(*type.annotatedActualTypeArguments.map { reflect(it) }.toTypedArray())
                 }
                 is AnnotatedWildcardType -> {
-                    mirror = WildcardMirror(cache, java as WildcardType, type, null, null)
+                    if(type.annotations.isEmpty())
+                        mirror = WildcardMirror(cache, type.type as WildcardType, type, reflect(type.type) as WildcardMirror, null)
+                    else
+                        mirror = reflect(GenericTypeReflector.replaceAnnotations(type, emptyArray()))
                 }
-                else -> mirror = reflect(java)
+                else -> mirror = reflect(type.type)
             }
 
-            return@getOrPut mirror.annotate(type.annotations.toList())
+            return@getOrPut mirror.withTypeAnnotations(type.annotations.toList())
         }
     }
 

@@ -22,7 +22,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<String>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<String>())
         val specializedDirectMethod = specializedType.declaredMethods.find { it.name == "directGeneric" }!!
         val specializedIndirectMethod = specializedType.declaredMethods.find { it.name == "indirectGeneric" }!!
 
@@ -39,7 +39,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<String>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<String>())
         val specializedDirectMethod = specializedType.declaredMethods.find { it.name == "directGeneric" }!!
         val specializedIndirectMethod = specializedType.declaredMethods.find { it.name == "indirectGeneric" }!!
 
@@ -51,7 +51,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a class should specialize the checked exception types of each of its declared methods")
     fun specializeMethodExceptionsWithClassGeneric() {
         val baseType = Mirror.reflectClass<GenericCheckedExceptionMethodHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<RuntimeException>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<RuntimeException>())
         val specializedMethod = specializedType.declaredMethods.find { it.name == "generic" }!!
 
         assertSame(Mirror.reflect<RuntimeException>(), specializedMethod.exceptionTypes[0])
@@ -115,7 +115,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<Object1>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<Object1>())
         val indirectMethod = specializedType.declaredMethods.find { it.name == "indirectGeneric" }!!
         val specializedIndirectMethod = indirectMethod.specialize(Mirror.reflect<String>())
 
@@ -131,7 +131,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
         }
 
         val baseType = Mirror.reflectClass<MethodHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<Object1>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<Object1>())
         val directMethod = specializedType.declaredMethods.find { it.name == "directGeneric" }!!
         val indirectMethod = specializedType.declaredMethods.find { it.name == "indirectGeneric" }!!
         val specializedDirectMethod = directMethod.specialize(Mirror.reflect<String>())
@@ -148,7 +148,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a class and its method should compound the specialization of the method's checked exception types")
     fun specializeMethodExceptionsWithClassAndMethodGeneric() {
         val baseType = Mirror.reflectClass<GenericCheckedExceptionMethodHolder<*>>()
-        val specializedType = baseType.specialize(Mirror.reflect<NullPointerException>())
+        val specializedType = baseType.withTypeArguments(Mirror.reflect<NullPointerException>())
         val method = specializedType.declaredMethods.find { it.name == "genericClassAndMethodParameters" }!!
         val specializedMethod = method.specialize(Mirror.reflect<RuntimeException>())
 

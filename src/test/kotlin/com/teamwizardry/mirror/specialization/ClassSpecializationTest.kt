@@ -20,7 +20,7 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     fun basicSpecialization() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
-        val specialized = genericType.specialize(specializeWith)
+        val specialized = genericType.withTypeArguments(specializeWith)
 
         assertNotEquals(genericType, specialized)
         assertSameList(listOf(specializeWith), specialized.typeParameters)
@@ -33,7 +33,7 @@ internal class ClassSpecializationTest: MirrorTestBase() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
         assertThrows<InvalidSpecializationException> {
-            genericType.specialize(specializeWith, specializeWith)
+            genericType.withTypeArguments(specializeWith, specializeWith)
         }
     }
 
@@ -41,14 +41,14 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     @DisplayName("Specializing a type with its own type parameters should return the raw type")
     fun specialize_withOwnTypeParameters_shouldReturnRawType() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
-        assertSame(genericType, genericType.specialize(genericType.typeParameters[0]))
+        assertSame(genericType, genericType.withTypeArguments(genericType.typeParameters[0]))
     }
 
     @Test
     @DisplayName("Specializing a non-generic type with no type arguments should return the raw type")
     fun specialize_nonGenericWithNoArguments_shouldReturnRawType() {
         val nonGenericType = Mirror.reflectClass(Object1::class.java)
-        assertSame(nonGenericType, nonGenericType.specialize())
+        assertSame(nonGenericType, nonGenericType.withTypeArguments())
     }
 
     @Test
@@ -57,8 +57,8 @@ internal class ClassSpecializationTest: MirrorTestBase() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith1 = Mirror.reflectClass<Object1>()
         val specializeWith2 = Mirror.reflectClass<Object2>()
-        val specialized1 = genericType.specialize(specializeWith1)
-        val specialized2 = specialized1.specialize(specializeWith2)
+        val specialized1 = genericType.withTypeArguments(specializeWith1)
+        val specialized2 = specialized1.withTypeArguments(specializeWith2)
         assertSame(specialized1.raw, specialized2.raw)
     }
 }

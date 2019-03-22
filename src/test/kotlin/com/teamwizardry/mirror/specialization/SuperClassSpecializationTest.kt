@@ -19,7 +19,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
         val supertype = simpleType.superclass!!
 
         val generic = Mirror.reflectClass(GenericObject1::class.java)
-        assertEquals(generic.specialize(Mirror.reflect<String>()), supertype)
+        assertEquals(generic.withTypeArguments(Mirror.reflect<String>()), supertype)
     }
 
     @Test
@@ -39,7 +39,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
             "is specialized for SomeType")
     fun specializedHandoffToSupertype() {
         class SimpleSubtype<A>: GenericObject1<A>()
-        val specialized = Mirror.reflectClass(SimpleSubtype::class.java).specialize(Mirror.reflect<String>())
+        val specialized = Mirror.reflectClass(SimpleSubtype::class.java).withTypeArguments(Mirror.reflect<String>())
         val supertype = specialized.superclass!!
 
         assertSameList(listOf(Mirror.reflect<String>()), supertype.typeParameters)
@@ -55,7 +55,7 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
 
         assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface1::class.java)
-                        .specialize(subtype.typeParameters[0])
+                        .withTypeArguments(subtype.typeParameters[0])
         ), supertype.typeParameters)
     }
 
@@ -64,12 +64,12 @@ internal class SuperClassSpecializationTest: MirrorTestBase() {
             "supertype is specialized for T3<SomeType>")
     fun specializeHandoffWrappedToSupertype() {
         class SimpleSubtype<A>: GenericObject1<GenericInterface1<A>>()
-        val subtype = Mirror.reflectClass(SimpleSubtype::class.java).specialize(Mirror.reflect<String>())
+        val subtype = Mirror.reflectClass(SimpleSubtype::class.java).withTypeArguments(Mirror.reflect<String>())
         val supertype = subtype.superclass!!
 
         assertSameList(listOf(
                 Mirror.reflectClass(GenericInterface1::class.java)
-                        .specialize(Mirror.reflect<String>())
+                        .withTypeArguments(Mirror.reflect<String>())
         ), supertype.typeParameters)
     }
 }

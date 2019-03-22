@@ -16,12 +16,14 @@ version = "0.0.1"
 
 repositories {
     mavenCentral()
+    maven(url = "https://jitpack.io")
 }
 
 dependencies {
     compile(kotlin("stdlib-jdk8"))
     compile(kotlin("reflect"))
-    compile("io.leangen.geantyref", "geantyref", "1.3.6")
+    //compile("io.leangen.geantyref", "geantyref", "1.3.6")
+    compile("com.github.thecodewarrior", "geantyref", "-SNAPSHOT")
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.3.0-M1")
     testCompile("com.nhaarman", "mockito-kotlin-kt1.1", "1.5.0")
     testCompile(files("noParamNames/out"))

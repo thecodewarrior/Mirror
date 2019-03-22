@@ -43,4 +43,12 @@ internal class MirrorTest: MirrorTestBase() {
             Mirror.createArrayType(Mirror.reflect(typeVariable))
         )
     }
+
+    @Test
+    fun createArrayType_withSpecialized_shouldReturnSpecialized() {
+        assertEquals(
+            Mirror.reflect<Array<List<String>>>(),
+            Mirror.createArrayType(Mirror.reflect<List<String>>())
+        )
+    }
 }
