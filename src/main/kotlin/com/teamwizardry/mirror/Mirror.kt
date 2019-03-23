@@ -16,7 +16,6 @@ import java.lang.reflect.Executable
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Type
-import kotlin.reflect.KClass
 
 /**
  * Provides access to the Mirrors for various reflective types.
@@ -162,11 +161,6 @@ object Mirror {
     fun createArrayType(type: TypeMirror): ArrayMirror {
         return reflect(TypeFactory.arrayOf(type.coreAnnotatedType, emptyArray())) as ArrayMirror
     }
-
-    val Class<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this) as ArrayMirror
-    val Class<*>.mirror: ClassMirror get() = Mirror.reflect(this) as ClassMirror
-    val KClass<*>.arrayMirror: ArrayMirror get() = Mirror.reflect(this.java) as ArrayMirror
-    val KClass<*>.mirror: ClassMirror get() = Mirror.reflect(this.java) as ClassMirror
 
     /**
      * Easy access to core Java types (void + primitives + Object)

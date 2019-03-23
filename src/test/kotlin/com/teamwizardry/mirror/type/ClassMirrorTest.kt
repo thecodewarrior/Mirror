@@ -99,21 +99,21 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("Getting the enclosing class of a ClassMirror statically nested within another should return the outer class")
     fun enclosingClass_ofStaticNestedClass_shouldReturnClassMirror() {
-        val type = Mirror.reflectClass<OuterClass1.OuterClass1_InnerStaticClass>()
+        val type = Mirror.reflectClass<OuterClass1.InnerStaticClass>()
         assertSame(Mirror.reflectClass<OuterClass1>(), type.enclosingClass)
     }
 
     @Test
     @DisplayName("Getting the enclosing class of a ClassMirror nested within another should return the outer class")
     fun enclosingClass_ofNestedClass_shouldReturnClassMirror() {
-        val type = Mirror.reflectClass<OuterClass1.OuterClass1_InnerClass>()
+        val type = Mirror.reflectClass<OuterClass1.InnerClass>()
         assertSame(Mirror.reflectClass<OuterClass1>(), type.enclosingClass)
     }
 
     @Test
     @DisplayName("Field types of inner classes that use outer generics should have outer generic types")
     fun fieldType_ofInnerClassFieldWithOuterGenericType_shouldReturnOuterGenericType() {
-        val innerClass = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val innerClass = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val fieldType = innerClass.field("innerField")?.type
         assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], fieldType)
     }
@@ -121,7 +121,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("Method types of inner classes that use outer generics should have outer generic types")
     fun returnType_ofMethodInNestedClassWithOuterGenericType_shouldReturnOuterGenericType() {
-        val innerClass = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val innerClass = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val methodType = innerClass.methods("innerMethod")[0].returnType
         assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], methodType)
     }

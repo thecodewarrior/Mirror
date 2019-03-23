@@ -34,7 +34,12 @@ abstract class TypeMirror internal constructor() {
     abstract val coreType: Type
 
     /**
-     * The Java Core Reflection annotated type this mirror represents
+     * The Java Core Reflection annotated type this mirror represents.
+     *
+     * **!!NOTE!!** The JVM implementations of `AnnotatedType` don't implement `equals` or `hashCode`, so they will
+     * equal neither each other nor this.
+     * If you need these methods pass any annotated type through [GenericTypeReflector.toCanonical].
+     * In Kotlin code you can use the [AnnotatedType.canonical][com.teamwizardry.mirror.canonical] extension.
      */
     abstract val coreAnnotatedType: AnnotatedType
 

@@ -82,7 +82,7 @@ class TestUtilsAssertions {
     }
 
     @Test
-    @DisplayName("assertSameSet with lists containing two identical elements in the same order should fail")
+    @DisplayName("assertSameSet with lists containing two identical elements in the same order should succeed")
     fun assertSameSet_withTwoIdenticalElementsInOrder_shouldSucceed() {
         val element1 = Any()
         val element2 = Any()
@@ -103,6 +103,49 @@ class TestUtilsAssertions {
         val element = Any()
         assertThrows<AssertionFailedError> {
             assertSameSet(listOf(element), listOf(element, element))
+        }
+    }
+
+    // =============================================================================================================
+
+    @Test
+    @DisplayName("assertSetEquals with empty lists should succeed")
+    fun assertSetEquals_withEmptyLists_shouldSucceed() {
+        assertSetEquals(listOf(), listOf())
+    }
+
+    @Test
+    @DisplayName("assertSetEquals with lists containing a single identical element should succeed")
+    fun assertSetEquals_withSingleIdenticalElement_shouldSucceed() {
+        val element = Any()
+        assertSetEquals(listOf(element), listOf(element))
+    }
+
+    @Test
+    @DisplayName("assertSetEquals with lists containing a single equal but not identical elements should succeed")
+    fun assertSetEquals_withSingleEqualElement_shouldFail() {
+        val element1 = 1 to 2
+        val element2 = 1 to 2
+        assertSetEquals(listOf(element1), listOf(element2))
+    }
+
+    @Test
+    @DisplayName("assertSetEquals with lists containing two equal elements in the same order should succeed")
+    fun assertSetEquals_withTwoIdenticalElementsInOrder_shouldSucceed() {
+        assertSetEquals(listOf("a", "b"), listOf("a", "b"))
+    }
+
+    @Test
+    @DisplayName("assertSetEquals with lists containing two equal elements in different orders should succeed")
+    fun assertSetEquals_withTwoIdenticalElementsOutOfOrder_shouldSucceed() {
+        assertSetEquals(listOf("a", "b"), listOf("b", "a"))
+    }
+
+    @Test
+    @DisplayName("assertSetEquals with lists containing a equal elements with and one duplicated should fail")
+    fun assertSetEquals_withDuplicatedIdenticalElement_shouldFail() {
+        assertThrows<AssertionFailedError> {
+            assertSetEquals(listOf("a"), listOf("a", "a"))
         }
     }
 

@@ -29,7 +29,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the enclosing class of an inner class should return the outer class")
     fun enclosingClass_ofInnerClass_shouldReturnOuterClass() {
         val outer = Mirror.reflectClass(OuterClass1::class.java)
-        val inner = Mirror.reflectClass(OuterClass1.OuterClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterClass1.InnerClass::class.java)
         assertSame(outer, inner.enclosingClass)
     }
 
@@ -37,7 +37,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the enclosing class of an inner class with a raw generic outer class should return the outer class")
     fun enclosingClass_ofInnerClassWithRawGenericOuterClass_shouldReturnRawGenericOuterClass() {
         val outer = Mirror.reflectClass(OuterGenericClass1::class.java)
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         assertSame(outer, inner.enclosingClass)
     }
 
@@ -45,7 +45,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the enclosing class of a class with a specialized outer class should return the outer class")
     fun enclosingClass_ofInnerClassWithSpecializedOuterClass_shouldReturnSpecializedOuterClass() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val specialized = inner.withEnclosingClass(outer)
         assertSame(outer, specialized.enclosingClass)
     }
@@ -54,7 +54,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the enclosing type of a class with a directly specified specialized outer class should return the specialized outer class")
     fun enclosingClass_ofInnerClassWithDirectlySpecifiedOuterClass_shouldReturnSpecializedOuterClass() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
-        val inner = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerClass>()
+        val inner = Mirror.reflectClass<OuterGenericClass1<String>.InnerClass>()
         assertSame(outer, inner.enclosingClass)
     }
 
@@ -62,17 +62,17 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the mirror of a class with a directly specified specialized outer class should be identical to the mirror with the outer class specified directly")
     fun mirror_ofInnerClassWithDirectlySpecializedOuterClass_shouldBeIdenticalToInnerClassWithOuterClassSpecializedManually() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val specialized = inner.withEnclosingClass(outer)
-        val innerDirect = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerClass>()
+        val innerDirect = Mirror.reflectClass<OuterGenericClass1<String>.InnerClass>()
         assertSame(specialized, innerDirect)
     }
 
     @Test
     @DisplayName("Getting the enclosing type of a doubly-nested class with a directly specified specialized outer class should return the singly-nested specialized outer class")
     fun enclosingClass_ofDoublyInnerClassWithDirectlySpecifiedOuterClass_shouldReturnSinglyInnerClassWithSpecializedOuterClass() {
-        val outer = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerClass>()
-        val inner = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerClass.OuterGenericClass1_InnerClass_InnerClass>()
+        val outer = Mirror.reflectClass<OuterGenericClass1<String>.InnerClass>()
+        val inner = Mirror.reflectClass<OuterGenericClass1<String>.InnerClass.InnerClass>()
         assertSame(outer, inner.enclosingClass)
     }
 
@@ -80,9 +80,9 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the mirror of a class with a directly specified specialized outer class should be identical to the mirror with the outer class specified directly")
     fun mirror_ofDoublyInnerClassWithDirectlySpecializedOuterClass_shouldBeIdenticalToDoublyInnerClassWithOuterClassesSpecializedManually() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
-        val middle = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java).withEnclosingClass(outer)
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass.OuterGenericClass1_InnerClass_InnerClass::class.java).withEnclosingClass(middle)
-        val innerDirect = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerClass.OuterGenericClass1_InnerClass_InnerClass>()
+        val middle = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java).withEnclosingClass(outer)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass.InnerClass::class.java).withEnclosingClass(middle)
+        val innerDirect = Mirror.reflectClass<OuterGenericClass1<String>.InnerClass.InnerClass>()
         assertSame(inner, innerDirect)
     }
 
@@ -90,7 +90,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the field type of a field in a class with a specialized outer class should return the specialized field type")
     fun fieldType_ofFieldInClassWithGenericOuterClass_shouldReturnOuterClassTypeParameter() {
         val outer = Mirror.reflectClass(OuterGenericClass1::class.java)
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val specialized = inner.field("innerField")?.type
         assertSame(outer.typeParameters[0], specialized)
     }
@@ -99,7 +99,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the field type of a field in a class with a specialized outer class should return the specialized field type")
     fun fieldType_ofFieldInInnerClassWithSpecializedOuterClass_shouldReturnSpecializedFieldType() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val specialized = inner.withEnclosingClass(outer).field("innerField")?.type
         assertSame(outer.typeParameters[0], specialized)
     }
@@ -108,7 +108,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the return type of a method in a class with a specialized outer class should return the specialized return type")
     fun returnType_ofMethodInInnerClassWithSpecializedOuterClass_shouldReturnSpecializedReturnType() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
-        val inner = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerClass::class.java)
+        val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
         val specialized = inner.withEnclosingClass(outer).methods("innerMethod")[0].returnType
         assertSame(outer.typeParameters[0], specialized)
     }
@@ -133,8 +133,8 @@ class EnclosingClassTest: MirrorTestBase() {
     @Test
     @DisplayName("Calling enclose on a specialized inner class and passing a null outer class should return itself without a specialized enclosing class")
     fun enclose_ofSpecializedInnerClass_whenPassedNull_shouldReturnSpecializedSelfWithoutSpecializedEnclosingClass() {
-        val inner = Mirror.reflectClass<OuterGenericClass1<String>.OuterGenericClass1_InnerGenericClass<Object1>>()
-        val withRawOuter = Mirror.reflectClass(OuterGenericClass1.OuterGenericClass1_InnerGenericClass::class.java).withTypeArguments(Mirror.reflectClass<Object1>())
+        val inner = Mirror.reflectClass<OuterGenericClass1<String>.InnerGenericClass<Object1>>()
+        val withRawOuter = Mirror.reflectClass(OuterGenericClass1.InnerGenericClass::class.java).withTypeArguments(Mirror.reflectClass<Object1>())
         assertSame(withRawOuter, inner.withEnclosingClass(null))
     }
 
@@ -149,9 +149,9 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the declared classes of a parent class should return a list of the inner classes")
     fun declaredClasses_ofParentClass_shouldReturnInnerClasses() {
         val outer = Mirror.reflectClass(OuterClass1::class.java)
-        val innerStatic = Mirror.reflectClass(OuterClass1.OuterClass1_InnerStaticClass::class.java)
-        val inner = Mirror.reflectClass(OuterClass1.OuterClass1_InnerClass::class.java)
-        val inner2 = Mirror.reflectClass(OuterClass1.OuterClass1_InnerClass2::class.java)
+        val innerStatic = Mirror.reflectClass(OuterClass1.InnerStaticClass::class.java)
+        val inner = Mirror.reflectClass(OuterClass1.InnerClass::class.java)
+        val inner2 = Mirror.reflectClass(OuterClass1.InnerClass2::class.java)
         assertSameSet(listOf(innerStatic, inner, inner2), outer.declaredClasses)
     }
 }

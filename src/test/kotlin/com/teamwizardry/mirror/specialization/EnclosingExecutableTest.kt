@@ -24,7 +24,7 @@ class EnclosingExecutableTest: MirrorTestBase() {
     @Test
     @DisplayName("Getting the enclosing executable of an inner class should return null")
     fun enclosingExecutable_ofInnerClass_shouldReturnNull() {
-        val clazz = Mirror.reflectClass(OuterClass1.OuterClass1_InnerClass::class.java)
+        val clazz = Mirror.reflectClass(OuterClass1.InnerClass::class.java)
         assertNull(clazz.enclosingExecutable)
     }
 

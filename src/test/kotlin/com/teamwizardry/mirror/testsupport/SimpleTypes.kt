@@ -41,61 +41,61 @@ open class Exception1: Exception()
 open class Exception2: Exception()
 
 open class OuterClass1 {
-    class OuterClass1_InnerStaticClass
-    inner class OuterClass1_InnerClass
-    inner class OuterClass1_InnerClass2
+    class InnerStaticClass
+    inner class InnerClass
+    inner class InnerClass2
 
     fun getAnonymousClass(): Type {
-        class OuterClass1_Method_AnonymousClass
-        return OuterClass1_Method_AnonymousClass::class.java
+        class Method_AnonymousClass
+        return Method_AnonymousClass::class.java
     }
 
     fun getGenericAnonymousClass(): Type {
-        class OuterClass1_Method_GenericAnonymousClass<I: Any> {
+        class Method_GenericAnonymousClass<I: Any> {
             lateinit var innerField: I
         }
-        return OuterClass1_Method_GenericAnonymousClass::class.java
+        return Method_GenericAnonymousClass::class.java
     }
 
     fun <T: Any> getSpecializedAnonymousClass(): Type {
-        class OuterClass1_GenericMethod_SpecializedAnonymousClass<I: Any> {
+        class GenericMethod_SpecializedAnonymousClass<I: Any> {
             lateinit var innerField: I
             lateinit var outerField: T
         }
-        return typeToken<OuterClass1_GenericMethod_SpecializedAnonymousClass<T>>()
+        return typeToken<GenericMethod_SpecializedAnonymousClass<T>>()
     }
 }
 
 open class OuterGenericClass1<T: Any> {
-    class OuterGenericClass1_InnerStaticClass
-    inner class OuterGenericClass1_InnerClass {
+    class InnerStaticClass
+    inner class InnerClass {
         lateinit var innerField: T
         fun innerMethod(): T { nothing() }
-        inner class OuterGenericClass1_InnerClass_InnerClass
+        inner class InnerClass
     }
-    inner class OuterGenericClass1_InnerGenericClass<I>
+    inner class InnerGenericClass<I>
 
     fun getAnonymousClass(): Type {
-        class OuterGenericClass1_Method_AnonymousClass {
+        class Method_AnonymousClass {
             lateinit var innerField: T
         }
-        return typeToken<OuterGenericClass1_Method_AnonymousClass>()
+        return typeToken<Method_AnonymousClass>()
     }
 
     fun getGenericAnonymousClass(): Type {
-        class OuterGenericClass1_Method_GenericAnonymousClass<I: Any> {
+        class Method_GenericAnonymousClass<I: Any> {
             lateinit var innerField: I
             lateinit var outerField: T
         }
 
-        return typeToken<OuterGenericClass1_Method_GenericAnonymousClass<T>>()
+        return typeToken<Method_GenericAnonymousClass<T>>()
     }
 
     fun <T: Any> getSpecializedAnonymousClass(): Type {
-        class OuterGenericClass1_GenericMethod_SpecializedAnonymousClass<I: Any> {
+        class GenericMethod_SpecializedAnonymousClass<I: Any> {
             lateinit var innerField: I
             lateinit var outerField: T
         }
-        return typeToken<OuterGenericClass1_GenericMethod_SpecializedAnonymousClass<T>>()
+        return typeToken<GenericMethod_SpecializedAnonymousClass<T>>()
     }
 }
