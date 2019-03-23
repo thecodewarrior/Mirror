@@ -4,8 +4,13 @@ import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.GenericObject2
 import com.teamwizardry.mirror.testsupport.Interface1
+import com.teamwizardry.mirror.testsupport.Interface12
+import com.teamwizardry.mirror.testsupport.Interface12Sub1
 import com.teamwizardry.mirror.testsupport.Interface1Sub1
 import com.teamwizardry.mirror.testsupport.Interface1Sub2
+import com.teamwizardry.mirror.testsupport.Interface2
+import com.teamwizardry.mirror.testsupport.Interface2Sub1
+import com.teamwizardry.mirror.testsupport.Interface2Sub2
 import com.teamwizardry.mirror.testsupport.LowerBounded
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
@@ -296,8 +301,35 @@ internal class IsAssignableTest: MirrorTestBase() {
         var upperBounded: UpperBounded<Interface1Sub1>
     )
 
+    class TypeVariableHolder<
+        RawT,
+        Interface1T: Interface1,
+        Interface1Sub1T: Interface1Sub1,
+        Interface1Sub2T: Interface1Sub2,
+        Interface12T,
+        Interface12Sub1T,
+        Interface12Sub2T,
+        Interface12DirectT: Interface12,
+        Object1T: Object1
+        >
+        where Interface12T: Interface1,
+              Interface12T: Interface2,
+              Interface12Sub1T: Interface1Sub1,
+              Interface12Sub1T: Interface2Sub1,
+              Interface12Sub2T: Interface1Sub2,
+              Interface12Sub2T: Interface2Sub2
+
     val lowerWildcard = (BoundedFieldHolder::class.java.getField("lowerBounded").genericType as ParameterizedType).actualTypeArguments[0]
     val upperWildcard = (BoundedFieldHolder::class.java.getField("upperBounded").genericType as ParameterizedType).actualTypeArguments[0]
+    val RawT               = TypeVariableHolder::class.java.typeParameters[0]
+    val Interface1T        = TypeVariableHolder::class.java.typeParameters[1]
+    val Interface1Sub1T    = TypeVariableHolder::class.java.typeParameters[2]
+    val Interface1Sub2T    = TypeVariableHolder::class.java.typeParameters[3]
+    val Interface12T       = TypeVariableHolder::class.java.typeParameters[4]
+    val Interface12Sub1T   = TypeVariableHolder::class.java.typeParameters[5]
+    val Interface12Sub2T   = TypeVariableHolder::class.java.typeParameters[6]
+    val Interface12DirectT = TypeVariableHolder::class.java.typeParameters[7]
+    val Object1T           = TypeVariableHolder::class.java.typeParameters[8]
 
     @Test
     @DisplayName("The Object mirror should be assignable from wildcard mirrors")
@@ -374,4 +406,103 @@ internal class IsAssignableTest: MirrorTestBase() {
         )
     }
 
+    @Test
+    @DisplayName("Variable mirrors should be assignable from mirrors of their bounds")
+    fun variableAssignableFromSameType() {
+        assertTrue(
+            Mirror.reflect(Interface1T).isAssignableFrom(
+                Mirror.reflect<Interface1>()
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from subtypes of their bounds")
+    fun variableAssignableFromSubtype() {
+        assertTrue(
+            Mirror.reflect(Interface1T).isAssignableFrom(
+                Mirror.reflect<Interface1Sub1>()
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from mirrors that implement all of their bounds")
+    fun variableAssignableFromDoubleImplement() {
+        assertTrue(
+            Mirror.reflect(Interface12T).isAssignableFrom(
+                Mirror.reflect<Interface12>()
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from mirrors that subclass all of their bounds")
+    fun variableAssignableFromDoubleSubtype() {
+        assertTrue(
+            Mirror.reflect(Interface12T).isAssignableFrom(
+                Mirror.reflect<Interface12Sub1>()
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should not be assignable from mirrors that superclass their bounds")
+    fun variableNotAssignableFromSupertype() {
+        assertFalse(
+            Mirror.reflect(Interface1Sub1T).isAssignableFrom(
+                Mirror.reflect<Interface1>()
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should not be assignable from mirrors unrelated to their bounds")
+    fun variableNotAssignableFromUnrelated() {
+        assertFalse(
+            Mirror.reflect(Interface1T).isAssignableFrom(
+                Mirror.reflect<Object1>()
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from themselves")
+    fun variableAssignableFromSelf() {
+        assertTrue(
+            Mirror.reflect(Interface1T).isAssignableFrom(
+                Mirror.reflect(Interface1T)
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from variables with subclassed bounds")
+    fun variableAssignableFromSubtypeBounds() {
+        assertTrue(
+            Mirror.reflect(Interface1T).isAssignableFrom(
+                Mirror.reflect(Interface1Sub1T)
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from variables with multiple subclassed bounds")
+    fun variableAssignableFromMultipleSubtypeBounds() {
+        assertTrue(
+            Mirror.reflect(Interface12T).isAssignableFrom(
+                Mirror.reflect(Interface12T)
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("Variable mirrors should be assignable from variables with double subclassed bounds")
+    fun variableAssignableFromDoubleSubtypeBounds() {
+        assertTrue(
+            Mirror.reflect(Interface12T).isAssignableFrom(
+                Mirror.reflect(Interface12DirectT)
+            )
+        )
+    }
 }
