@@ -9,11 +9,13 @@ public class CoreTypesTestAnnotatedTypes extends AnnotatedTypeHolder {
     @TypeHolder("@TypeAnnotation1 T; T")
     <T> void type_TypeAnnotation1_T_T(@TypeAnnotation1 T a, T b) {}
     @TypeHolder("? extends Object1")
-    void type_GenericObject1_G_extends_Object1(@Unwrap GenericObject1<? extends Object1> a) {}
+    void type_GenericObject1_Q_extends_Object1(Unwrap<? extends Object1> a) {}
+    @TypeHolder("? super Object1")
+    void type_GenericObject1_Q_super_Object1(Unwrap<? super Object1> a) {}
     @TypeHolder("@TypeAnnotation1 ? extends Object1")
-    void type_GenericObject1_TypeAnnotation1_G_extends_Object1(@Unwrap GenericObject1<@TypeAnnotation1 ? extends Object1> a) {}
+    void type_GenericObject1_TypeAnnotation1_Q_extends_Object1(Unwrap<@TypeAnnotation1 ? extends Object1> a) {}
     @TypeHolder("? extends @TypeAnnotation1 Object1")
-    void type_GenericObject1_G_extends_TypeAnnotation1_Object1(@Unwrap GenericObject1<? extends @TypeAnnotation1 Object1> a) {}
+    void type_GenericObject1_Q_extends_TypeAnnotation1_Object1(Unwrap<? extends @TypeAnnotation1 Object1> a) {}
 
     @TypeHolder("Object1[]")
     void type_Object1_arr(Object1[] a) {}

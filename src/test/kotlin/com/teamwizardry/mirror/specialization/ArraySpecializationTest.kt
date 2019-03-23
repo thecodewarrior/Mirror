@@ -42,7 +42,7 @@ internal class ArraySpecializationTest: MirrorTestBase() {
     fun specialize_withIncompatibleType_shouldThrow() {
         val array = Mirror.reflect<Array<List<*>>>() as ArrayMirror
         assertThrows<InvalidSpecializationException> {
-            array.specialize(Mirror.reflect<String>())
+            array.withComponent(Mirror.reflect<String>())
         }
     }
 }

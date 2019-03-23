@@ -2,9 +2,7 @@ package com.teamwizardry.mirror.type;
 
 import com.teamwizardry.mirror.annotations.TypeAnnotation1;
 import com.teamwizardry.mirror.annotations.TypeAnnotationArg1;
-import com.teamwizardry.mirror.testsupport.AnnotatedTypeHolder;
-import com.teamwizardry.mirror.testsupport.GenericObject1;
-import com.teamwizardry.mirror.testsupport.Object1;
+import com.teamwizardry.mirror.testsupport.*;
 
 import java.util.List;
 
@@ -25,4 +23,24 @@ public class TypeMirrorTestAnnotatedTypes extends AnnotatedTypeHolder {
     void type_List_TypeAnnotation1_Q_extends_Object1(List<@TypeAnnotation1 ? extends Object1> a) {}
     @TypeHolder("@TypeAnnotation1 GenericObject1<Object1>[]")
     void type_TypeAnnotation1_GenericObject1_Object1_arr(@TypeAnnotation1 GenericObject1<Object1>[] a) {}
+
+    @TypeHolder("? extends Object1Sub")
+    void type_Q_extends_Object1Sub(Unwrap<? extends Object1Sub> a) {}
+    @TypeHolder("? super Object1Sub")
+    void type_Q_super_Object1Sub(Unwrap<? super Object1Sub> a) {}
+    @TypeHolder("? extends @TypeAnnotation1 Object1")
+    void type_Q_extends_TypeAnnotation1_Object1(Unwrap<? extends @TypeAnnotation1 Object1> a) {}
+    @TypeHolder("? super @TypeAnnotation1 Object1")
+    void type_Q_super_TypeAnnotation1_Object1(Unwrap<? super @TypeAnnotation1 Object1> a) {}
+
+    @TypeHolder("T")
+    <T> void type_T(T a) {}
+    @TypeHolder("T[]; T")
+    <T> void type_T_arr(T[] a, T b) {}
+    @TypeHolder("T extends Object1")
+    <T extends Object1> void type_T_extends_Object1(T a) {}
+    @TypeHolder("T extends Interface2 & Interface1")
+    <T extends Interface2 & Interface1> void type_T_extends_Interface2_amp_Interface1(T a) {}
+    @TypeHolder("T extends @TypeAnnotation1 Object1")
+    <T extends @TypeAnnotation1 Object1> void type_T_extends_TypeAnnotation1_Object1(T a) {}
 }

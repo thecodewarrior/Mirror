@@ -37,32 +37,41 @@ public class AnnotatedTypeHolder {
     }
 
     private void populateTypes() {
-        List<Field> fields = new ArrayList<>();
-        List<Method> methods = new ArrayList<>();
-        List<Parameter> parameters = new ArrayList<>();
+        Set<Class<?>> classes = new HashSet<>();
+        Deque<Class<?>> searchQueue = new LinkedList<>();
+        searchQueue.add(this.getClass());
 
-        Class<?> clazz = this.getClass();
-        while(clazz != null) {
+        while(!searchQueue.isEmpty()) {
+            Class<?> clazz = searchQueue.poll();
+            classes.add(clazz);
+            if(clazz.getSuperclass() != null) {
+                searchQueue.add(clazz.getSuperclass());
+            }
+            Collections.addAll(searchQueue, clazz.getInterfaces());
+            Collections.addAll(searchQueue, clazz.getDeclaredClasses());
+        }
+
+        Set<Field> fields = new HashSet<>();
+        Set<Method> methods = new HashSet<>();
+        Set<Parameter> parameters = new HashSet<>();
+
+        for(Class<?> clazz : classes) {
             Collections.addAll(fields, clazz.getDeclaredFields());
             Collections.addAll(methods, clazz.getDeclaredMethods());
             for(Method method : clazz.getDeclaredMethods()) {
                 Collections.addAll(parameters, method.getParameters());
             }
-
-            clazz = clazz.getSuperclass();
         }
 
         for(Method method : methods) {
             TypeHolder holder = method.getDeclaredAnnotation(TypeHolder.class);
             if(holder != null) {
                 if(holder.type() == HolderType.DIRECT) {
-                    addType(holder.value(), holder.index(), method.getAnnotatedReturnType(),
-                            method.getDeclaredAnnotation(Unwrap.class) != null);
+                    addType(holder.value(), holder.index(), method.getAnnotatedReturnType());
                 } else if(holder.type() == HolderType.PARAMS) {
                     int i = 0;
                     for(Parameter parameter : method.getParameters()) {
-                        addType(holder.value(), holder.index() + i, parameter.getAnnotatedType(),
-                                parameter.getDeclaredAnnotation(Unwrap.class) != null);
+                        addType(holder.value(), holder.index() + i, parameter.getAnnotatedType());
                         i++;
                     }
                 }
@@ -72,21 +81,19 @@ public class AnnotatedTypeHolder {
         for(Field field : fields) {
             TypeHolder holder = field.getDeclaredAnnotation(TypeHolder.class);
             if(holder != null) {
-                addType(holder.value(), holder.index(), field.getAnnotatedType(),
-                        field.getDeclaredAnnotation(Unwrap.class) != null);
+                addType(holder.value(), holder.index(), field.getAnnotatedType());
             }
         }
 
         for(Parameter parameter : parameters) {
             TypeHolder holder = parameter.getDeclaredAnnotation(TypeHolder.class);
             if(holder != null) {
-                addType(holder.value(), holder.index(), parameter.getAnnotatedType(),
-                        parameter.getDeclaredAnnotation(Unwrap.class) != null);
+                addType(holder.value(), holder.index(), parameter.getAnnotatedType());
             }
         }
     }
 
-    private void addType(String name, int index, AnnotatedType type, boolean unwrap) {
+    private void addType(String name, int index, AnnotatedType type) {
         Map<Integer, AnnotatedType> indexMap;
         if(types.containsKey(name)) {
             indexMap = types.get(name);
@@ -95,35 +102,26 @@ public class AnnotatedTypeHolder {
             types.put(name, indexMap);
         }
 
-        if(unwrap) {
-            if(type instanceof AnnotatedParameterizedType) {
-                int i = 0;
-                for(AnnotatedType arg : ((AnnotatedParameterizedType) type).getAnnotatedActualTypeArguments()) {
-                    indexMap.put(index + i, arg);
-                    i++;
-                }
-            } else {
-                throw new IllegalArgumentException("Couldn't unwrap type of class " + type.getClass().getSimpleName());
-            }
+        if(type.getType() instanceof ParameterizedType && ((ParameterizedType) type.getType()).getRawType() == Unwrap.class) {
+            indexMap.put(index, ((AnnotatedParameterizedType) type).getAnnotatedActualTypeArguments()[0]);
+        } else {
+            indexMap.put(index, type);
         }
-        indexMap.put(index, type);
     }
 
-    protected enum HolderType {
+    public enum HolderType {
         PARAMS,
-        DIRECT;
+        DIRECT
     }
 
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
     @Retention(RetentionPolicy.RUNTIME)
-    protected @interface TypeHolder {
+    public @interface TypeHolder {
         String value();
         int index() default 0;
         HolderType type() default HolderType.PARAMS;
     }
 
-    @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
-    @Retention(RetentionPolicy.RUNTIME)
-    protected @interface Unwrap {
+    protected final class Unwrap<T> {
     }
 }

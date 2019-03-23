@@ -1,48 +1,51 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.Mirror
-import com.teamwizardry.mirror.testsupport.Interface1
-import com.teamwizardry.mirror.testsupport.LowerBounded
-import com.teamwizardry.mirror.testsupport.UpperBounded
+import com.teamwizardry.mirror.testsupport.Object1Sub
 import com.teamwizardry.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.lang.reflect.ParameterizedType
 
 internal class WildcardMirrorTest {
+    val holder = TypeMirrorTestAnnotatedTypes()
 
     @Test
     fun getLowerBounds_onLowerBoundedWildcard_shouldReturnLowerBound() {
-        class FieldHolder(
-            @JvmField
-            var field: LowerBounded<Interface1>
-        )
-
-        val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
+        val wildcard = holder["? super Object1Sub"]
         val type = Mirror.reflect(wildcard) as WildcardMirror
-        assertSameList(listOf(Mirror.reflect<Interface1>()), type.lowerBounds)
+        assertSameList(listOf(Mirror.reflect<Object1Sub>()), type.lowerBounds)
+    }
+
+    @Test
+    fun getLowerBounds_onLowerBoundedAnnotatedWildcard_shouldReturnAnnotatedLowerBound() {
+        val wildcard = holder["? super @TypeAnnotation1 Object1"]
+        val type = Mirror.reflect(wildcard) as WildcardMirror
+        assertSameList(
+            listOf(Mirror.reflect(holder["@TypeAnnotation1 Object1"])),
+            type.lowerBounds
+        )
     }
 
     @Test
     fun getUpperBounds_onUpperBoundedWildcard_shouldReturnUpperBound() {
-        class FieldHolder(
-            @JvmField
-            var field: UpperBounded<Interface1>
-        )
-
-        val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
+        val wildcard = holder["? extends Object1Sub"]
         val type = Mirror.reflect(wildcard) as WildcardMirror
-        assertSameList(listOf(Mirror.reflect<Interface1>()), type.upperBounds)
+        assertSameList(listOf(Mirror.reflect<Object1Sub>()), type.upperBounds)
+    }
+
+    @Test
+    fun getUpperBounds_onUpperBoundedAnnotatedWildcard_shouldReturnAnnotatedUpperBound() {
+        val wildcard = holder["? extends @TypeAnnotation1 Object1"]
+        val type = Mirror.reflect(wildcard) as WildcardMirror
+        assertSameList(
+            listOf(Mirror.reflect(holder["@TypeAnnotation1 Object1"])),
+            type.upperBounds
+        )
     }
 
     @Test
     fun getRaw_onWildcard_shouldReturnItself() {
-        class FieldHolder(
-            @JvmField
-            var field: UpperBounded<Interface1>
-        )
-
-        val wildcard = (FieldHolder::class.java.getField("field").genericType as ParameterizedType).actualTypeArguments[0]
+        val wildcard = holder["? extends Object1Sub"]
         val type = Mirror.reflect(wildcard) as WildcardMirror
         assertEquals(type, type.raw)
     }

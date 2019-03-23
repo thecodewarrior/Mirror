@@ -113,4 +113,42 @@ internal abstract class TypeSpecialization private constructor(annotations: List
             val DEFAULT = Array(emptyList(), null)
         }
     }
+
+    class Wildcard(annotations: List<Annotation>, val upperBounds: List<TypeMirror>?, val lowerBounds: List<TypeMirror>?): TypeSpecialization(annotations) {
+        override fun copy(
+            annotations: List<Annotation>
+        ): Wildcard {
+            return Wildcard(annotations, upperBounds, lowerBounds)
+        }
+
+        fun copy(
+            annotations: List<Annotation> = this.annotations,
+            upperBounds: List<TypeMirror>? = this.upperBounds,
+            lowerBounds: List<TypeMirror>? = this.lowerBounds
+        ): Wildcard {
+            return Wildcard(annotations, upperBounds, lowerBounds)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Wildcard) return false
+
+            if (annotations != other.annotations) return false
+            if (upperBounds != other.upperBounds) return false
+            if (lowerBounds != other.lowerBounds) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = annotations.hashCode()
+            result = 31 * result + upperBounds.hashCode()
+            result = 31 * result + lowerBounds.hashCode()
+            return result
+        }
+
+        companion object {
+            val DEFAULT = Wildcard(emptyList(), null, null)
+        }
+    }
 }

@@ -11,10 +11,26 @@ class WildcardMirrorTest: MirrorTestBase() {
     private val holder = CoreTypesTestAnnotatedTypes()
 
     @Test
+    fun coreType_ofNotAnnotatedRaw_shouldReturnWildcard() {
+        assertEquals(
+            holder["? extends Object1"].type,
+            Mirror.reflect(holder["? extends Object1"].type).coreType
+        )
+    }
+
+    @Test
     fun coreType_ofNotAnnotated_shouldReturnWildcard() {
         assertEquals(
             holder["? extends Object1"].type,
             Mirror.reflect(holder["? extends Object1"]).coreType
+        )
+    }
+
+    @Test
+    fun coreType_ofNotAnnotatedLowerBounded_shouldReturnWildcard() {
+        assertEquals(
+            holder["? super Object1"].type,
+            Mirror.reflect(holder["? super Object1"]).coreType
         )
     }
 
@@ -52,9 +68,11 @@ class WildcardMirrorTest: MirrorTestBase() {
 
     @Test
     fun coreAnnotatedType_ofAnnotatedBound_shouldReturnWithBound() {
+        val mirror = Mirror.reflect(holder["? extends @TypeAnnotation1 Object1"])
+        val canon = holder["? extends @TypeAnnotation1 Object1"].canonical
         assertEquals(
-            holder["? extends @TypeAnnotation1 Object1"].canonical,
-            Mirror.reflect(holder["? extends @TypeAnnotation1 Object1"]).coreAnnotatedType
+            canon,
+            mirror.coreAnnotatedType
         )
     }
 }

@@ -37,7 +37,7 @@ class ArrayMirror internal constructor(
 
     override fun defaultSpecialization() = TypeSpecialization.Array.DEFAULT
 
-    fun specialize(component: TypeMirror): ArrayMirror {
+    fun withComponent(component: TypeMirror): ArrayMirror {
         if(!this.raw.component.isAssignableFrom(component))
             throw InvalidSpecializationException("Passed component $component is not assignable to raw component type " +
                 "${this.raw.component}")

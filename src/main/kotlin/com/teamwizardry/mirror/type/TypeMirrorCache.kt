@@ -1,7 +1,7 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import io.leangen.geantyref.GenericTypeReflector
+import com.teamwizardry.mirror.canonical
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
@@ -31,7 +31,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                 is GenericArrayType -> {
                     val component = reflect(type.genericComponentType)
                     val rawArray = java.lang.reflect.Array.newInstance(component.erasure, 0).javaClass
-                    mirror = (reflect(rawArray) as ArrayMirror).specialize(component)
+                    mirror = (reflect(rawArray) as ArrayMirror).withComponent(component)
                 }
                 is ParameterizedType -> {
                     var theMirror = reflect(type.rawType) as ClassMirror
@@ -55,22 +55,19 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
     }
 
     fun reflect(type: AnnotatedType): TypeMirror {
-        return rawCache.getOrPut(type) {
+        return rawCache.getOrPut(type.canonical) {
             val mirror: TypeMirror
             when (type) {
                 is AnnotatedArrayType -> {
                     mirror = (reflect(type.type) as ArrayMirror)
-                        .specialize(reflect(type.annotatedGenericComponentType))
+                        .withComponent(reflect(type.annotatedGenericComponentType))
                 }
                 is AnnotatedParameterizedType -> {
                     mirror = (reflect(type.type as ParameterizedType) as ClassMirror)
                         .withTypeArguments(*type.annotatedActualTypeArguments.map { reflect(it) }.toTypedArray())
                 }
                 is AnnotatedWildcardType -> {
-                    if(type.annotations.isEmpty())
-                        mirror = WildcardMirror(cache, type.type as WildcardType, type, reflect(type.type) as WildcardMirror, null)
-                    else
-                        mirror = reflect(GenericTypeReflector.replaceAnnotations(type, emptyArray()))
+                    mirror = WildcardMirror(cache, type.type as WildcardType, type, null, null)
                 }
                 else -> mirror = reflect(type.type)
             }

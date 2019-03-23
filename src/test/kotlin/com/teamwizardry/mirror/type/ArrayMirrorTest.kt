@@ -5,9 +5,9 @@ import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.typeToken
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.lang.reflect.AnnotatedArrayType
 
 internal class ArrayMirrorTest: MirrorTestBase() {
+    val holder = TypeMirrorTestAnnotatedTypes()
 
     @Test
     fun getRawClass_onArray_shouldReturnArrayType() {
@@ -30,14 +30,8 @@ internal class ArrayMirrorTest: MirrorTestBase() {
 
     @Test
     fun getComponent_onGenericArray_shouldReturnVariable() {
-        class FieldHolder<T>(
-            @JvmField
-            val field: Array<T>
-        )
-        val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
-        val type = Mirror.reflect(genericArray) as ArrayMirror
-        val component = Mirror.reflect(genericArray.annotatedGenericComponentType)
-        assertEquals(component, type.component)
+        val type = Mirror.reflect(holder["T[]; T", 0]) as ArrayMirror
+        assertEquals(Mirror.reflect(holder["T[]; T", 1]), type.component)
     }
 
     @Test

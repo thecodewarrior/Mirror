@@ -16,7 +16,7 @@ class TypeMapping(
             is ArrayMirror -> {
                 val component = this[type.component]
                 if(component != type.component) {
-                    return type.specialize(component)
+                    return type.withComponent(component)
                 }
             }
             is ClassMirror -> {
