@@ -63,8 +63,12 @@ class ClassMirror internal constructor(
         }
     }
 
+//region Data
+    /**
+     * The raw, unspecialized version of this mirror.
+     */
+    override val raw: ClassMirror = raw ?: this
 
-//region Supertypes
     /**
      * The supertype of this class. This property is `null` if this reflect represents [Object], an interface,
      * a primitive, or `void`. The returned type will be specialized based on this type's specialization and any
@@ -95,10 +99,18 @@ class ClassMirror internal constructor(
         specialization?.arguments ?: java.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
     }
 
-    /**
-     * The raw, unspecialized version of this mirror.
-     */
-    override val raw: ClassMirror = raw ?: this
+    val enclosingClass: ClassMirror? by lazy {
+        specialization?.enclosingClass ?: java.enclosingClass?.let { cache.types.reflect(it) as ClassMirror }
+    }
+
+    val enclosingExecutable: ExecutableMirror? by lazy {
+        specialization?.enclosingExecutable ?: (java.enclosingMethod ?: java.enclosingConstructor)?.let { cache.executables.reflect(it) }
+    }
+
+    val genericMapping: TypeMapping by lazy {
+        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
+            enclosingClass?.genericMapping + enclosingExecutable?.genericMapping
+    }
 
     override fun defaultSpecialization() = TypeSpecialization.Class.DEFAULT
 
@@ -117,34 +129,6 @@ class ClassMirror internal constructor(
         val newSpecialization = (specialization ?: defaultSpecialization())
             .copy(arguments = if(parameters.isEmpty()) null else parameters.toList())
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
-    }
-
-    private val isAssignableCache = ConcurrentHashMap<TypeMirror, Boolean>()
-
-    override fun isAssignableFrom(other: TypeMirror): Boolean {
-        if(other == this) return true
-        if(this.java == Any::class.java) {
-            if(other is VoidMirror) return false
-            if(other is ClassMirror && other.java.isPrimitive) return false
-            return true
-        }
-        if(other !is ClassMirror)
-            return false
-
-        return isAssignableCache.getOrPut(other) {
-            if(other.raw == this.raw) {
-                return@getOrPut this.typeParameters.zip(other.typeParameters)
-                    .all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
-            }
-
-            if(other.superclass?.let { this.isAssignableFrom(it) } == true)
-                return@getOrPut true
-
-            if(other.interfaces.any { this.isAssignableFrom(it) })
-                return@getOrPut true
-
-            return@getOrPut false
-        }
     }
 
     /**
@@ -202,9 +186,7 @@ class ClassMirror internal constructor(
             ClassMirror(cache, java, raw, it)
         }
     }
-//endregion
 
-//region Inner Classes
     /**
      * The inner classes declared directly inside of this class.
      *
@@ -215,6 +197,42 @@ class ClassMirror internal constructor(
             (cache.types.reflect(it) as ClassMirror).withEnclosingClass(this)
         }.unmodifiable()
     }
+
+    /**
+     * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
+     * this list.
+     *
+     * This list is created when it is first accessed and is thread safe.
+     */
+    val declaredFields: List<FieldMirror> by lazy {
+        java.declaredFields.map {
+            cache.fields.reflect(it).specialize(this)
+        }.unmodifiable()
+    }
+
+    /**
+     * The methods declared directly inside of this class, any methods inherited from superclasses will not appear in
+     * this list.
+     *
+     * This list is created when it is first accessed and is thread safe.
+     */
+    val declaredMethods: List<MethodMirror> by lazy {
+        java.declaredMethods.map {
+            cache.executables.reflect(it).enclose(this) as MethodMirror
+        }.unmodifiable()
+    }
+
+    /**
+     * The constructors declared directly inside this class
+     *
+     * This list is created when it is first accessed and is thread safe.
+     */
+    val declaredConstructors: List<ConstructorMirror> by lazy {
+        java.declaredConstructors.map {
+            cache.executables.reflect(it).enclose(this) as ConstructorMirror
+        }.unmodifiable()
+    }
+//endregion
 
     fun declaredClass(name: String): ClassMirror? {
         return declaredClasses.find { it.java.simpleName == name }
@@ -229,20 +247,6 @@ class ClassMirror internal constructor(
             superclass?.also { list.addAll(it.innerClasses(name)) }
             return@getOrPut list.unmodifiable()
         }
-    }
-//endregion
-
-//region Fields
-    /**
-     * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
-     * this list.
-     *
-     * This list is created when it is first accessed and is thread safe.
-     */
-    val declaredFields: List<FieldMirror> by lazy {
-        java.declaredFields.map {
-            cache.fields.reflect(it).specialize(this)
-        }.unmodifiable()
     }
 
     fun declaredField(name: String): FieldMirror? {
@@ -259,20 +263,6 @@ class ClassMirror internal constructor(
             return@getOrPut field
         }
     }
-//endregion
-
-//region Methods
-    /**
-     * The methods declared directly inside of this class, any methods inherited from superclasses will not appear in
-     * this list.
-     *
-     * This list is created when it is first accessed and is thread safe.
-     */
-    val declaredMethods: List<MethodMirror> by lazy {
-        java.declaredMethods.map {
-            cache.executables.reflect(it).enclose(this) as MethodMirror
-        }.unmodifiable()
-    }
 
     fun declaredMethods(name: String): List<MethodMirror> {
         return declaredMethods.filter { it.name == name }.unmodifiable()
@@ -288,37 +278,38 @@ class ClassMirror internal constructor(
             return@getOrPut methods.unmodifiable()
         }
     }
-//endregion
-
-//region Constructors
-    /**
-     * The constructors declared directly inside this class
-     *
-     * This list is created when it is first accessed and is thread safe.
-     */
-    val declaredConstructors: List<ConstructorMirror> by lazy {
-        java.declaredConstructors.map {
-            cache.executables.reflect(it).enclose(this) as ConstructorMirror
-        }.unmodifiable()
-    }
 
     fun declaredConstructor(vararg params: TypeMirror): ConstructorMirror? {
         val match = params.toList()
         return declaredConstructors.find { it.parameterTypes == match }
     }
-//endregion
 
-    val enclosingClass: ClassMirror? by lazy {
-        specialization?.enclosingClass ?: java.enclosingClass?.let { cache.types.reflect(it) as ClassMirror }
-    }
+    private val isAssignableCache = ConcurrentHashMap<TypeMirror, Boolean>()
 
-    val enclosingExecutable: ExecutableMirror? by lazy {
-        specialization?.enclosingExecutable ?: (java.enclosingMethod ?: java.enclosingConstructor)?.let { cache.executables.reflect(it) }
-    }
+    override fun isAssignableFrom(other: TypeMirror): Boolean {
+        if(other == this) return true
+        if(this.java == Any::class.java) {
+            if(other is VoidMirror) return false
+            if(other is ClassMirror && other.java.isPrimitive) return false
+            return true
+        }
+        if(other !is ClassMirror)
+            return false
 
-    val genericMapping: TypeMapping by lazy {
-        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
-            enclosingClass?.genericMapping + enclosingExecutable?.genericMapping
+        return isAssignableCache.getOrPut(other) {
+            if(other.raw == this.raw) {
+                return@getOrPut this.typeParameters.zip(other.typeParameters)
+                    .all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
+            }
+
+            if(other.superclass?.let { this.isAssignableFrom(it) } == true)
+                return@getOrPut true
+
+            if(other.interfaces.any { this.isAssignableFrom(it) })
+                return@getOrPut true
+
+            return@getOrPut false
+        }
     }
 
     /**
