@@ -1,7 +1,7 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import io.leangen.geantyref.GenericTypeReflector
+import com.teamwizardry.mirror.coretypes.CoreTypeFactory
 import java.lang.reflect.AnnotatedType
 
 class VoidMirror internal constructor(
@@ -12,7 +12,7 @@ class VoidMirror internal constructor(
 ): TypeMirror() {
 
     override val coreAnnotatedType: AnnotatedType
-        = GenericTypeReflector.annotate(coreType, typeAnnotations.toTypedArray())
+        = CoreTypeFactory.annotate(coreType, typeAnnotations.toTypedArray())
 
     override val raw: VoidMirror = raw ?: this
 

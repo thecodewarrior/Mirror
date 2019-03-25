@@ -149,6 +149,15 @@ internal class TypeMirrorTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("Reflecting a class with looping generic inheritance should not infinitely recurse")
+    fun reflect_withLoopingGenericInheritance_shouldNotRecurse() {
+        open class ParentType<T>
+        class ChildClass: ParentType<ChildClass>()
+
+        Mirror.reflect(typeToken<ChildClass>())
+    }
+
+    @Test
     fun specificity_ofSelf_shouldBeEqual() {
         val type = Mirror.reflect<Object1>().specificity
         assertEquals(0, type.compareTo(type))

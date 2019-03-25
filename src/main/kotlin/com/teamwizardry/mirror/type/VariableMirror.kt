@@ -1,7 +1,7 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.MirrorCache
-import io.leangen.geantyref.GenericTypeReflector
+import com.teamwizardry.mirror.coretypes.CoreTypeFactory
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
@@ -16,7 +16,7 @@ class VariableMirror internal constructor(
 ): TypeMirror() {
 
     override val coreAnnotatedType: AnnotatedTypeVariable
-        = GenericTypeReflector.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedTypeVariable
+        = CoreTypeFactory.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedTypeVariable
 
     override val raw: VariableMirror = raw ?: this
 

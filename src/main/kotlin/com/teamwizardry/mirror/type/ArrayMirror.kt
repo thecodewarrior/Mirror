@@ -3,8 +3,8 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.ArrayReflect
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import io.leangen.geantyref.GenericTypeReflector
-import io.leangen.geantyref.TypeFactory
+import com.teamwizardry.mirror.coretypes.CoreTypeFactory
+import com.teamwizardry.mirror.coretypes.TypeImplAccess
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.Type
 
@@ -26,12 +26,12 @@ class ArrayMirror internal constructor(
     }
 
     override val coreType: Type = specialization?.component?.let { component ->
-        TypeFactory.arrayOf(component.coreType)
+        TypeImplAccess.createArrayType(component.coreType)
     } ?: java
 
     override val coreAnnotatedType: AnnotatedArrayType = specialization?.component?.let { component ->
-        TypeFactory.arrayOf(component.coreAnnotatedType, typeAnnotations.toTypedArray())
-    } ?: GenericTypeReflector.annotate(java, typeAnnotations.toTypedArray()) as AnnotatedArrayType
+        TypeImplAccess.createArrayType(component.coreAnnotatedType, typeAnnotations.toTypedArray())
+    } ?: CoreTypeFactory.annotate(java, typeAnnotations.toTypedArray()) as AnnotatedArrayType
 
     override val raw: ArrayMirror = raw ?: this
 

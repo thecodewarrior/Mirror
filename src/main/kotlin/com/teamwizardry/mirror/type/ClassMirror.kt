@@ -2,13 +2,13 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
+import com.teamwizardry.mirror.coretypes.CoreTypeFactory
+import com.teamwizardry.mirror.coretypes.TypeImplAccess
 import com.teamwizardry.mirror.member.ConstructorMirror
 import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
-import com.teamwizardry.mirror.utils.unmodifiable
-import io.leangen.geantyref.GenericTypeReflector
-import io.leangen.geantyref.TypeFactory
+import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -44,22 +44,29 @@ class ClassMirror internal constructor(
         }
 
         val params = specialization?.arguments
-        if(params != null) {
-            coreType = TypeFactory.parameterizedInnerClass(
-                specialization.enclosingClass?.coreType, java,
-                *params.map { it.coreType }.toTypedArray()
-            )
-        } else {
-            coreType = TypeFactory.innerClass(specialization?.enclosingClass?.coreType, java)
+        val owner = specialization?.enclosingClass
+        coreType = when {
+            params != null ->
+                TypeImplAccess.createParameterizedTypeImpl(
+                    java,
+                    params.map { it.coreType }.toTypedArray(),
+                    owner?.coreType
+                )
+            owner != null ->
+                @Suppress("UNCHECKED_CAST")
+                TypeImplAccess.createParameterizedTypeImpl(java, java.typeParameters as Array<Type>, owner.coreType)
+            else ->
+                java
         }
 
         if(coreType is ParameterizedType && params != null) {
-           coreAnnotatedType = TypeFactory.parameterizedAnnotatedClass(
-                specialization.enclosingClass?.coreType, java, typeAnnotations.toTypedArray(),
-                *params.map { it.coreAnnotatedType }.toTypedArray()
+            coreAnnotatedType = TypeImplAccess.createAnnotatedParameterizedTypeImpl(
+                coreType,
+                typeAnnotations.toTypedArray(),
+                params.map { it.coreAnnotatedType }.toTypedArray()
             )
         } else {
-            coreAnnotatedType = GenericTypeReflector.annotate(coreType, typeAnnotations.toTypedArray())
+            coreAnnotatedType = CoreTypeFactory.annotate(coreType, typeAnnotations.toTypedArray())
         }
     }
 
@@ -88,7 +95,7 @@ class ClassMirror internal constructor(
     val interfaces: List<ClassMirror> by lazy {
         java.annotatedInterfaces.map {
             this.genericMapping[cache.types.reflect(it)] as ClassMirror
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     /**
@@ -96,7 +103,7 @@ class ClassMirror internal constructor(
      * [raw] to get the actual type parameters of the class as opposed to their specializations.
      */
     val typeParameters: List<TypeMirror> by lazy {
-        specialization?.arguments ?: java.typeParameters.map { cache.types.reflect(it) }.unmodifiable()
+        specialization?.arguments ?: java.typeParameters.map { cache.types.reflect(it) }.unmodifiableView()
     }
 
     val enclosingClass: ClassMirror? by lazy {
@@ -195,7 +202,7 @@ class ClassMirror internal constructor(
     val declaredClasses: List<ClassMirror> by lazy {
         java.declaredClasses.map {
             (cache.types.reflect(it) as ClassMirror).withEnclosingClass(this)
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     /**
@@ -207,7 +214,7 @@ class ClassMirror internal constructor(
     val declaredFields: List<FieldMirror> by lazy {
         java.declaredFields.map {
             cache.fields.reflect(it).specialize(this)
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     /**
@@ -219,7 +226,7 @@ class ClassMirror internal constructor(
     val declaredMethods: List<MethodMirror> by lazy {
         java.declaredMethods.map {
             cache.executables.reflect(it).enclose(this) as MethodMirror
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     /**
@@ -230,7 +237,7 @@ class ClassMirror internal constructor(
     val declaredConstructors: List<ConstructorMirror> by lazy {
         java.declaredConstructors.map {
             cache.executables.reflect(it).enclose(this) as ConstructorMirror
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 //endregion
 
@@ -245,7 +252,7 @@ class ClassMirror internal constructor(
             val list = mutableListOf<ClassMirror>()
             declaredClasses.find { it.java.simpleName == name }?.also { list.add(it) }
             superclass?.also { list.addAll(it.innerClasses(name)) }
-            return@getOrPut list.unmodifiable()
+            return@getOrPut list.unmodifiableView()
         }
     }
 
@@ -265,7 +272,7 @@ class ClassMirror internal constructor(
     }
 
     fun declaredMethods(name: String): List<MethodMirror> {
-        return declaredMethods.filter { it.name == name }.unmodifiable()
+        return declaredMethods.filter { it.name == name }.unmodifiableView()
     }
 
     private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
@@ -275,7 +282,7 @@ class ClassMirror internal constructor(
             val methods = mutableListOf<MethodMirror>()
             methods.addAll(declaredMethods.filter { it.name == name })
             methods.addAll(superclass?.methods(name) ?: emptyList())
-            return@getOrPut methods.unmodifiable()
+            return@getOrPut methods.unmodifiableView()
         }
     }
 

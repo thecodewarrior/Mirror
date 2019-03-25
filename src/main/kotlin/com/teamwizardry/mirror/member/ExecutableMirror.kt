@@ -5,7 +5,7 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMapping
 import com.teamwizardry.mirror.type.TypeMirror
-import com.teamwizardry.mirror.utils.unmodifiable
+import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.Executable
 
 abstract class ExecutableMirror internal constructor(
@@ -27,23 +27,23 @@ abstract class ExecutableMirror internal constructor(
     val parameters: List<ParameterMirror> by lazy {
         java.parameters.map {
             cache.parameters.reflect(it).specialize(this)
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     val parameterTypes: List<TypeMirror> by lazy {
-        parameters.map { it.type }.unmodifiable()
+        parameters.map { it.type }.unmodifiableView()
     }
 
     val exceptionTypes: List<TypeMirror> by lazy {
         java.annotatedExceptionTypes.map {
              genericMapping[cache.types.reflect(it)]
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     val typeParameters: List<TypeMirror> by lazy {
         specialization?.arguments ?: java.typeParameters.map {
             cache.types.reflect(it)
-        }.unmodifiable()
+        }.unmodifiableView()
     }
 
     val declaringClass: ClassMirror by lazy {
