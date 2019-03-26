@@ -63,7 +63,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                         .withComponent(reflect(type.annotatedGenericComponentType))
                 }
                 is AnnotatedParameterizedType -> {
-                    mirror = (reflect(type.type as ParameterizedType) as ClassMirror)
+                    mirror = (reflect(type.type) as ClassMirror)
                         .withTypeArguments(*type.annotatedActualTypeArguments.map { reflect(it) }.toTypedArray())
                 }
                 is AnnotatedWildcardType -> {

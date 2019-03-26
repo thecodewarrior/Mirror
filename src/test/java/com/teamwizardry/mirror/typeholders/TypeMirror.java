@@ -1,4 +1,4 @@
-package com.teamwizardry.mirror.type;
+package com.teamwizardry.mirror.typeholders;
 
 import com.teamwizardry.mirror.annotations.TypeAnnotation1;
 import com.teamwizardry.mirror.annotations.TypeAnnotationArg1;
@@ -6,7 +6,7 @@ import com.teamwizardry.mirror.testsupport.*;
 
 import java.util.List;
 
-public class TypeMirrorTestAnnotatedTypes extends AnnotatedTypeHolder {
+public class TypeMirror extends AnnotatedTypeHolder {
     @TypeHolder("Object1")
     void type_Object1(Object1 a) {}
     @TypeHolder("@TypeAnnotation1 Object1")

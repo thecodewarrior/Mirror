@@ -36,10 +36,6 @@ internal object TypeImplAccess {
     fun createAnnotatedWildcardTypeImpl(type: WildcardType, annotations: Array<Annotation>, lowerBounds: Array<AnnotatedType>?, upperBounds: Array<AnnotatedType>?): AnnotatedWildcardType  =
         AnnotatedWildcardTypeImpl(type, annotations, lowerBounds, upperBounds)
 
-    @Throws(AnnotationFormatException::class)
-    fun createAnnotationInvocationHandler(annotationType: Class<out Annotation>, values: Map<String, Any>): AnnotationInvocationHandler  =
-        AnnotationInvocationHandler(annotationType, values)
-
     fun createGenericArrayTypeImpl(componentType: Type): GenericArrayType  =
         GenericArrayTypeImpl(componentType)
 
@@ -49,8 +45,8 @@ internal object TypeImplAccess {
     fun createArrayType(componentType: Type): Type =
         GenericArrayTypeImpl.createArrayType(componentType)
 
-    fun createArrayType(componentType: AnnotatedType, typeArguments: Array<Annotation>): AnnotatedArrayType =
-        AnnotatedArrayTypeImpl.createArrayType(componentType, typeArguments)
+    fun createArrayType(componentType: AnnotatedType, annotations: Array<Annotation>): AnnotatedArrayType =
+        AnnotatedArrayTypeImpl.createArrayType(componentType, annotations)
 
     fun createParameterizedTypeImpl(rawType: Class<*>, actualTypeArguments: Array<Type>, ownerType: Type?): ParameterizedType  =
         ParameterizedTypeImpl(rawType, actualTypeArguments, ownerType)

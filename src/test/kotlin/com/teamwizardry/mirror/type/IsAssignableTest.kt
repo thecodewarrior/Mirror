@@ -15,13 +15,14 @@ import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
 import com.teamwizardry.mirror.testsupport.Object1Sub
 import com.teamwizardry.mirror.testsupport.Object1SubSub
+import com.teamwizardry.mirror.typeholders.TypeMirror
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class IsAssignableTest: MirrorTestBase() {
-    val holder = TypeMirrorTestAnnotatedTypes()
+    val holder = TypeMirror()
 
     @Test
     @DisplayName("A class should be assignable from itself")

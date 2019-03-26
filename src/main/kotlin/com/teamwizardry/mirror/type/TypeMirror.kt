@@ -1,8 +1,9 @@
 package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
+import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.MirrorCache
-import io.leangen.geantyref.GenericTypeReflector
+import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
@@ -38,7 +39,7 @@ abstract class TypeMirror internal constructor() {
      *
      * **!!NOTE!!** The JVM implementations of `AnnotatedType` don't implement `equals` or `hashCode`, so they will
      * equal neither each other nor this.
-     * If you need these methods pass any annotated type through [GenericTypeReflector.toCanonical].
+     * If you need these methods pass any annotated type through [Mirror.toCanonical].
      * In Kotlin code you can use the [AnnotatedType.canonical][com.teamwizardry.mirror.canonical] extension.
      */
     abstract val coreAnnotatedType: AnnotatedType
@@ -46,7 +47,7 @@ abstract class TypeMirror internal constructor() {
     /**
      * The JVM erasure of this type.
      */
-    val erasure: Class<*> get() = GenericTypeReflector.erase(coreType)
+    val erasure: Class<*> get() = CoreTypeUtils.erase(coreType)
 
     internal abstract val specialization: TypeSpecialization?
     internal abstract fun defaultSpecialization(): TypeSpecialization

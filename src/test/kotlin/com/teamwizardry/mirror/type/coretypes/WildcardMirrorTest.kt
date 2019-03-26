@@ -1,14 +1,14 @@
-package com.teamwizardry.mirror.coretypes
+package com.teamwizardry.mirror.type.coretypes
 
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.canonical
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
-import com.teamwizardry.mirror.type.CoreTypesTestAnnotatedTypes
+import com.teamwizardry.mirror.typeholders.TypeMirror_CoreTypes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class WildcardMirrorTest: MirrorTestBase() {
-    private val holder = CoreTypesTestAnnotatedTypes()
+    private val holder = TypeMirror_CoreTypes()
 
     @Test
     fun coreType_ofNotAnnotatedRaw_shouldReturnWildcard() {

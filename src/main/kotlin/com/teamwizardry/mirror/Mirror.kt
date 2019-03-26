@@ -1,5 +1,8 @@
 package com.teamwizardry.mirror
 
+import com.teamwizardry.mirror.coretypes.AnnotationFormatException
+import com.teamwizardry.mirror.coretypes.CoreTypeUtils
+import com.teamwizardry.mirror.coretypes.TypeImplAccess
 import com.teamwizardry.mirror.member.ConstructorMirror
 import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.member.FieldMirror
@@ -8,8 +11,6 @@ import com.teamwizardry.mirror.type.ArrayMirror
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.type.VoidMirror
-import io.leangen.geantyref.AnnotationFormatException
-import io.leangen.geantyref.TypeFactory
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -137,7 +138,7 @@ object Mirror {
     @JvmOverloads
     @Throws(AnnotationFormatException::class)
     fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
-        return TypeFactory.annotation(clazz, arguments)
+        return CoreTypeUtils.createAnnotation(clazz, arguments)
     }
 
     @JvmStatic
@@ -147,11 +148,11 @@ object Mirror {
     }
 
     inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
-        return TypeFactory.annotation(T::class.java, arguments)
+        return newAnnotation(T::class.java, arguments)
     }
 
     inline fun <reified T: Annotation> newAnnotation(vararg arguments: Pair<String, Any>): T {
-        return TypeFactory.annotation(T::class.java, mapOf(*arguments))
+        return newAnnotation(T::class.java, mapOf(*arguments))
     }
 
     /**
@@ -159,35 +160,38 @@ object Mirror {
      */
     @JvmStatic
     fun createArrayType(type: TypeMirror): ArrayMirror {
-        return reflect(TypeFactory.arrayOf(type.coreAnnotatedType, emptyArray())) as ArrayMirror
+        return reflect(TypeImplAccess.createArrayType(type.coreAnnotatedType, emptyArray())) as ArrayMirror
     }
+
+    @JvmStatic
+    fun <T: AnnotatedType> toCanonical(type: T) = CoreTypeUtils.toCanonical(type)
 
     /**
      * Easy access to core Java types (void + primitives + Object)
      */
     object Types {
         /** The type mirror representing the `void` type */
-        val void: VoidMirror get() = reflect(Void.TYPE) as VoidMirror
+        @JvmStatic val void: VoidMirror get() = reflect(Void.TYPE) as VoidMirror
 
         /** The type mirror representing the primitive `boolean` type */
-        val boolean: ClassMirror get() = reflectClass(Boolean::class.javaPrimitiveType!!)
+        @JvmStatic val boolean: ClassMirror get() = reflectClass(Boolean::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `byte` type */
-        val byte: ClassMirror get() = reflectClass(Byte::class.javaPrimitiveType!!)
+        @JvmStatic val byte: ClassMirror get() = reflectClass(Byte::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `char` type */
-        val char: ClassMirror get() = reflectClass(Char::class.javaPrimitiveType!!)
+        @JvmStatic val char: ClassMirror get() = reflectClass(Char::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `short` type */
-        val short: ClassMirror get() = reflectClass(Short::class.javaPrimitiveType!!)
+        @JvmStatic val short: ClassMirror get() = reflectClass(Short::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `int` type */
-        val int: ClassMirror get() = reflectClass(Int::class.javaPrimitiveType!!)
+        @JvmStatic val int: ClassMirror get() = reflectClass(Int::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `long` type */
-        val long: ClassMirror get() = reflectClass(Long::class.javaPrimitiveType!!)
+        @JvmStatic val long: ClassMirror get() = reflectClass(Long::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `float` type */
-        val float: ClassMirror get() = reflectClass(Float::class.javaPrimitiveType!!)
+        @JvmStatic val float: ClassMirror get() = reflectClass(Float::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `double` type */
-        val double: ClassMirror get() = reflectClass(Double::class.javaPrimitiveType!!)
+        @JvmStatic val double: ClassMirror get() = reflectClass(Double::class.javaPrimitiveType!!)
 
         /** The type mirror representing the `Object` type */
-        val `object`: ClassMirror get() = reflectClass<Any>()
+        @JvmStatic val `object`: ClassMirror get() = reflectClass<Any>()
         /** The type mirror representing the `Any` type (synonymous with [object]) */
         @get:JvmSynthetic
         val any: ClassMirror get() = reflectClass<Any>()

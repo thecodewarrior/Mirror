@@ -4,7 +4,7 @@ Changes:
 - Refactored to package `com.teamwizardry.mirror.coretypes`
 - stripped down to exclusively type implementation creation
 - tweaked to better suit the needs of Mirror
-- the Kotlin files in `com.teamwizardry.mirror.coretypes` are largely based on `GenericTypeReflector` and `TypeFactory`
+- the contents of the Kotlin file `CoreTypeUtils.kt` is largely based on `GenericTypeReflector` and `TypeFactory`
 
 ```
                                  Apache License

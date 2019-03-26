@@ -3,11 +3,12 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.Object1Sub
 import com.teamwizardry.mirror.testsupport.assertSameList
+import com.teamwizardry.mirror.typeholders.TypeMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class WildcardMirrorTest {
-    val holder = TypeMirrorTestAnnotatedTypes()
+    val holder = TypeMirror()
 
     @Test
     fun getLowerBounds_onLowerBoundedWildcard_shouldReturnLowerBound() {

@@ -1,9 +1,9 @@
-package com.teamwizardry.mirror.coretypes
+package com.teamwizardry.mirror.type.coretypes
 
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.annotations.TypeAnnotation1
+import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
-import io.leangen.geantyref.GenericTypeReflector
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -15,21 +15,21 @@ class VoidMirrorTest: MirrorTestBase() {
 
     @Test
     fun coreType_ofAnnotated_shouldReturnVoidClass() {
-        val annotatedVoid = GenericTypeReflector.annotate(Void.TYPE, arrayOf(Mirror.newAnnotation<TypeAnnotation1>()))
+        val annotatedVoid = CoreTypeUtils.annotate(Void.TYPE, arrayOf(Mirror.newAnnotation<TypeAnnotation1>()))
         assertEquals(Void.TYPE, Mirror.reflect(annotatedVoid).coreType)
     }
 
     @Test
     fun coreAnnotatedType_ofNotAnnotated_shouldReturnVoidClassWithNoAnnotations() {
         assertEquals(
-            GenericTypeReflector.annotate(Void.TYPE),
+            CoreTypeUtils.annotate(Void.TYPE),
             Mirror.Types.void.coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofAnnotated_shouldReturnVoidClassWithAnnotations() {
-        val annotatedVoid = GenericTypeReflector.annotate(Void.TYPE, arrayOf(Mirror.newAnnotation<TypeAnnotation1>()))
+        val annotatedVoid = CoreTypeUtils.annotate(Void.TYPE, arrayOf(Mirror.newAnnotation<TypeAnnotation1>()))
         assertEquals(
             annotatedVoid,
             Mirror.reflect(annotatedVoid).coreAnnotatedType

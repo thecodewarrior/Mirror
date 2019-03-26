@@ -1,6 +1,10 @@
+/*
+ * License: Apache License, Version 2.0
+ * See the NOTICE file in the root directory or at <a href="http://www.apache.org/licenses/LICENSE-2">apache.org</a>.
+ */
+
 package com.teamwizardry.mirror.coretypes
 
-import io.leangen.geantyref.CaptureType
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
@@ -8,11 +12,12 @@ import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Proxy
 import java.lang.reflect.Type
 import java.lang.reflect.TypeVariable
 import java.lang.reflect.WildcardType
 import java.util.Arrays
-import java.util.Objects
+import java.util.Collections.emptyMap
 
 internal object CoreTypeUtils {
     /**
@@ -68,14 +73,17 @@ internal object CoreTypeUtils {
      */
     @JvmStatic
     fun equals(t1: AnnotatedType, t2: AnnotatedType): Boolean {
-        var t1 = t1
-        var t2 = t2
-        Objects.requireNonNull(t1)
-        Objects.requireNonNull(t2)
-        t1 = t1 as? AnnotatedTypeImpl ?: toCanonical(t1)
-        t2 = t2 as? AnnotatedTypeImpl ?: toCanonical(t2)
+        return (t1 as? AnnotatedTypeImpl ?: toCanonical(t1)) == (t2 as? AnnotatedTypeImpl ?: toCanonical(t2))
+    }
 
-        return t1 == t2
+    @Suppress("UNCHECKED_CAST")
+    @Throws(AnnotationFormatException::class)
+    fun <A: Annotation> createAnnotation(annotationType: Class<A>, values: Map<String, Any>?): A {
+        return Proxy.newProxyInstance(
+            annotationType.classLoader,
+            arrayOf<Class<*>>(annotationType),
+            AnnotationInvocationHandler(annotationType, values ?: emptyMap())
+        ) as A
     }
 
     @JvmStatic
