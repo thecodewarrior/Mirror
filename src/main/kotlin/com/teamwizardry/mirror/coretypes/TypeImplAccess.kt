@@ -43,6 +43,9 @@ internal object TypeImplAccess {
     fun createGenericArrayTypeImpl(componentType: Type): GenericArrayType  =
         GenericArrayTypeImpl(componentType)
 
+    fun createArrayType(componentClass: Class<*>): Class<*> =
+        GenericArrayTypeImpl.createArrayType(componentClass)
+
     fun createArrayType(componentType: Type): Type =
         GenericArrayTypeImpl.createArrayType(componentType)
 

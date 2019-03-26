@@ -45,7 +45,7 @@ public class TypeVariableImpl<D extends GenericDeclaration> implements TypeVaria
         if (bounds == null || bounds.length == 0) {
             throw new IllegalArgumentException("There must be at least one bound. For an unbound variable, the bound must be Object");
         }
-        return Arrays.stream(bounds).map(GenericTypeReflector::annotate).toArray(AnnotatedType[]::new);
+        return Arrays.stream(bounds).map(CoreTypeUtils::annotate).toArray(AnnotatedType[]::new);
     }
 
     @Override

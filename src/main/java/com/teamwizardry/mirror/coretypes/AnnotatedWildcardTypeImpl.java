@@ -44,13 +44,13 @@ class AnnotatedWildcardTypeImpl extends AnnotatedTypeImpl implements AnnotatedWi
         if (!(other instanceof AnnotatedWildcardType) || !super.equals(other)) {
             return false;
         }
-        return GenericTypeReflector.typeArraysEqual(lowerBounds, ((AnnotatedWildcardType) other).getAnnotatedLowerBounds())
-                && GenericTypeReflector.typeArraysEqual(upperBounds, ((AnnotatedWildcardType) other).getAnnotatedUpperBounds());
+        return CoreTypeUtils.typeArraysEqual(lowerBounds, ((AnnotatedWildcardType) other).getAnnotatedLowerBounds())
+                && CoreTypeUtils.typeArraysEqual(upperBounds, ((AnnotatedWildcardType) other).getAnnotatedUpperBounds());
     }
 
     @Override
     public int hashCode() {
-        return 127 * super.hashCode() ^ (GenericTypeReflector.hashCode(lowerBounds) + GenericTypeReflector.hashCode(upperBounds));
+        return 127 * super.hashCode() ^ (CoreTypeUtils.hashCode(lowerBounds) + CoreTypeUtils.hashCode(upperBounds));
     }
 
     @Override
@@ -72,13 +72,13 @@ class AnnotatedWildcardTypeImpl extends AnnotatedTypeImpl implements AnnotatedWi
             throw new IllegalArgumentException("Incompatible upper bounds " + Arrays.toString(upperBounds) + " for type " + type.toString());
         }
         for (int i = 0; i < type.getLowerBounds().length; i++) {
-            if (GenericTypeReflector.erase(type.getLowerBounds()[i]) != GenericTypeReflector.erase(lowerBounds[i].getType())) {
+            if (CoreTypeUtils.erase(type.getLowerBounds()[i]) != CoreTypeUtils.erase(lowerBounds[i].getType())) {
                 throw new IllegalArgumentException("Bound " + lowerBounds[i].getType() + " incompatible with "
                         + type.getLowerBounds()[i] + " in type " + type.toString());
             }
         }
         for (int i = 0; i < type.getUpperBounds().length; i++) {
-            if (upperBounds.length != 0 && GenericTypeReflector.erase(type.getUpperBounds()[i]) != GenericTypeReflector.erase(upperBounds[i].getType())) {
+            if (upperBounds.length != 0 && CoreTypeUtils.erase(type.getUpperBounds()[i]) != CoreTypeUtils.erase(upperBounds[i].getType())) {
                 throw new IllegalArgumentException("Bound " + upperBounds[i].getType() + " incompatible with "
                         + type.getUpperBounds()[i] + " in type " + type.toString());
             }

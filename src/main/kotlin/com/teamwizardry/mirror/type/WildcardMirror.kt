@@ -2,7 +2,7 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.coretypes.CoreTypeFactory
+import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.WildcardType
 
@@ -16,9 +16,9 @@ class WildcardMirror internal constructor(
 ): TypeMirror() {
 
     override val coreAnnotatedType: AnnotatedWildcardType = if(annotated != null)
-        CoreTypeFactory.replaceAnnotations(annotated, typeAnnotations.toTypedArray())
+        CoreTypeUtils.replaceAnnotations(annotated, typeAnnotations.toTypedArray())
     else
-        CoreTypeFactory.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedWildcardType
+        CoreTypeUtils.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedWildcardType
 
     override val raw: WildcardMirror = raw ?: this
 

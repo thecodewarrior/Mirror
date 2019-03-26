@@ -2,7 +2,7 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
-import com.teamwizardry.mirror.coretypes.CoreTypeFactory
+import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import com.teamwizardry.mirror.coretypes.TypeImplAccess
 import com.teamwizardry.mirror.member.ConstructorMirror
 import com.teamwizardry.mirror.member.ExecutableMirror
@@ -66,7 +66,7 @@ class ClassMirror internal constructor(
                 params.map { it.coreAnnotatedType }.toTypedArray()
             )
         } else {
-            coreAnnotatedType = CoreTypeFactory.annotate(coreType, typeAnnotations.toTypedArray())
+            coreAnnotatedType = CoreTypeUtils.annotate(coreType, typeAnnotations.toTypedArray())
         }
     }
 

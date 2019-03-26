@@ -72,7 +72,7 @@ class AnnotatedTypeImpl implements AnnotatedType {
 
     @Override
     public String toString() {
-        return annotationsString() + GenericTypeReflector.getTypeName(type);
+        return annotationsString() + CoreTypeUtils.getTypeName(type);
     }
 
     String annotationsString() {
