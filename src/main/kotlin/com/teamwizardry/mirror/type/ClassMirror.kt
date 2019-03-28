@@ -8,11 +8,15 @@ import com.teamwizardry.mirror.member.ConstructorMirror
 import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
+import com.teamwizardry.mirror.member.Modifier
+import com.teamwizardry.mirror.utils.checkedCast
 import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KClass
+import kotlin.reflect.KVisibility
 
 /**
  * A type mirror representing a Java class. Classes are the only type mirror that supports manual specialization as
@@ -241,6 +245,139 @@ class ClassMirror internal constructor(
     }
 //endregion
 
+    /*
+
+    // methods = publicly visible on this and subclasses
+    // declaredMethods = publicly and privately visible on this class specifically
+    // allMethods = publicly and privately visible on this class and subclasses (excluding overrides? including shadows)
+
+    // returns the specialized version of the passed method. So
+    // `List<String>.getMethod(List.getMethod("get", Any)) == .get(String)`
+    fun getMethod(other: MethodMirror): MethodMirror?
+    fun getField(other: FieldMirror): FieldMirror?
+    fun getConstructor(other: ConstructorMirror): ConstructorMirror?
+    fun getMemberClass(other: MemberClassMirror): MemberClassMirror?
+
+    val methods: List<MethodMirror>
+    val declaredMethods: List<MethodMirror>
+    val allMethods: List<MethodMirror>
+    fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
+    fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
+    fun getDeclaredMethod(name: String, vararg args: TypeMirror): MethodMirror?
+    fun getDeclaredMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
+    fun getAllMethods(name: String, vararg args: TypeMirror): List<MethodMirror>
+    fun getAllMethods(raw: Boolean, name: String, vararg args: TypeMirror): List<MethodMirror>
+
+    val fields: List<FieldMirror>
+    val declaredFields: List<FieldMirror>
+    val allFields: List<FieldMirror>
+    fun getField(name: String): FieldMirror?
+    fun getDeclaredField(name: String): FieldMirror?
+    fun getAllFields(name: String): List<FieldMirror>
+
+    val constructors: List<ConstructorMirror>
+    val declaredConstructors: List<ConstructorMirror>
+    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
+    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
+
+    val memberClasses: List<ClassMirror>
+    val declaredMemberClasses: List<ClassMirror>
+    val allMemberClasses: List<ClassMirror>
+    fun getMemberClass(name: String): ClassMirror?
+    fun getDeclaredMemberClass(name: String): ClassMirror?
+    fun getAllMemberClasses(name: String): List<ClassMirror>
+
+    /** the _declaration site_ annotations, as opposed to [typeAnnotations] */
+    - val annotations: List<Annotation>
+
+    - val modifiers: Set<Modifier>
+    - val access: Modifier.Access
+
+    - val isAnnotation: Boolean
+    - val isAnonymous: Boolean
+    - val isAbstract: Boolean
+    - val isStatic: Boolean
+    - val isStrictfp: Boolean
+    - val isEnum: Boolean
+    - val isLocal: Boolean
+    - val isMember: Boolean
+    - val isPrimitive: Boolean
+    - val isSynthetic: Boolean
+    - val isSealed: Boolean
+    - val isOpen: Boolean
+    - val isData: Boolean
+    - val isCompanion: Boolean
+
+    - val simpleName: String
+    - val name: String
+    - val canonicalName: String
+
+    // returns the enum type of this class, either this mirror or its superclass in the case of anonymous subclass enum
+    // elements
+    - val enumType: ClassMirror?
+    // if [isEnum] is true, this returns the array of enum constants in for this enum class.
+    - val enumConstants: List<Object>?
+    */
+
+    val kClass: KClass<*>? = java.kotlin
+
+    val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    val isInternalAccess: Boolean = kClass?.visibility == KVisibility.INTERNAL
+
+    val flags: Set<Flag> = listOf(
+        Flag.ABSTRACT to (Modifier.ABSTRACT in modifiers),
+        Flag.STATIC to (Modifier.STATIC in modifiers),
+        Flag.FINAL to (Modifier.FINAL in modifiers),
+        Flag.STRICT to (Modifier.STRICT in modifiers),
+
+        Flag.COMPANION to kClass?.isCompanion,
+        Flag.DATA to kClass?.isData,
+        Flag.SEALED to kClass?.isSealed,
+        Flag.ANNOTATION to java.isAnnotation,
+        Flag.ANONYMOUS to java.isAnonymousClass,
+        Flag.ENUM to java.isEnum,
+        Flag.INTERFACE to java.isInterface,
+        Flag.LOCAL to java.isLocalClass,
+        Flag.MEMBER to java.isMemberClass,
+        Flag.PRIMITIVE to java.isPrimitive,
+        Flag.SYNTHETIC to java.isSynthetic
+    ).filter { it.second == true }.mapTo(mutableSetOf()) { it.first }.unmodifiableView()
+
+    val isAbstract: Boolean = Flag.ABSTRACT in flags
+    val isStatic: Boolean = Flag.STATIC in flags
+    val isFinal: Boolean = Flag.FINAL in flags
+    val isStrict: Boolean = Flag.STRICT in flags
+
+    val isOpen: Boolean = !isFinal
+    val isCompanion: Boolean = Flag.COMPANION in flags
+    val isData: Boolean = Flag.DATA in flags
+    val isSealed: Boolean = Flag.SEALED in flags
+    val isAnnotation: Boolean = Flag.ANNOTATION in flags
+    val isAnonymous: Boolean = Flag.ANONYMOUS in flags
+    val isEnum: Boolean = Flag.ENUM in flags
+    val isInterface: Boolean = Flag.INTERFACE in flags
+    val isLocal: Boolean = Flag.LOCAL in flags
+    val isMember: Boolean = Flag.MEMBER in flags
+    val isPrimitive: Boolean = Flag.PRIMITIVE in flags
+    val isSynthetic: Boolean = Flag.SYNTHETIC in flags
+
+    val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
+    val declaredAnnotations: List<Annotation> = java.declaredAnnotations.toList().unmodifiableView()
+
+    val enumType: ClassMirror? by lazy {
+        when {
+            this.isEnum -> this
+            this.superclass?.isEnum == true -> this.superclass
+            else -> null
+        }
+    }
+    val enumConstants: List<Enum<*>>? = java.enumConstants?.toList()?.checkedCast<Enum<*>>()?.unmodifiableView()
+
+    val simpleName: String = java.simpleName
+    val name: String = java.name
+    val canonicalName: String? = java.canonicalName
+
     fun declaredClass(name: String): ClassMirror? {
         return declaredClasses.find { it.java.simpleName == name }
     }
@@ -368,6 +505,25 @@ class ClassMirror internal constructor(
             str += "<${typeParameters.joinToString(", ")}>"
         }
         return str
+    }
+
+    enum class Flag {
+        ABSTRACT,
+        STATIC,
+        FINAL,
+        STRICT,
+
+        COMPANION,
+        DATA,
+        SEALED,
+        ANNOTATION,
+        ANONYMOUS,
+        ENUM,
+        INTERFACE,
+        LOCAL,
+        MEMBER,
+        PRIMITIVE,
+        SYNTHETIC
     }
 }
 

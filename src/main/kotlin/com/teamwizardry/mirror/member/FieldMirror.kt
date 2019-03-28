@@ -5,8 +5,8 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.MethodHandleHelper
+import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 
 class FieldMirror internal constructor(
     internal val cache: MirrorCache,
@@ -19,10 +19,16 @@ class FieldMirror internal constructor(
     val isEnumConstant: Boolean = java.isEnumConstant
 
     val name: String = java.name
-    val isStatic: Boolean = Modifier.isStatic(java.modifiers)
-    val isTransient: Boolean = Modifier.isTransient(java.modifiers)
-    val isVolatile: Boolean = Modifier.isVolatile(java.modifiers)
-    val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
+
+    val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    val isPublic = Modifier.PUBLIC in modifiers
+    val isProtected = Modifier.PROTECTED in modifiers
+    val isPrivate = Modifier.PRIVATE in modifiers
+    val isStatic = Modifier.STATIC in modifiers
+    val isFinal = Modifier.FINAL in modifiers
+    val isTransient = Modifier.TRANSIENT in modifiers
+    val isVolatile = Modifier.VOLATILE in modifiers
 
     val declaringClass: ClassMirror by lazy {
         _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
@@ -50,7 +56,7 @@ class FieldMirror internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> get(receiver: Any?): T {
-        if(Modifier.isStatic(java.modifiers)) {
+        if(isStatic) {
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
             return raw.staticGetWrapper() as T
@@ -74,10 +80,10 @@ class FieldMirror internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     fun set(receiver: Any?, value: Any?) {
-        if(Modifier.isStatic(java.modifiers)) {
+        if(isStatic) {
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
-            if(Modifier.isFinal(java.modifiers))
+            if(isFinal)
                 throw IllegalStateException("Cannot set the value of final static field `${declaringClass.java.simpleName}.$name`")
             raw.staticSetWrapper(value)
         } else {
@@ -85,7 +91,7 @@ class FieldMirror internal constructor(
                 throw NullPointerException("Null receiver for instance field `${declaringClass.java.simpleName}.$name`")
             if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
                 throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance field `${declaringClass.java.simpleName}.$name`")
-            if(Modifier.isFinal(java.modifiers))
+            if(isFinal)
                 throw IllegalStateException("Cannot set the value of final instance field `${declaringClass.java.simpleName}.$name`")
             raw.instanceSetWrapper(receiver, value)
         }

@@ -4,8 +4,8 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.MethodHandleHelper
+import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.Method
-import java.lang.reflect.Modifier
 
 class MethodMirror internal constructor(
     cache: MirrorCache,
@@ -18,8 +18,15 @@ class MethodMirror internal constructor(
     override val name: String = java.name
     val description: String get() = "${declaringClass.java.simpleName}.$name(${raw.parameterTypes.joinToString(", ")})"
 
-    val isStatic: Boolean = Modifier.isStatic(java.modifiers)
-    val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
+    val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+
+    val isAbstract = Modifier.ABSTRACT in modifiers
+    val isStatic = Modifier.STATIC in modifiers
+    val isFinal = Modifier.FINAL in modifiers
+    val isSynchronized = Modifier.SYNCHRONIZED in modifiers
+    val isNative = Modifier.NATIVE in modifiers
+    val isStrict = Modifier.STRICT in modifiers
 
     override fun specialize(vararg parameters: TypeMirror): MethodMirror {
         return super.specialize(*parameters) as MethodMirror
@@ -41,7 +48,7 @@ class MethodMirror internal constructor(
     @Suppress("UNCHECKED_CAST")
     @Throws(Throwable::class)
     fun <T> call(receiver: Any?, vararg args: Any?): T {
-        if(Modifier.isStatic(java.modifiers)) {
+        if(isStatic) {
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static method `${declaringClass.java.simpleName}.$name`. Expected null.")
             if(args.size != parameters.size)

@@ -12,10 +12,18 @@ import java.util.*;
 public class AnnotatedTypeHolder {
     @NotNull
     private Map<String, Map<Integer, AnnotatedType>> types = new HashMap<>();
+    @NotNull
+    private Map<String, Object> elements = new HashMap<>();
 
     protected AnnotatedTypeHolder() {
         populateTypes();
     }
+
+    public Method getMethod(String name) { return (Method) elements.get(name); }
+    public Field getField(String name) { return (Field) elements.get(name); }
+    public Constructor getConstructor(String name) { return (Constructor) elements.get(name); }
+    public Parameter getParameter(String name) { return (Parameter) elements.get(name); }
+    public Class getClass(String name) { return (Class) elements.get(name); }
 
     @NotNull
     public AnnotatedType get(String name) {
@@ -54,12 +62,19 @@ public class AnnotatedTypeHolder {
         Set<Field> fields = new HashSet<>();
         Set<Method> methods = new HashSet<>();
         Set<Parameter> parameters = new HashSet<>();
+        Set<Constructor> constructors = new HashSet<>();
 
         for(Class<?> clazz : classes) {
             Collections.addAll(fields, clazz.getDeclaredFields());
             Collections.addAll(methods, clazz.getDeclaredMethods());
             for(Method method : clazz.getDeclaredMethods()) {
                 Collections.addAll(parameters, method.getParameters());
+            }
+            Collections.addAll(constructors, clazz.getDeclaredConstructors());
+
+            ElementHolder elementHolder = clazz.getDeclaredAnnotation(ElementHolder.class);
+            if(elementHolder != null) {
+                elements.put(elementHolder.value(), clazz);
             }
         }
 
@@ -76,6 +91,10 @@ public class AnnotatedTypeHolder {
                     }
                 }
             }
+            ElementHolder elementHolder = method.getDeclaredAnnotation(ElementHolder.class);
+            if(elementHolder != null) {
+                elements.put(elementHolder.value(), method);
+            }
         }
 
         for(Field field : fields) {
@@ -83,12 +102,28 @@ public class AnnotatedTypeHolder {
             if(holder != null) {
                 addType(holder.value(), holder.index(), field.getAnnotatedType());
             }
+            ElementHolder elementHolder = field.getDeclaredAnnotation(ElementHolder.class);
+            if(elementHolder != null) {
+                elements.put(elementHolder.value(), field);
+            }
         }
 
         for(Parameter parameter : parameters) {
             TypeHolder holder = parameter.getDeclaredAnnotation(TypeHolder.class);
             if(holder != null) {
                 addType(holder.value(), holder.index(), parameter.getAnnotatedType());
+            }
+            ElementHolder elementHolder = parameter.getDeclaredAnnotation(ElementHolder.class);
+            if(elementHolder != null) {
+                elements.put(elementHolder.value(), parameter);
+            }
+        }
+
+        for(Constructor constructor : constructors) {
+            TypeHolder holder = constructor.getDeclaredAnnotation(TypeHolder.class);
+            ElementHolder elementHolder = constructor.getDeclaredAnnotation(ElementHolder.class);
+            if(elementHolder != null) {
+                elements.put(elementHolder.value(), constructor);
             }
         }
     }
@@ -120,6 +155,13 @@ public class AnnotatedTypeHolder {
         String value();
         int index() default 0;
         HolderType type() default HolderType.PARAMS;
+    }
+
+    @Target({ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR,
+            ElementType.PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface ElementHolder {
+        String value();
     }
 
     protected final class Unwrap<T> {

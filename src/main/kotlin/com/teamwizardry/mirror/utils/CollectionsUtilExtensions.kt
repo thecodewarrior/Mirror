@@ -38,6 +38,20 @@ internal fun <K, V> MutableMap<K, V>.synchronizedView(): MutableMap<K, V> = Coll
 internal fun <K, V> SortedMap<K, V>.synchronizedView(): SortedMap<K, V> = Collections.synchronizedSortedMap(this)
 internal fun <K, V> NavigableMap<K, V>.synchronizedView(): NavigableMap<K, V> = Collections.synchronizedNavigableMap(this)
 
+// Unmodifiable/synchronized creators ==================================================================================
+
+internal fun <T> unmodifiableSetOf(vararg values: T): Set<T> = setOf(*values).unmodifiableView()
+internal fun <T> unmodifiableSortedSetOf(vararg values: T): SortedSet<T> = sortedSetOf(*values).unmodifiableView()
+internal fun <T> unmodifiableListOf(vararg values: T): List<T> = listOf(*values).unmodifiableView()
+internal fun <K, V> unmodifiableMapOf(vararg pairs: Pair<K, V>): Map<K, V> = mapOf(*pairs).unmodifiableView()
+internal fun <K: Comparable<K>, V> unmodifiableSortedMapOf(vararg pairs: Pair<K, V>): SortedMap<K, V> = sortedMapOf(*pairs).unmodifiableView()
+
+internal fun <T> synchronizedSetOf(vararg values: T): MutableSet<T> = mutableSetOf(*values).synchronizedView()
+internal fun <T> synchronizedSortedSetOf(vararg values: T): SortedSet<T> = sortedSetOf(*values).synchronizedView()
+internal fun <T> synchronizedListOf(vararg values: T): MutableList<T> = mutableListOf(*values).synchronizedView()
+internal fun <K, V> synchronizedMapOf(vararg pairs: Pair<K, V>): MutableMap<K, V> = mutableMapOf(*pairs).synchronizedView()
+internal fun <K: Comparable<K>, V> synchronizedSortedMapOf(vararg pairs: Pair<K, V>): SortedMap<K, V> = sortedMapOf(*pairs).synchronizedView()
+
 // Checked casts/wrappers ==============================================================================================
 
 internal inline fun <reified T> MutableCollection<T>.checkedView(): MutableCollection<T> = Collections.checkedCollection(this.toList(), T::class.java)

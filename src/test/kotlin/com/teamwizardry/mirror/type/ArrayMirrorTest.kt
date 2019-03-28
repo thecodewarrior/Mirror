@@ -3,12 +3,12 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.typeToken
-import com.teamwizardry.mirror.typeholders.TypeMirror
+import com.teamwizardry.mirror.typeholders.TypeMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ArrayMirrorTest: MirrorTestBase() {
-    val holder = TypeMirror()
+    val holder = TypeMirrorHolder()
 
     @Test
     fun getRawClass_onArray_shouldReturnArrayType() {

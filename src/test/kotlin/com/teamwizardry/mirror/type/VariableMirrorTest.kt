@@ -5,12 +5,12 @@ import com.teamwizardry.mirror.testsupport.Interface1
 import com.teamwizardry.mirror.testsupport.Interface2
 import com.teamwizardry.mirror.testsupport.Object1
 import com.teamwizardry.mirror.testsupport.assertSameList
-import com.teamwizardry.mirror.typeholders.TypeMirror
+import com.teamwizardry.mirror.typeholders.TypeMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class VariableMirrorTest {
-    val holder = TypeMirror()
+    val holder = TypeMirrorHolder()
 
     @Test
     fun getBounds_onUnboundedType_shouldReturnListOfObject() {

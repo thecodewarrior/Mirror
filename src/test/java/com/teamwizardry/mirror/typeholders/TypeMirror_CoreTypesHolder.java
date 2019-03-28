@@ -3,7 +3,7 @@ package com.teamwizardry.mirror.typeholders;
 import com.teamwizardry.mirror.annotations.TypeAnnotation1;
 import com.teamwizardry.mirror.testsupport.*;
 
-public class TypeMirror_CoreTypes extends AnnotatedTypeHolder {
+public class TypeMirror_CoreTypesHolder extends AnnotatedTypeHolder {
     @TypeHolder("T")
     <T> void type_T(T a) {}
     @TypeHolder("@TypeAnnotation1 T; T")

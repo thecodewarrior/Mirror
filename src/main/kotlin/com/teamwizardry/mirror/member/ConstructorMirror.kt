@@ -17,7 +17,7 @@ class ConstructorMirror internal constructor(
     override val raw: ConstructorMirror = raw ?: this
     override val name: String = java.name
     val description: String get() = "${declaringClass.java.simpleName}(${raw.parameterTypes.joinToString(", ")})"
-    val accessLevel: AccessLevel = AccessLevel.fromModifiers(java.modifiers)
+    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
     override fun specialize(vararg parameters: TypeMirror): ConstructorMirror {
         return super.specialize(*parameters) as ConstructorMirror

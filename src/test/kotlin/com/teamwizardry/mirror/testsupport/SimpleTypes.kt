@@ -21,6 +21,7 @@ interface Interface12: Interface1, Interface2
 interface Interface12Sub1: Interface1Sub1, Interface2Sub1
 interface Interface12Sub2: Interface1Sub2, Interface2Sub2
 
+internal class KotlinInternalClass
 
 open class Object1
 open class GenericObject1<T>
@@ -45,6 +46,19 @@ open class LowerBounded<in T>
 
 open class Exception1: Exception()
 open class Exception2: Exception()
+
+class ClosedObject1
+data class DataObject1(val field: Boolean)
+
+sealed class SealedClass {
+    class SealedSub1: SealedClass()
+    class SealedSub2: SealedClass()
+    class SealedSub3: SealedClass()
+}
+
+class CompanionHolder {
+    companion object
+}
 
 open class OuterClass1 {
     class InnerStaticClass
@@ -103,5 +117,12 @@ open class OuterGenericClass1<T: Any> {
             lateinit var outerField: T
         }
         return typeToken<GenericMethod_SpecializedAnonymousClass<T>>()
+    }
+}
+
+enum class EnumClass1 {
+    NORMAL,
+    ANONYMOUS {
+        fun someFun() {}
     }
 }

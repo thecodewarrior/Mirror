@@ -42,10 +42,10 @@ internal class FieldMirrorTest: MirrorTestBase() {
     @DisplayName("The access levels of fields should be correctly mapped and stored")
     fun field_visibility() {
         val baseType = Mirror.reflectClass<FieldVisibilityTestClass>()
-        assertEquals(AccessLevel.PUBLIC, baseType.field("publicField")?.accessLevel)
-        assertEquals(AccessLevel.PACKAGE, baseType.field("defaultField")?.accessLevel)
-        assertEquals(AccessLevel.PROTECTED, baseType.field("protectedField")?.accessLevel)
-        assertEquals(AccessLevel.PRIVATE, baseType.field("privateField")?.accessLevel)
+        assertEquals(Modifier.Access.PUBLIC, baseType.field("publicField")?.access)
+        assertEquals(Modifier.Access.DEFAULT, baseType.field("defaultField")?.access)
+        assertEquals(Modifier.Access.PROTECTED, baseType.field("protectedField")?.access)
+        assertEquals(Modifier.Access.PRIVATE, baseType.field("privateField")?.access)
     }
 
     @Test

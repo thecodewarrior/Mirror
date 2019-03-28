@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 
 /**
  * An implementation of {@link Annotation} that mimics the behavior of normal annotations.
- * It is an {@link InvocationHandler}, meant to be used via {@link TypeFactory#annotation(Class, Map)}.
+ * It is an {@link InvocationHandler}, meant to be used via {@link CoreTypeUtils#createAnnotation(Class, Map)}.
  * <p>
  * The constructor checks that the all the elements required by the annotation interface are provided
  * and that the types are compatible. If extra elements are provided, they are ignored.

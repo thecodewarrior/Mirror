@@ -19,7 +19,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Type
 
 /**
- * Provides access to the Mirrors for various reflective types.
+ * The central class used to retrieve mirrors of Core Reflection objects
  */
 object Mirror {
     internal var cache = MirrorCache()
@@ -134,6 +134,13 @@ object Mirror {
         return cache.executables.reflect(executable)
     }
 
+    /**
+     * Dynamically creates a new annotation instance.
+     *
+     * @throws AnnotationFormatException if the [clazz] isn't an annotation class
+     * @throws AnnotationFormatException if any required annotation values are missing from the passed map
+     * @throws AnnotationFormatException if any values in the map have incompatible types with the attributes of the annotation
+     */
     @JvmStatic
     @JvmOverloads
     @Throws(AnnotationFormatException::class)
@@ -141,16 +148,37 @@ object Mirror {
         return CoreTypeUtils.createAnnotation(clazz, arguments)
     }
 
+    /**
+     * Dynamically creates a new annotation instance.
+     *
+     * @throws AnnotationFormatException if the [clazz] isn't an annotation class
+     * @throws AnnotationFormatException if any required annotation values are missing from the passed name-value pair set
+     * @throws AnnotationFormatException if any values in the set have incompatible types with the attributes of the annotation
+     */
     @JvmStatic
     @Throws(AnnotationFormatException::class)
     fun <T: Annotation> newAnnotation(clazz: Class<T>, vararg arguments: Pair<String, Any>): T {
         return newAnnotation(clazz, mapOf(*arguments))
     }
 
+    /**
+     * Dynamically creates a new annotation instance.
+     *
+     * @throws AnnotationFormatException if the [clazz] isn't an annotation class
+     * @throws AnnotationFormatException if any required annotation values are missing from the passed map
+     * @throws AnnotationFormatException if any values in the map have incompatible types with the attributes of the annotation
+     */
     inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
         return newAnnotation(T::class.java, arguments)
     }
 
+    /**
+     * Dynamically creates a new annotation instance.
+     *
+     * @throws AnnotationFormatException if the [clazz] isn't an annotation class
+     * @throws AnnotationFormatException if any required annotation values are missing from the passed name-value pair set
+     * @throws AnnotationFormatException if any values in the set have incompatible types with the attributes of the annotation
+     */
     inline fun <reified T: Annotation> newAnnotation(vararg arguments: Pair<String, Any>): T {
         return newAnnotation(T::class.java, mapOf(*arguments))
     }
@@ -163,6 +191,9 @@ object Mirror {
         return reflect(TypeImplAccess.createArrayType(type.coreAnnotatedType, emptyArray())) as ArrayMirror
     }
 
+    /**
+     * Transforms the passed type to an equivalent one that implements the [equals] and [hashCode] methods.
+     */
     @JvmStatic
     fun <T: AnnotatedType> toCanonical(type: T) = CoreTypeUtils.toCanonical(type)
 

@@ -15,6 +15,7 @@ class ParameterMirror internal constructor(
     val name: String? = if(java.isNamePresent) java.name else null
 
     val raw: ParameterMirror = raw ?: this
+    val isFinal = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
 
     val type: TypeMirror by lazy {
         java.annotatedType.let {

@@ -4,6 +4,7 @@ import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import kotlin.reflect.KTypeProjection
 
 /**
  * A container for a generic type.
@@ -39,6 +40,13 @@ abstract class TypeToken<T> {
      */
     fun getAnnotated(): AnnotatedType {
         return (javaClass.annotatedSuperclass as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
+    }
+
+    /**
+     * Gets the kotlin type represented by this TypeToken
+     */
+    fun getKotlin(): KTypeProjection {
+        return javaClass.kotlin.supertypes[0].arguments[0]
     }
 }
 

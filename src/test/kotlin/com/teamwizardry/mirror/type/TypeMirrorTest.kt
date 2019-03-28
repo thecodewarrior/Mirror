@@ -11,13 +11,13 @@ import com.teamwizardry.mirror.testsupport.Object1Sub
 import com.teamwizardry.mirror.testsupport.Object1Sub2
 import com.teamwizardry.mirror.testsupport.Object2
 import com.teamwizardry.mirror.typeToken
-import com.teamwizardry.mirror.typeholders.TypeMirror
+import com.teamwizardry.mirror.typeholders.TypeMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class TypeMirrorTest: MirrorTestBase() {
-    private val holder = TypeMirror()
+    private val holder = TypeMirrorHolder()
 
     @Test
     @DisplayName("Reflecting a non-array class should return a ClassMirror")
