@@ -243,9 +243,12 @@ internal class ClassMirrorTest: MirrorTestBase() {
         assertAll(
             { testFlags<ClosedObject1>(Flag.FINAL) },
             { testFlags<Object1>() },
-            { testFlags<CompanionHolder.Companion>(Flag.FINAL, Flag.STATIC, Flag.COMPANION, Flag.MEMBER) },
-            { testFlags<DataObject1>(Flag.FINAL, Flag.DATA) },
-            { testFlags<SealedClass>(Flag.ABSTRACT, Flag.SEALED) },
+            { testFlags<CompanionHolder.Companion>(Flag.FINAL, Flag.STATIC, Flag.MEMBER)
+                assertTrue(Mirror.reflectClass<CompanionHolder.Companion>().isCompanion) },
+            { testFlags<DataObject1>(Flag.FINAL)
+                assertTrue(Mirror.reflectClass<DataObject1>().isData) },
+            { testFlags<SealedClass>(Flag.ABSTRACT)
+                assertTrue(Mirror.reflectClass<SealedClass>().isSealed) },
             { testFlags<Interface1>(Flag.INTERFACE, Flag.ABSTRACT) }
         )
     }

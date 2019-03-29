@@ -19,6 +19,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.jvm.KotlinReflectionNotSupportedError
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
@@ -322,7 +323,14 @@ class ClassMirror internal constructor(
 
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
-    val isInternalAccess: Boolean = kClass?.visibility == KVisibility.INTERNAL
+    /**
+     * Returns true if this object represents a Kotlin class and that class has an `internal` visibility modifier
+     *
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
+     * optional dependency for jar size reasons)
+     */
+    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
+    val isInternalAccess: Boolean get() = kClass?.visibility == KVisibility.INTERNAL
 
     val flags: Set<Flag> = listOf(
         Flag.ABSTRACT to (Modifier.ABSTRACT in modifiers),
@@ -330,9 +338,6 @@ class ClassMirror internal constructor(
         Flag.FINAL to (Modifier.FINAL in modifiers),
         Flag.STRICT to (Modifier.STRICT in modifiers),
 
-        Flag.COMPANION to kClass?.isCompanion,
-        Flag.DATA to kClass?.isData,
-        Flag.SEALED to kClass?.isSealed,
         Flag.ANNOTATION to java.isAnnotation,
         Flag.ANONYMOUS to java.isAnonymousClass,
         Flag.ENUM to java.isEnum,
@@ -341,7 +346,7 @@ class ClassMirror internal constructor(
         Flag.MEMBER to java.isMemberClass,
         Flag.PRIMITIVE to java.isPrimitive,
         Flag.SYNTHETIC to java.isSynthetic
-    ).filter { it.second == true }.mapTo(mutableSetOf()) { it.first }.unmodifiableView()
+    ).filter { it.second }.mapTo(mutableSetOf()) { it.first }.unmodifiableView()
 
     val isAbstract: Boolean = Flag.ABSTRACT in flags
     val isStatic: Boolean = Flag.STATIC in flags
@@ -349,9 +354,30 @@ class ClassMirror internal constructor(
     val isStrict: Boolean = Flag.STRICT in flags
 
     val isOpen: Boolean = !isFinal
-    val isCompanion: Boolean = Flag.COMPANION in flags
-    val isData: Boolean = Flag.DATA in flags
-    val isSealed: Boolean = Flag.SEALED in flags
+    /**
+     * Returns true if this object represents a Kotlin class and that class is a companion class
+     *
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
+     * optional dependency for jar size reasons)
+     */
+    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
+    val isCompanion: Boolean get() = kClass?.isCompanion ?: false
+    /**
+     * Returns true if this object represents a Kotlin class and that class is a data class
+     *
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
+     * optional dependency for jar size reasons)
+     */
+    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
+    val isData: Boolean get() = kClass?.isData ?: false
+    /**
+     * Returns true if this object represents a Kotlin class and that class is a sealed class
+     *
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
+     * optional dependency for jar size reasons)
+     */
+    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
+    val isSealed: Boolean get() = kClass?.isSealed ?: false
     val isAnnotation: Boolean = Flag.ANNOTATION in flags
     val isAnonymous: Boolean = Flag.ANONYMOUS in flags
     val isEnum: Boolean = Flag.ENUM in flags
@@ -634,9 +660,6 @@ class ClassMirror internal constructor(
         FINAL,
         STRICT,
 
-        COMPANION,
-        DATA,
-        SEALED,
         ANNOTATION,
         ANONYMOUS,
         ENUM,

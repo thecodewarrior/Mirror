@@ -1,8 +1,7 @@
+
 import groovy.lang.Closure
-import org.gradle.kotlin.dsl.provider.kotlinScriptClassPathProviderOf
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.concurrent.Callable
 
 plugins {
     java
@@ -21,9 +20,8 @@ repositories {
 
 dependencies {
     compile(kotlin("stdlib-jdk8"))
-    compile(kotlin("reflect"))
     testImplementation("org.junit.jupiter", "junit-jupiter-api", "5.4.0-M1")
-    testCompile("com.nhaarman", "mockito-kotlin-kt1.1", "1.5.0")
+    testCompile(kotlin("reflect"))
     testCompile(files("noParamNames/out"))
 }
 

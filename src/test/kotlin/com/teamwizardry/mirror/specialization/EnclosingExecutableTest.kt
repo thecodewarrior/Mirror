@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.reflect.jvm.javaConstructor
-import kotlin.reflect.jvm.javaMethod
 
 class EnclosingExecutableTest: MirrorTestBase() {
     @Test
@@ -33,7 +31,7 @@ class EnclosingExecutableTest: MirrorTestBase() {
     fun enclosingExecutable_ofLocalClass_shouldReturnEnclosingMethod() {
         class LocalClass
         val clazz = Mirror.reflectClass(LocalClass::class.java)
-        val thisMethod = ::enclosingExecutable_ofLocalClass_shouldReturnEnclosingMethod.javaMethod!!
+        val thisMethod = javaClass.getMethod("enclosingExecutable_ofLocalClass_shouldReturnEnclosingMethod")
         assertSame(Mirror.reflect(thisMethod), clazz.enclosingExecutable)
     }
 
@@ -44,7 +42,7 @@ class EnclosingExecutableTest: MirrorTestBase() {
             init {
                 class LocalClass
                 val clazz = Mirror.reflectClass(LocalClass::class.java)
-                val thisConstructor = ::ConstructorHolder.javaConstructor!!
+                val thisConstructor = javaClass.getConstructor()
                 assertSame(Mirror.reflect(thisConstructor), clazz.enclosingExecutable)
             }
         }
