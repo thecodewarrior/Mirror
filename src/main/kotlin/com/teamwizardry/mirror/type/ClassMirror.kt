@@ -10,13 +10,19 @@ import com.teamwizardry.mirror.member.FieldMirror
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.member.Modifier
 import com.teamwizardry.mirror.utils.checkedCast
+import com.teamwizardry.mirror.utils.uniqueBy
 import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedType
+import java.lang.reflect.Constructor
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
+
+
 
 /**
  * A type mirror representing a Java class. Classes are the only type mirror that supports manual specialization as
@@ -127,14 +133,14 @@ class ClassMirror internal constructor(
 
     /**
      * Creates a copy of this mirror, replacing its type parameters the given types. This will ripple the changes to
-     * supertypes/interfaces, method and field signatures, etc. Passing zero arguments will remove the current type
-     * arguments without replacing them.
+     * supertypes/interfaces, method and field signatures, etc. Passing zero arguments will return a copy of this
+     * mirror with the raw type arguments.
      *
      * @throws InvalidSpecializationException if the passed type list is not the same length as [typeParameters] or zero
      * @return A copy of this type with its type parameters replaced
      */
     fun withTypeArguments(vararg parameters: TypeMirror): ClassMirror {
-        if(parameters.size != typeParameters.size && parameters.isEmpty())
+        if(parameters.size != typeParameters.size && parameters.isNotEmpty())
             throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from class type " +
                     "parameter count ${typeParameters.size}")
         val newSpecialization = (specialization ?: defaultSpecialization())
@@ -153,11 +159,7 @@ class ClassMirror internal constructor(
      * is null
      */
     fun withEnclosingClass(enclosing: ClassMirror?): ClassMirror {
-        if(enclosing == null) {
-            val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingClass = null)
-            return cache.types.specialize(raw, newSpecialization) as ClassMirror
-        }
-        if(enclosing.raw != raw.enclosingClass)
+        if(enclosing != null && enclosing.raw != raw.enclosingClass)
             throw InvalidSpecializationException("Passed enclosing class ($enclosing) is not equal to or a " +
                 "specialization of this class's enclosing class (${raw.enclosingClass})")
         val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingClass = enclosing)
@@ -175,11 +177,7 @@ class ClassMirror internal constructor(
      * [enclosing] is null
      */
     fun withEnclosingExecutable(enclosing: ExecutableMirror?): ClassMirror {
-        if(enclosing == null) {
-            val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingExecutable = null)
-            return cache.types.specialize(raw, newSpecialization) as ClassMirror
-        }
-        if(enclosing.raw != raw.enclosingExecutable)
+        if(enclosing != null && enclosing.raw != raw.enclosingExecutable)
             throw InvalidSpecializationException("Passed enclosing executable ($enclosing) is not equal to or a " +
                 "specialization of this class's enclosing executable (${raw.enclosingExecutable})")
         val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingExecutable = enclosing)
@@ -203,7 +201,7 @@ class ClassMirror internal constructor(
      *
      * This list is created when it is first accessed and is thread safe.
      */
-    val declaredClasses: List<ClassMirror> by lazy {
+    val declaredMemberClasses: List<ClassMirror> by lazy {
         java.declaredClasses.map {
             (cache.types.reflect(it) as ClassMirror).withEnclosingClass(this)
         }.unmodifiableView()
@@ -217,7 +215,7 @@ class ClassMirror internal constructor(
      */
     val declaredFields: List<FieldMirror> by lazy {
         java.declaredFields.map {
-            cache.fields.reflect(it).specialize(this)
+            cache.fields.reflect(it).withDeclaringClass(this)
         }.unmodifiableView()
     }
 
@@ -229,7 +227,7 @@ class ClassMirror internal constructor(
      */
     val declaredMethods: List<MethodMirror> by lazy {
         java.declaredMethods.map {
-            cache.executables.reflect(it).enclose(this) as MethodMirror
+            cache.executables.reflect(it).withDeclaringClass(this) as MethodMirror
         }.unmodifiableView()
     }
 
@@ -240,7 +238,7 @@ class ClassMirror internal constructor(
      */
     val declaredConstructors: List<ConstructorMirror> by lazy {
         java.declaredConstructors.map {
-            cache.executables.reflect(it).enclose(this) as ConstructorMirror
+            cache.executables.reflect(it).withDeclaringClass(this) as ConstructorMirror
         }.unmodifiableView()
     }
 //endregion
@@ -319,6 +317,7 @@ class ClassMirror internal constructor(
     - val enumConstants: List<Object>?
     */
 
+    //region Simple helpers
     val kClass: KClass<*>? = java.kotlin
 
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
@@ -377,9 +376,131 @@ class ClassMirror internal constructor(
     val simpleName: String = java.simpleName
     val name: String = java.name
     val canonicalName: String? = java.canonicalName
+    //endregion
+
+    //region Member helpers
+
+    // methods = publicly visible on this and subclasses
+    // declaredMethods = publicly and privately visible on this class specifically
+    // allMethods = publicly and privately visible on this class and subclasses (excluding overrides? including shadows)
+    // returns the specialized version of the passed method. So
+    // `List<String>.getMethod(List.getMethod("get", Any)) == .get(String)`
+
+    //region Specializers
+
+    fun getMethod(other: MethodMirror): MethodMirror? = getMethod(other.java)
+    fun getMethod(other: Method): MethodMirror? {
+        if(other.declaringClass == this.java) {
+            return declaredMethods.find { it.java == other }
+        }
+        return findSuperclass(other.declaringClass)?.getMethod(other)
+    }
+
+    fun getField(other: FieldMirror): FieldMirror? = getField(other.java)
+    fun getField(other: Field): FieldMirror? {
+        if(other.declaringClass == this.java) {
+            return declaredFields.find { it.java == other }
+        }
+        return findSuperclass(other.declaringClass)?.getField(other)
+    }
+
+    fun getConstructor(other: ConstructorMirror): ConstructorMirror? = getConstructor(other.java)
+    fun getConstructor(other: Constructor<*>): ConstructorMirror? {
+        if(other.declaringClass == this.java) {
+            return declaredConstructors.find { it.java == other }
+        }
+        return findSuperclass(other.declaringClass)?.getConstructor(other)
+    }
+
+    fun getMemberClass(other: ClassMirror): ClassMirror? = getMemberClass(other.java)
+    fun getMemberClass(other: Class<*>): ClassMirror? {
+        if(other.declaringClass == this.java) {
+            return declaredMemberClasses.find { it.java == other }
+        }
+        return findSuperclass(other.declaringClass)?.getMemberClass(other)
+    }
+
+    //endregion
+
+    //region Methods
+    val methods: List<MethodMirror> by lazy {
+        val declaredPublic = declaredMethods.filter { it.access == Modifier.Access.PUBLIC }
+
+        var inheritedMethods = interfaces.flatMap { iface -> iface.methods.filter { !it.isStatic } }.toMutableList()
+
+        superclass?.also { superclass ->
+            val supers = superclass.methods.toMutableList()
+            supers.filter { !it.isAbstract && !it.isDefault }.forEach { m ->
+                inheritedMethods.removeIf { it.descriptor == m.descriptor }
+            }
+            supers.addAll(inheritedMethods)
+            inheritedMethods = supers
+        }
+
+        // Filter out all local methods from inherited ones
+        declaredPublic.forEach { m ->
+            inheritedMethods.removeIf {
+                it.descriptor == m.descriptor || it in declaredPublic
+            }
+        }
+        val result = (declaredPublic + inheritedMethods).toMutableList<MethodMirror?>()
+
+        result.forEach { m ->
+            if(m?.isDefault == true)
+                result.forEachIndexed { i, it ->
+                    if (it != null && it != m && (m.descriptor == it.descriptor) &&
+                        m.declaringClass != it.declaringClass &&
+                        m.declaringClass.isAssignableFrom(it.declaringClass))
+                        result[i] = null
+                }
+        }
+
+        return@lazy result.filterNotNull().unmodifiableView()
+    }
+    val allMethods: List<MethodMirror> by lazy {
+        (declaredMethods + interfaces.flatMap { it.allMethods } +
+            (superclass?.allMethods ?: emptyList())).uniqueBy { it.descriptor }.unmodifiableView()
+    }
+//    fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
+//    fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
+//    fun getDeclaredMethod(name: String, vararg args: TypeMirror): MethodMirror?
+//    fun getDeclaredMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
+//    fun getAllMethods(name: String, vararg args: TypeMirror): List<MethodMirror>
+//    fun getAllMethods(raw: Boolean, name: String, vararg args: TypeMirror): List<MethodMirror>
+    //endregion
+
+    //region Fields
+    val fields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
+    val allFields: List<FieldMirror> by lazy {
+        (declaredFields + interfaces.flatMap { it.allFields } +
+            (superclass?.allFields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
+    }
+//    fun getField(name: String): FieldMirror?
+//    fun getDeclaredField(name: String): FieldMirror?
+//    fun getAllFields(name: String): List<FieldMirror>
+    //endregion
+
+    //region Constructors
+    val constructors: List<ConstructorMirror> by lazy { java.constructors.mapNotNull { getConstructor(it) }.unmodifiableView() }
+//    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
+//    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
+    //endregion
+
+    //region Member classes
+    val memberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
+    val allMemberClasses: List<ClassMirror> by lazy {
+        (declaredMemberClasses + interfaces.flatMap { it.allMemberClasses } +
+            (superclass?.allMemberClasses ?: emptyList())).unmodifiableView()
+    }
+//    fun getMemberClass(name: String): ClassMirror?
+//    fun getDeclaredMemberClass(name: String): ClassMirror?
+//    fun getAllMemberClasses(name: String): List<ClassMirror>
+    //endregion
+
+    //endregion
 
     fun declaredClass(name: String): ClassMirror? {
-        return declaredClasses.find { it.java.simpleName == name }
+        return declaredMemberClasses.find { it.java.simpleName == name }
     }
 
     private val declaredClassCache = ConcurrentHashMap<String, List<ClassMirror>>()
@@ -387,7 +508,7 @@ class ClassMirror internal constructor(
     fun innerClasses(name: String): List<ClassMirror> {
         return declaredClassCache.getOrPut(name) {
             val list = mutableListOf<ClassMirror>()
-            declaredClasses.find { it.java.simpleName == name }?.also { list.add(it) }
+            declaredMemberClasses.find { it.java.simpleName == name }?.also { list.add(it) }
             superclass?.also { list.addAll(it.innerClasses(name)) }
             return@getOrPut list.unmodifiableView()
         }

@@ -28,6 +28,14 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("Specializing type with zero arguments should return the raw class")
+    fun specialize_withZeroArgumentCount_shouldReturnRaw() {
+        val genericType = Mirror.reflectClass<GenericObject1<Object1>>()
+        assertEquals(Mirror.reflectClass(GenericObject1::class.java), genericType.withTypeArguments())
+    }
+
+
+    @Test
     @DisplayName("Specializing type with wrong number of arguments should throw InvalidSpecializationException")
     fun specialize_withWrongArgumentCount_shouldThrow() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)

@@ -38,9 +38,9 @@ class FieldMirror internal constructor(
         declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
-    fun specialize(enclosing: ClassMirror): FieldMirror {
+    fun withDeclaringClass(enclosing: ClassMirror): FieldMirror {
         if(enclosing.java != java.declaringClass)
-            throw InvalidSpecializationException("Invalid enclosing class $type. " +
+            throw InvalidSpecializationException("Invalid declaring class $type. " +
                 "$this is declared in ${java.declaringClass}")
         return cache.fields.specialize(this, enclosing)
     }

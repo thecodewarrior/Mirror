@@ -70,7 +70,7 @@ class EnclosingExecutableTest: MirrorTestBase() {
         }
         val clazz = Mirror.reflectClass<LocalClass>()
         val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().methods("localClassUsingSpecializedMethodTypeParameter")[0]
-        assertSame(Mirror.reflect<String>(), clazz.withEnclosingExecutable(thisMethod.specialize(Mirror.reflect<String>())).field("foo")?.type)
+        assertSame(Mirror.reflect<String>(), clazz.withEnclosingExecutable(thisMethod.withTypeParameters(Mirror.reflect<String>())).field("foo")?.type)
     }
 
     @Test

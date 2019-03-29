@@ -43,4 +43,12 @@ public class TypeMirrorHolder extends AnnotatedTypeHolder {
     <T extends Interface2 & Interface1> void type_T_extends_Interface2_amp_Interface1(T a) {}
     @TypeHolder("T extends @TypeAnnotation1 Object1")
     <T extends @TypeAnnotation1 Object1> void type_T_extends_TypeAnnotation1_Object1(T a) {}
+
+    // for directly reflecting and reflecting through class equality check
+    public static class DirectInClassEquality {
+        @ElementHolder("void method()")
+        void method() { }
+        @ElementHolder("int field")
+        int field = 0;
+    }
 }

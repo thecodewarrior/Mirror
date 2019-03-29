@@ -12,5 +12,6 @@ open class MirrorTestBase {
 
     open fun initializeForTest() {
         Mirror.cache = MirrorCache()
+        Mirror._types = Mirror.Types()
     }
 }

@@ -30,4 +30,8 @@ class VoidMirror internal constructor(
     override fun isAssignableFrom(other: TypeMirror): Boolean {
         return other == this
     }
+
+    override fun toString(): String {
+        return "void"
+    }
 }

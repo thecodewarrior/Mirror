@@ -21,6 +21,16 @@ interface Interface12: Interface1, Interface2
 interface Interface12Sub1: Interface1Sub1, Interface2Sub1
 interface Interface12Sub2: Interface1Sub2, Interface2Sub2
 
+interface NonEmptyInterface1 {
+    fun interface1(): Object1
+}
+interface NonEmptyInterface1Override: NonEmptyInterface1 {
+    override fun interface1(): Object1
+}
+interface NonEmptyInterface1Shadow: NonEmptyInterface1 {
+    override fun interface1(): Object1Sub
+}
+
 internal class KotlinInternalClass
 
 open class Object1

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class VoidMirrorTest: MirrorTestBase() {
     @Test
     fun coreType_ofNotAnnotated_shouldReturnVoidClass() {
-        assertEquals(Void.TYPE, Mirror.Types.void.coreType)
+        assertEquals(Void.TYPE, Mirror.types.void.coreType)
     }
 
     @Test
@@ -23,7 +23,7 @@ class VoidMirrorTest: MirrorTestBase() {
     fun coreAnnotatedType_ofNotAnnotated_shouldReturnVoidClassWithNoAnnotations() {
         assertEquals(
             CoreTypeUtils.annotate(Void.TYPE),
-            Mirror.Types.void.coreAnnotatedType
+            Mirror.types.void.coreAnnotatedType
         )
     }
 

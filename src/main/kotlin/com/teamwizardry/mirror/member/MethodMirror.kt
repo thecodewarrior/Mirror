@@ -21,19 +21,25 @@ class MethodMirror internal constructor(
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
-    val isAbstract = Modifier.ABSTRACT in modifiers
-    val isStatic = Modifier.STATIC in modifiers
-    val isFinal = Modifier.FINAL in modifiers
-    val isSynchronized = Modifier.SYNCHRONIZED in modifiers
-    val isNative = Modifier.NATIVE in modifiers
-    val isStrict = Modifier.STRICT in modifiers
+    val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
+    val isStatic: Boolean = Modifier.STATIC in modifiers
+    val isFinal: Boolean = Modifier.FINAL in modifiers
+    val isSynchronized: Boolean = Modifier.SYNCHRONIZED in modifiers
+    val isNative: Boolean = Modifier.NATIVE in modifiers
+    val isStrict: Boolean = Modifier.STRICT in modifiers
 
-    override fun specialize(vararg parameters: TypeMirror): MethodMirror {
-        return super.specialize(*parameters) as MethodMirror
+    val isSynthetic: Boolean = java.isSynthetic
+    val isVarArgs: Boolean = java.isVarArgs
+    val isBridge: Boolean = java.isBridge
+    val isDefault: Boolean = java.isDefault
+    val defaultValue: Any? = java.defaultValue
+
+    override fun withTypeParameters(vararg parameters: TypeMirror): MethodMirror {
+        return super.withTypeParameters(*parameters) as MethodMirror
     }
 
-    override fun enclose(type: ClassMirror): MethodMirror {
-        return super.enclose(type) as MethodMirror
+    override fun withDeclaringClass(type: ClassMirror?): MethodMirror {
+        return super.withDeclaringClass(type) as MethodMirror
     }
 
     private val instanceWrapper by lazy {

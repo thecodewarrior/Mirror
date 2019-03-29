@@ -25,4 +25,19 @@ class FieldSpecializationTest {
         assertEquals(Mirror.reflect<String>(), specializedDirectField.type)
         assertEquals(Mirror.reflect<GenericInterface1<String>>(), specializedIndirectField.type)
     }
+
+    @Test
+    fun specialize_withRawType_shouldReturnRawField() {
+        class FieldHolder<T>(
+            @JvmField
+            val field: T
+        )
+
+        val baseType = Mirror.reflectClass(FieldHolder::class.java)
+        val specializedType = Mirror.reflectClass<FieldHolder<String>>()
+        val specializedField = specializedType.declaredFields.find { it.name == "field" }!!
+        val despecializedField = specializedField.withDeclaringClass(baseType)
+
+        assertEquals(specializedField.raw, despecializedField)
+    }
 }

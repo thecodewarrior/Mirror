@@ -26,7 +26,7 @@ abstract class ExecutableMirror internal constructor(
 
     val parameters: List<ParameterMirror> by lazy {
         java.parameters.map {
-            cache.parameters.reflect(it).specialize(this)
+            cache.parameters.reflect(it).withDeclaringExecutable(this)
         }.unmodifiableView()
     }
 
@@ -54,20 +54,44 @@ abstract class ExecutableMirror internal constructor(
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
     }
 
-    open fun specialize(vararg parameters: TypeMirror): ExecutableMirror {
-        if(parameters.size != typeParameters.size)
+    open fun withTypeParameters(vararg parameters: TypeMirror): ExecutableMirror {
+        if(parameters.isNotEmpty() && parameters.size != typeParameters.size)
             throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from actual " +
                 "parameter count ${typeParameters.size}")
+//        if(parameters.toList() == raw.typeParameters) return raw
         val newSpecialization = specialization?.copy(arguments = parameters.toList())
             ?: ExecutableSpecialization(null, parameters.toList())
         return cache.executables.specialize(raw, newSpecialization)
     }
 
-    open fun enclose(type: ClassMirror): ExecutableMirror {
-        if(type.java != java.declaringClass)
-            throw InvalidSpecializationException("Invalid enclosing class $type. " +
+    open fun withDeclaringClass(type: ClassMirror?): ExecutableMirror {
+        if(type != null && type.java != java.declaringClass)
+            throw InvalidSpecializationException("Invalid declaring class $type. " +
                 "$this is declared in ${java.declaringClass}")
+//        if(type == raw.declaringClass) return raw
         val newSpecialization = this.specialization?.copy(enclosing = type) ?: ExecutableSpecialization(type, null)
         return cache.executables.specialize(raw, newSpecialization)
+    }
+
+    internal val descriptor: Any = Descriptor(this)
+
+    private class Descriptor(val mirror: ExecutableMirror) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Descriptor) return false
+
+            val m1 = mirror
+            val m2 = other.mirror
+            return m1.returnType == m2.returnType &&
+                m1.name == m2.name &&
+                m1.parameterTypes == m2.parameterTypes
+        }
+
+        override fun hashCode(): Int {
+            var result = mirror.returnType.hashCode()
+            result = 31 * result + mirror.name.hashCode()
+            result = 31 * result + mirror.parameterTypes.hashCode()
+            return result
+        }
     }
 }

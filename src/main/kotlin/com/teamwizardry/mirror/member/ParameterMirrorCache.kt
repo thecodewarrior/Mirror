@@ -17,7 +17,7 @@ internal class ParameterMirrorCache(private val cache: MirrorCache) {
     fun specialize(parameter: ParameterMirror, executable: ExecutableMirror): ParameterMirror {
         val raw = parameter.raw
         return specializedCache.getOrPut(raw to executable) {
-            if(executable.raw == executable)
+            if(raw.declaringExecutable == executable)
                 raw
             else
                 ParameterMirror(cache, raw, executable, raw.java)

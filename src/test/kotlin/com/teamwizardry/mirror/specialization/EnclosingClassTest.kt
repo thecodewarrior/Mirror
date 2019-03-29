@@ -142,7 +142,7 @@ class EnclosingClassTest: MirrorTestBase() {
     @DisplayName("Getting the declared classes of a leaf class should return an empty list")
     fun declaredClasses_ofLeafClass_shouldBeEmpty() {
         val clazz = Mirror.reflectClass(Object1::class.java)
-        assertEquals(emptyList<ClassMirror>(), clazz.declaredClasses)
+        assertEquals(emptyList<ClassMirror>(), clazz.declaredMemberClasses)
     }
 
     @Test
@@ -152,6 +152,6 @@ class EnclosingClassTest: MirrorTestBase() {
         val innerStatic = Mirror.reflectClass(OuterClass1.InnerStaticClass::class.java)
         val inner = Mirror.reflectClass(OuterClass1.InnerClass::class.java)
         val inner2 = Mirror.reflectClass(OuterClass1.InnerClass2::class.java)
-        assertSameSet(listOf(innerStatic, inner, inner2), outer.declaredClasses)
+        assertSameSet(listOf(innerStatic, inner, inner2), outer.declaredMemberClasses)
     }
 }

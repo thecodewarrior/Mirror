@@ -56,6 +56,24 @@ internal class TypeMirrorTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("Reflecting a method should return the same method as the one in the class mirror")
+    fun reflect_withMethod_shouldReturnSameAsClassMethod() {
+        val method = holder.getMethod("void method()")
+        val mirror = Mirror.reflectClass<TypeMirrorHolder.DirectInClassEquality>()
+            .declaredMethods.find { it.name == "method" }!!
+        assertEquals(mirror, Mirror.reflect(method))
+    }
+
+    @Test
+    @DisplayName("Reflecting a field should return the same field as the one in the class mirror")
+    fun reflect_withField_shouldReturnSameAsClassField() {
+        val field = holder.getField("int field")
+        val mirror = Mirror.reflectClass<TypeMirrorHolder.DirectInClassEquality>()
+            .declaredFields.find { it.name == "field" }!!
+        assertEquals(mirror, Mirror.reflect(field))
+    }
+
+    @Test
     @DisplayName("Getting the annotations of an unannotated type should return an empty list")
     fun getAnnotation_ofUnannotatedType_shouldReturnEmptyList() {
         val type = Mirror.reflect(holder["Object1"])

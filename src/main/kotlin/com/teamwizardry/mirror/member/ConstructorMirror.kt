@@ -19,12 +19,12 @@ class ConstructorMirror internal constructor(
     val description: String get() = "${declaringClass.java.simpleName}(${raw.parameterTypes.joinToString(", ")})"
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
-    override fun specialize(vararg parameters: TypeMirror): ConstructorMirror {
-        return super.specialize(*parameters) as ConstructorMirror
+    override fun withTypeParameters(vararg parameters: TypeMirror): ConstructorMirror {
+        return super.withTypeParameters(*parameters) as ConstructorMirror
     }
 
-    override fun enclose(type: ClassMirror): ConstructorMirror {
-        return super.enclose(type) as ConstructorMirror
+    override fun withDeclaringClass(type: ClassMirror?): ConstructorMirror {
+        return super.withDeclaringClass(type) as ConstructorMirror
     }
 
     private val wrapper by lazy {

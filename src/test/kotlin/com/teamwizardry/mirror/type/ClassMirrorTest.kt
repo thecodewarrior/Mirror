@@ -18,6 +18,7 @@ import com.teamwizardry.mirror.testsupport.OuterGenericClass1
 import com.teamwizardry.mirror.testsupport.SealedClass
 import com.teamwizardry.mirror.testsupport.assertSameList
 import com.teamwizardry.mirror.testsupport.assertSameSet
+import com.teamwizardry.mirror.testsupport.assertSetEquals
 import com.teamwizardry.mirror.testsupport.simpletypes.JObject1
 import com.teamwizardry.mirror.type.ClassMirror.Flag
 import com.teamwizardry.mirror.typeholders.ClassMirrorHolder
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import com.teamwizardry.mirror.typeholders.ClassMirrorHolder as H
 
 internal class ClassMirrorTest: MirrorTestBase() {
     private val holder = ClassMirrorHolder()
@@ -271,7 +273,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
             // TODO java lambda KClass error
             // `kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: class com.teamwizardry.mirror.typeholders.ClassMirrorHolder$$Lambda$246/50345623`
             // { assertEquals(setOf(Flag.SYNTHETIC), Mirror.reflectClass(holder.lambda.javaClass).flags) },
-            { assertEquals(setOf(Flag.ABSTRACT, Flag.FINAL, Flag.PRIMITIVE), Mirror.Types.int.flags) },
+            { assertEquals(setOf(Flag.ABSTRACT, Flag.FINAL, Flag.PRIMITIVE), Mirror.types.int.flags) },
             { testFlags<JObject1>() },
             { testFlags<EnumClass1>(Flag.ENUM) }
         )
@@ -307,5 +309,19 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun enumConstants_ofAnonymousEnumSubclass_shouldReturnNull() {
         assertNull(Mirror.reflectClass(EnumClass1.ANONYMOUS.javaClass).enumConstants)
+    }
+
+    private inline fun <reified T> testMethodsAgainstJava()
+        = assertSetEquals(T::class.java.methods.map { Mirror.reflect(it) }, Mirror.reflectClass<T>().methods)
+
+    @Test
+    fun methods_ofRawTypes_shouldMatchJava() {
+        assertSetEquals(Mirror.types.int.java.methods.map { Mirror.reflect(it) }, Mirror.types.int.methods)
+        testMethodsAgainstJava<H.EmptyInterface>()
+        testMethodsAgainstJava<H.NonEmptyInterface>()
+        testMethodsAgainstJava<H.NonEmptyInterfaceOverride>()
+        testMethodsAgainstJava<H.NonEmptyInterfaceShadow>()
+        testMethodsAgainstJava<H.NonEmptyInterfaceImplSuperOverrideImpl>()
+        testMethodsAgainstJava<H.ClassWithStaticsInSupertypes>()
     }
 }

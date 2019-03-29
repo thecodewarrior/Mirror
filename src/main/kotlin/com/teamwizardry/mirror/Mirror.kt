@@ -23,6 +23,10 @@ import java.lang.reflect.Type
  */
 object Mirror {
     internal var cache = MirrorCache()
+    // separate property because Intellij puts an annoying underline on `var` properties
+    internal var _types = Types()
+    @JvmStatic
+    val types: Types get() = _types
 
     /**
      * Gets the type mirror representing the passed type
@@ -200,31 +204,31 @@ object Mirror {
     /**
      * Easy access to core Java types (void + primitives + Object)
      */
-    object Types {
+    class Types internal constructor() {
         /** The type mirror representing the `void` type */
-        @JvmStatic val void: VoidMirror get() = reflect(Void.TYPE) as VoidMirror
+        val void: VoidMirror = reflect(Void.TYPE) as VoidMirror
 
         /** The type mirror representing the primitive `boolean` type */
-        @JvmStatic val boolean: ClassMirror get() = reflectClass(Boolean::class.javaPrimitiveType!!)
+        val boolean: ClassMirror = reflectClass(Boolean::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `byte` type */
-        @JvmStatic val byte: ClassMirror get() = reflectClass(Byte::class.javaPrimitiveType!!)
+        val byte: ClassMirror = reflectClass(Byte::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `char` type */
-        @JvmStatic val char: ClassMirror get() = reflectClass(Char::class.javaPrimitiveType!!)
+        val char: ClassMirror = reflectClass(Char::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `short` type */
-        @JvmStatic val short: ClassMirror get() = reflectClass(Short::class.javaPrimitiveType!!)
+        val short: ClassMirror = reflectClass(Short::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `int` type */
-        @JvmStatic val int: ClassMirror get() = reflectClass(Int::class.javaPrimitiveType!!)
+        val int: ClassMirror = reflectClass(Int::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `long` type */
-        @JvmStatic val long: ClassMirror get() = reflectClass(Long::class.javaPrimitiveType!!)
+        val long: ClassMirror = reflectClass(Long::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `float` type */
-        @JvmStatic val float: ClassMirror get() = reflectClass(Float::class.javaPrimitiveType!!)
+        val float: ClassMirror = reflectClass(Float::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `double` type */
-        @JvmStatic val double: ClassMirror get() = reflectClass(Double::class.javaPrimitiveType!!)
+        val double: ClassMirror = reflectClass(Double::class.javaPrimitiveType!!)
 
         /** The type mirror representing the `Object` type */
-        @JvmStatic val `object`: ClassMirror get() = reflectClass<Any>()
+        val `object`: ClassMirror = reflectClass<Any>()
         /** The type mirror representing the `Any` type (synonymous with [object]) */
         @get:JvmSynthetic
-        val any: ClassMirror get() = reflectClass<Any>()
+        val any: ClassMirror = reflectClass<Any>()
     }
 }

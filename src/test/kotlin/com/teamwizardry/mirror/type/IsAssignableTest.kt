@@ -265,8 +265,8 @@ internal class IsAssignableTest: MirrorTestBase() {
     @DisplayName("The void mirror should be assignable from itself")
     fun voidAssignableFromSelf() {
         assertTrue(
-            Mirror.Types.void.isAssignableFrom(
-                Mirror.Types.void
+            Mirror.types.void.isAssignableFrom(
+                Mirror.types.void
             )
         )
     }
@@ -275,22 +275,22 @@ internal class IsAssignableTest: MirrorTestBase() {
     @DisplayName("The void mirror should not be assignable from other types")
     fun voidNotAssignableFromOthers() {
         assertFalse(
-            Mirror.Types.void.isAssignableFrom(
-                Mirror.Types.any
+            Mirror.types.void.isAssignableFrom(
+                Mirror.types.any
             )
         )
         assertFalse(
-            Mirror.Types.void.isAssignableFrom(
+            Mirror.types.void.isAssignableFrom(
                 Mirror.reflect<IntArray>()
             )
         )
         assertFalse(
-            Mirror.Types.void.isAssignableFrom(
+            Mirror.types.void.isAssignableFrom(
                 Mirror.reflect<GenericObject1<String>>()
             )
         )
         assertFalse(
-            Mirror.Types.void.isAssignableFrom(
+            Mirror.types.void.isAssignableFrom(
                 Mirror.reflect(holder["? super Object1Sub"])
             )
         )
