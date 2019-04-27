@@ -19,7 +19,6 @@ import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.jvm.KotlinReflectionNotSupportedError
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
@@ -246,48 +245,54 @@ class ClassMirror internal constructor(
 
     /*
 
+    Key:
+    * not implemented
+    - done
+    ? untested
+
     // methods = publicly visible on this and subclasses
     // declaredMethods = publicly and privately visible on this class specifically
-    // allMethods = publicly and privately visible on this class and subclasses (excluding overrides? including shadows)
+    // allMethods = publicly and privately visible on this class and subclasses (excluding overrides/shadows?)
 
     // returns the specialized version of the passed method. So
     // `List<String>.getMethod(List.getMethod("get", Any)) == .get(String)`
-    fun getMethod(other: MethodMirror): MethodMirror?
-    fun getField(other: FieldMirror): FieldMirror?
-    fun getConstructor(other: ConstructorMirror): ConstructorMirror?
-    fun getMemberClass(other: MemberClassMirror): MemberClassMirror?
+    * fun getMethod(other: MethodMirror): MethodMirror?
+    * fun getField(other: FieldMirror): FieldMirror?
+    * fun getConstructor(other: ConstructorMirror): ConstructorMirror?
+    * fun getMemberClass(other: MemberClassMirror): MemberClassMirror?
 
-    val methods: List<MethodMirror>
-    val declaredMethods: List<MethodMirror>
-    val allMethods: List<MethodMirror>
-    fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
-    fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
-    fun getDeclaredMethod(name: String, vararg args: TypeMirror): MethodMirror?
-    fun getDeclaredMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
-    fun getAllMethods(name: String, vararg args: TypeMirror): List<MethodMirror>
-    fun getAllMethods(raw: Boolean, name: String, vararg args: TypeMirror): List<MethodMirror>
+    - val methods: List<MethodMirror>
+    - val declaredMethods: List<MethodMirror>
+    ? val allMethods: List<MethodMirror>
+    * fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
+    * fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
+    * fun getDeclaredMethod(name: String, vararg args: TypeMirror): MethodMirror?
+    * fun getDeclaredMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
+    * fun getAllMethods(name: String, vararg args: TypeMirror): List<MethodMirror>
+    * fun getAllMethods(raw: Boolean, name: String, vararg args: TypeMirror): List<MethodMirror>
 
-    val fields: List<FieldMirror>
-    val declaredFields: List<FieldMirror>
-    val allFields: List<FieldMirror>
-    fun getField(name: String): FieldMirror?
-    fun getDeclaredField(name: String): FieldMirror?
-    fun getAllFields(name: String): List<FieldMirror>
+    ? val fields: List<FieldMirror>
+    - val declaredFields: List<FieldMirror>
+    ? val allFields: List<FieldMirror>
+    * fun getField(name: String): FieldMirror?
+    * fun getDeclaredField(name: String): FieldMirror?
+    * fun getAllFields(name: String): List<FieldMirror>
 
-    val constructors: List<ConstructorMirror>
-    val declaredConstructors: List<ConstructorMirror>
-    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
-    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
+    ? val constructors: List<ConstructorMirror>
+    - val declaredConstructors: List<ConstructorMirror>
+    * fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
+    * fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
 
-    val memberClasses: List<ClassMirror>
-    val declaredMemberClasses: List<ClassMirror>
-    val allMemberClasses: List<ClassMirror>
-    fun getMemberClass(name: String): ClassMirror?
-    fun getDeclaredMemberClass(name: String): ClassMirror?
-    fun getAllMemberClasses(name: String): List<ClassMirror>
+    ? val memberClasses: List<ClassMirror>
+    - val declaredMemberClasses: List<ClassMirror>
+    ? val allMemberClasses: List<ClassMirror>
+    * fun getMemberClass(name: String): ClassMirror?
+    * fun getDeclaredMemberClass(name: String): ClassMirror?
+    * fun getAllMemberClasses(name: String): List<ClassMirror>
 
     /** the _declaration site_ annotations, as opposed to [typeAnnotations] */
-    - val annotations: List<Annotation>
+    ? val annotations: List<Annotation>
+    * val declaredAnnotations: List<Annotation>
 
     - val modifiers: Set<Modifier>
     - val access: Modifier.Access
@@ -307,9 +312,9 @@ class ClassMirror internal constructor(
     - val isData: Boolean
     - val isCompanion: Boolean
 
-    - val simpleName: String
-    - val name: String
-    - val canonicalName: String
+    ? val simpleName: String
+    ? val name: String
+    ? val canonicalName: String
 
     // returns the enum type of this class, either this mirror or its superclass in the case of anonymous subclass enum
     // elements
@@ -449,6 +454,7 @@ class ClassMirror internal constructor(
     //endregion
 
     //region Methods
+    //TODO specialized test
     val methods: List<MethodMirror> by lazy {
         val declaredPublic = declaredMethods.filter { it.access == Modifier.Access.PUBLIC }
 
@@ -483,6 +489,7 @@ class ClassMirror internal constructor(
 
         return@lazy result.filterNotNull().unmodifiableView()
     }
+    //TODO test
     val allMethods: List<MethodMirror> by lazy {
         (declaredMethods + interfaces.flatMap { it.allMethods } +
             (superclass?.allMethods ?: emptyList())).uniqueBy { it.descriptor }.unmodifiableView()
@@ -496,6 +503,7 @@ class ClassMirror internal constructor(
     //endregion
 
     //region Fields
+    //TODO test
     val fields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
     val allFields: List<FieldMirror> by lazy {
         (declaredFields + interfaces.flatMap { it.allFields } +
@@ -507,12 +515,14 @@ class ClassMirror internal constructor(
     //endregion
 
     //region Constructors
+    //TODO test
     val constructors: List<ConstructorMirror> by lazy { java.constructors.mapNotNull { getConstructor(it) }.unmodifiableView() }
 //    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
 //    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
     //endregion
 
     //region Member classes
+    //TODO test
     val memberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
     val allMemberClasses: List<ClassMirror> by lazy {
         (declaredMemberClasses + interfaces.flatMap { it.allMemberClasses } +
