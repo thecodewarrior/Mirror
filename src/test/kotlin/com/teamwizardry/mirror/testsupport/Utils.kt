@@ -92,28 +92,6 @@ inline fun <reified T> assertInstanceOf(actual: Any?) {
     assertInstanceOf(T::class.java, actual)
 }
 
-//TODO test
-fun assertAllEquals(message: String? = null, fn: AssertAllEqualsBuilder.() -> Unit) {
-    val builder = AssertAllEqualsBuilder()
-    builder.fn()
-    if(builder.errors.isNotEmpty()) {
-        val expected = builder.errors.joinToString(", ") { (message, expected, _) -> "$message = $expected" }
-        val actual = builder.errors.joinToString(", ") { (message, _, actual) -> "$message = $actual" }
-
-        throw AssertionFailedError(message ?: "", expected, actual)
-    }
-}
-
-class AssertAllEqualsBuilder {
-    val errors = mutableListOf<Triple<String, String, String>>()
-
-    fun assert(message: String, expected: Any, actual: Any) {
-        if(expected != actual) {
-            errors.add(Triple(message, expected.toString(), actual.toString()))
-        }
-    }
-}
-
 private fun Any?.toStringWithIdentity(): String {
     if(this == null) return "null"
 
