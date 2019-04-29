@@ -5,9 +5,6 @@ import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
-/**
- * Represents type variables (the `T` in `List<T>` and `public T theField`)
- */
 class VariableMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: TypeVariable<*>,

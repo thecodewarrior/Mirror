@@ -22,9 +22,16 @@ import java.lang.reflect.Type
  * The central class used to retrieve mirrors of Core Reflection objects
  */
 object Mirror {
-    internal var cache = MirrorCache()
-    // separate property because Intellij puts an annoying underline on `var` properties
-    internal var _types = Types()
+    // these instances are replaced by the unit tests using reflection. `types` doesn't simply have a private setter
+    // because if it did IDEA would mark it as mutable with an underline, which is incorrect and gets irritating
+    private var cache = MirrorCache()
+    private var _types = createTypes()
+    private fun createTypes(): Types {
+        val c = Types::class.java.getDeclaredConstructor()
+        c.isAccessible = true
+        return c.newInstance()
+    }
+
     @JvmStatic
     val types: Types get() = _types
 
@@ -204,7 +211,7 @@ object Mirror {
     /**
      * Easy access to core Java types (void + primitives + Object)
      */
-    class Types internal constructor() {
+    class Types private constructor() {
         /** The type mirror representing the `void` type */
         val void: VoidMirror = reflect(Void.TYPE) as VoidMirror
 

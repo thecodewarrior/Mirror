@@ -149,6 +149,26 @@ public class AnnotatedTypeHolder {
         DIRECT
     }
 
+    /**
+     * - Annotate a method to provide indexed access to its parameter types
+     * - Annotate a method and set {@code type} to {@code DIRECT} to provide access to its return type
+     * - Annotate a field to provide access to its type
+     * - Annotate a parameter to provide access to its type
+     *
+     * When applied to methods and {@code type} is {@code PARAMS}, {@code index} is an offset for parameter indices,
+     * otherwise {@code index} is the index within the type identifier
+     *
+     * <pre>
+     * &#064;TypeHolder("Foo&lt;Bar&gt;")
+     * private Foo&lt;Bar&gt; foo;
+     * // get("Foo&lt;Bar&gt;") == Foo&lt;Bar&gt;
+     *
+     * &#064;TypeHolder("Foo&lt;Bar&gt;, Foo&lt;Baz&gt;")
+     * private void fooTypes(Foo&lt;Bar&gt; arg0, Foo&lt;Baz&gt; arg1) {}
+     * // get("Foo&lt;Bar&gt;, Foo&lt;Baz&gt;", 0) == Foo&lt;Bar&gt;
+     * // get("Foo&lt;Bar&gt;, Foo&lt;Baz&gt;", 1) == Foo&lt;Baz&gt;
+     * </pre>
+     */
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
     @Retention(RetentionPolicy.RUNTIME)
     public @interface TypeHolder {
@@ -157,6 +177,9 @@ public class AnnotatedTypeHolder {
         HolderType type() default HolderType.PARAMS;
     }
 
+    /**
+     * Marks something to be accessed by name. Used to provided named access to methods, fields, types, etc.
+     */
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR,
             ElementType.PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -164,6 +187,15 @@ public class AnnotatedTypeHolder {
         String value();
     }
 
+    /**
+     * If the desired type is not a concrete type (e.g. {@code ? extends Foo}), {@code Unwrap} will resolve to its
+     * type parameter. Meaning a type holder of type {@code Unwrap<? extends Foo>} will resolve to {@code ? extends Foo}
+     * <pre>
+     * &#064;TypeHolder("? extends Foo")
+     * private Unwrap&lt;? extends Foo&gt; foo;
+     * </pre>
+     * @param <T> The type to resolve to
+     */
     protected final class Unwrap<T> {
     }
 }

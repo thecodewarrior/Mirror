@@ -8,6 +8,14 @@ public class ClassMirrorHolder extends AnnotatedTypeHolder {
     @TypeHolder("Object1")
     void type_Object1(Object1 a) {}
 
+    private Object1 innerAnonymous = new Object1() {
+        public boolean hi = true;
+    };
+
+    public Object1 getInnerAnonymous() {
+        return innerAnonymous;
+    }
+
     public Object1 getAnonymous() {
         return new Object1() {
             public boolean hi = true;
@@ -23,7 +31,8 @@ public class ClassMirrorHolder extends AnnotatedTypeHolder {
         return () -> {};
     }
 
-    // these have to be @ElementHolders because they are for modifier testing and so they can't all have the `public` modifier
+    // these have to be @ElementHolders because they are for modifier testing and can't all have the `public` modifier
+    @ElementHolder("public static class") public class PublicStaticClass {}
     @ElementHolder("public class") public class PublicClass {}
     @ElementHolder("default class") class DefaultClass {}
     @ElementHolder("protected class") protected class ProtectedClass {}

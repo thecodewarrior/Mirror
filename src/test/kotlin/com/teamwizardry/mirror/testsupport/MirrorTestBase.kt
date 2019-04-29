@@ -11,7 +11,19 @@ open class MirrorTestBase {
     }
 
     open fun initializeForTest() {
-        Mirror.cache = MirrorCache()
-        Mirror._types = Mirror.Types()
+        cacheField.set(Mirror, MirrorCache())
+        typesField.set(Mirror, createTypesMethod.invoke(Mirror))
+    }
+
+    private companion object {
+        val cacheField = Mirror::class.java.getDeclaredField("cache")
+        val typesField = Mirror::class.java.getDeclaredField("_types")
+        val createTypesMethod = Mirror::class.java.getDeclaredMethod("createTypes")
+
+        init {
+            cacheField.isAccessible = true
+            typesField.isAccessible = true
+            createTypesMethod.isAccessible = true
+        }
     }
 }

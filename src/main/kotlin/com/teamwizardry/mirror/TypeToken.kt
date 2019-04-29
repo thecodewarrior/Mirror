@@ -50,6 +50,13 @@ abstract class TypeToken<T> {
     }
 }
 
+/**
+ * Create a type token with the given type
+ *
+ * **NOTE!!** Due to a bug in javac before JDK 10, in most cases annotated type tokens will not work. https://github.com/raphw/byte-buddy/issues/583
+ *
+ * **NOTE!!** As of 1.3, Kotlin does not support runtime type annotations. Thus, type annotations in kotlin code will not work.
+ */
 inline fun <reified T> typeToken(): Type {
     return object : TypeToken<T>() {}.get()
 }

@@ -144,7 +144,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
 
     @Test
     @DisplayName("Getting declared fields of a class should return the correct mirrors")
-    fun getFields() {
+    fun getDeclaredFields() {
         class FieldHolder(
             @JvmField var foo: String,
             @JvmField private var bar: String
@@ -161,7 +161,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
 
     @Test
     @DisplayName("Getting declared methods of a class should return the correct mirrors")
-    fun getMethods() {
+    fun getDeclaredMethods() {
         class MethodHolder {
             fun foo() {}
             private fun bar() {}
@@ -178,7 +178,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
 
     @Test
     @DisplayName("Getting declared constructors of a class should return the correct mirrors")
-    fun getConstructors() {
+    fun getDeclaredConstructors() {
         class ConstructorHolder {
             constructor(foo: String)
             private constructor(bar: Int)
@@ -256,6 +256,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun flags_ofClasses_shouldBeCorrect() {
         assertAll(
+            { testFlags("public static class", Flag.MEMBER) },
             { testFlags("public class", Flag.MEMBER) },
             { testFlags("default class", Flag.MEMBER) },
             { testFlags("protected class", Flag.MEMBER) },
@@ -267,15 +268,10 @@ internal class ClassMirrorTest: MirrorTestBase() {
             // { testFlags("strictfp class", Flag.MEMBER, Flag.STRICT) },
             { testFlags("annotation class", Flag.MEMBER, Flag.INTERFACE, Flag.ABSTRACT, Flag.ANNOTATION, Flag.STATIC) },
             { testFlags("interface", Flag.MEMBER, Flag.STATIC, Flag.INTERFACE, Flag.ABSTRACT) },
-            // TODO java anonymous KClass error
-            // `kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: class com.teamwizardry.mirror.typeholders.ClassMirrorHolder$1`
-            // { assertEquals(setOf(Flag.ANONYMOUS), Mirror.reflectClass(holder.anonymous.javaClass).flags) },
-            // TODO java local KClass error
-            // `kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: class com.teamwizardry.mirror.typeholders.ClassMirrorHolder$1LocalClass`
-            // { assertEquals(setOf(Flag.LOCAL), Mirror.reflectClass(holder.local).flags) },
-            // TODO java lambda KClass error
-            // `kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: class com.teamwizardry.mirror.typeholders.ClassMirrorHolder$$Lambda$246/50345623`
-            // { assertEquals(setOf(Flag.SYNTHETIC), Mirror.reflectClass(holder.lambda.javaClass).flags) },
+            { assertEquals(setOf(Flag.ANONYMOUS), Mirror.reflectClass(holder.innerAnonymous.javaClass).flags) },
+            { assertEquals(setOf(Flag.ANONYMOUS), Mirror.reflectClass(holder.anonymous.javaClass).flags) },
+            { assertEquals(setOf(Flag.LOCAL), Mirror.reflectClass(holder.local).flags) },
+            { assertEquals(setOf(Flag.FINAL, Flag.SYNTHETIC), Mirror.reflectClass(holder.lambda.javaClass).flags) },
             { assertEquals(setOf(Flag.ABSTRACT, Flag.FINAL, Flag.PRIMITIVE), Mirror.types.int.flags) },
             { testFlags<JObject1>() },
             { testFlags<EnumClass1>(Flag.ENUM) }

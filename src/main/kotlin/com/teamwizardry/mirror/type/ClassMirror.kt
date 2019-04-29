@@ -7,6 +7,7 @@ import com.teamwizardry.mirror.coretypes.TypeImplAccess
 import com.teamwizardry.mirror.member.ConstructorMirror
 import com.teamwizardry.mirror.member.ExecutableMirror
 import com.teamwizardry.mirror.member.FieldMirror
+import com.teamwizardry.mirror.member.JvmModifier
 import com.teamwizardry.mirror.member.MethodMirror
 import com.teamwizardry.mirror.member.Modifier
 import com.teamwizardry.mirror.utils.checkedCast
@@ -24,12 +25,6 @@ import kotlin.reflect.KVisibility
 
 
 
-/**
- * A type mirror representing a Java class. Classes are the only type mirror that supports manual specialization as
- * they are the only types that have generic type parameters.
- *
- * @see TypeMirror
- */
 class ClassMirror internal constructor(
     override val cache: MirrorCache,
     override val java: Class<*>,
@@ -353,11 +348,29 @@ class ClassMirror internal constructor(
         Flag.SYNTHETIC to java.isSynthetic
     ).filter { it.second }.mapTo(mutableSetOf()) { it.first }.unmodifiableView()
 
+    /**
+     * Returns true if this mirror represents an abstract class.
+     */
     val isAbstract: Boolean = Flag.ABSTRACT in flags
+    /**
+     * Returns true if this mirror represents a static class.
+     */
     val isStatic: Boolean = Flag.STATIC in flags
+    /**
+     * Returns true if this mirror represents a final class.
+     */
     val isFinal: Boolean = Flag.FINAL in flags
+    /**
+     * Returns true if the class this mirror represents has the `strictfp` modifier.
+     *
+     * NOTE: For unknown reasons the strictfp modifier is not present in the Core Reflection modifiers, so this is
+     * always false
+     */
     val isStrict: Boolean = Flag.STRICT in flags
 
+    /**
+     * Returns true if the class this mirror represents is not final.
+     */
     val isOpen: Boolean = !isFinal
     /**
      * Returns true if this object represents a Kotlin class and that class is a companion class
@@ -383,18 +396,64 @@ class ClassMirror internal constructor(
      */
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     val isSealed: Boolean get() = kClass?.isSealed ?: false
+    /**
+     * Returns true if this mirror represents an annotation class.
+     */
     val isAnnotation: Boolean = Flag.ANNOTATION in flags
+    /**
+     * Returns true if this mirror represents an anonymous class.
+     */
     val isAnonymous: Boolean = Flag.ANONYMOUS in flags
+    /**
+     * Returns true if this mirror represents an enum class. This is false for anonymous enum subclasses, so for more
+     * consistent behavior use [enumType].
+     */
     val isEnum: Boolean = Flag.ENUM in flags
+    /**
+     * Returns true if the class this mirror represents is an interface.
+     */
     val isInterface: Boolean = Flag.INTERFACE in flags
+    /**
+     * Returns true if this mirror represents a local class. Local classes are classes declared within a block of code
+     * such as a method or constructor.
+     */
     val isLocal: Boolean = Flag.LOCAL in flags
+    /**
+     * Returns true if the class this mirror represents is a member of another class. Member classes include TODO what?
+     */
     val isMember: Boolean = Flag.MEMBER in flags
+    /**
+     * Returns true if this mirror represents a primitive class.
+     */
     val isPrimitive: Boolean = Flag.PRIMITIVE in flags
+    /**
+     * Returns true if this mirror represents a synthetic class.
+     */
     val isSynthetic: Boolean = Flag.SYNTHETIC in flags
 
+    /**
+     * Returns annotations that are present on the class this mirror represents. These are not the annotations
+     * present on the use of the type, for those use [typeAnnotations]
+     *
+     * @see Class.getAnnotations
+     */
     val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
+
+    /**
+     * Returns annotations that are directly present on the class this mirror represents. These are not the annotations
+     * present on the use of the type, for those use [typeAnnotations]
+     *
+     * @see Class.getDeclaredAnnotations
+     */
     val declaredAnnotations: List<Annotation> = java.declaredAnnotations.toList().unmodifiableView()
 
+    /**
+     * Returns the logical enum type of the class this mirror represents, taking into account anonymous enum subclasses,
+     * or null if this mirror does not represent an enum type or enum subclass.
+     *
+     * Anonymous enum subclasses (any enum element that overrides or implements a method from the enum itself) aren't
+     * enum classes themselves. This method will return the true enum class for both the actual enum and the subclasses.
+     */
     val enumType: ClassMirror? by lazy {
         when {
             this.isEnum -> this
@@ -402,10 +461,34 @@ class ClassMirror internal constructor(
             else -> null
         }
     }
+
+    /**
+     * Returns the list of constants in the enum class this mirror represents, or null if this mirror does not
+     * represent an enum class. If this mirror represents an anonymous subclass of an enum, this will return null.
+     *
+     * @see enumType
+     * @see Class.enumConstants
+     */
     val enumConstants: List<Enum<*>>? = java.enumConstants?.toList()?.checkedCast<Enum<*>>()?.unmodifiableView()
 
+    /**
+     * Returns the simple name of the class this mirror represents.
+     *
+     * See [Class.getSimpleName] for nuances.
+     */
     val simpleName: String = java.simpleName
+    /**
+     * Returns the internal name of the class this mirror represents. (e.g. `boolean` = `Z`,
+     * `com.example.Foo` = `Lcom.example.Foo;`)
+     *
+     * See [Class.getName] for nuances.
+     */
     val name: String = java.name
+    /**
+     * Returns the simple name of the class this mirror represents.
+     *
+     * See [Class.getCanonicalName] for nuances.
+     */
     val canonicalName: String? = java.canonicalName
     //endregion
 
@@ -419,7 +502,14 @@ class ClassMirror internal constructor(
 
     //region Specializers
 
+    /**
+     * Gets the specialized mirror that represents the same method as [other], or null if this type has no
+     * corresponding mirror.
+     */
     fun getMethod(other: MethodMirror): MethodMirror? = getMethod(other.java)
+    /**
+     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     */
     fun getMethod(other: Method): MethodMirror? {
         if(other.declaringClass == this.java) {
             return declaredMethods.find { it.java == other }
@@ -427,7 +517,14 @@ class ClassMirror internal constructor(
         return findSuperclass(other.declaringClass)?.getMethod(other)
     }
 
+    /**
+     * Gets the specialized mirror that represents the same field as [other], or null if this type has no
+     * corresponding mirror.
+     */
     fun getField(other: FieldMirror): FieldMirror? = getField(other.java)
+    /**
+     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     */
     fun getField(other: Field): FieldMirror? {
         if(other.declaringClass == this.java) {
             return declaredFields.find { it.java == other }
@@ -435,7 +532,14 @@ class ClassMirror internal constructor(
         return findSuperclass(other.declaringClass)?.getField(other)
     }
 
+    /**
+     * Gets the specialized mirror that represents the same constructor as [other], or null if this type has no
+     * corresponding mirror.
+     */
     fun getConstructor(other: ConstructorMirror): ConstructorMirror? = getConstructor(other.java)
+    /**
+     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     */
     fun getConstructor(other: Constructor<*>): ConstructorMirror? {
         if(other.declaringClass == this.java) {
             return declaredConstructors.find { it.java == other }
@@ -443,7 +547,14 @@ class ClassMirror internal constructor(
         return findSuperclass(other.declaringClass)?.getConstructor(other)
     }
 
+    /**
+     * Gets the specialized mirror that represents the same member class as [other], or null if this type has no
+     * corresponding mirror.
+     */
     fun getMemberClass(other: ClassMirror): ClassMirror? = getMemberClass(other.java)
+    /**
+     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     */
     fun getMemberClass(other: Class<*>): ClassMirror? {
         if(other.declaringClass == this.java) {
             return declaredMemberClasses.find { it.java == other }
@@ -454,45 +565,44 @@ class ClassMirror internal constructor(
     //endregion
 
     //region Methods
-    //TODO specialized test
     val methods: List<MethodMirror> by lazy {
-        val declaredPublic = declaredMethods.filter { it.access == Modifier.Access.PUBLIC }
-
-        var inheritedMethods = interfaces.flatMap { iface -> iface.methods.filter { !it.isStatic } }.toMutableList()
-
-        superclass?.also { superclass ->
-            val supers = superclass.methods.toMutableList()
-            supers.filter { !it.isAbstract && !it.isDefault }.forEach { m ->
-                inheritedMethods.removeIf { it.descriptor == m.descriptor }
-            }
-            supers.addAll(inheritedMethods)
-            inheritedMethods = supers
-        }
-
-        // Filter out all local methods from inherited ones
-        declaredPublic.forEach { m ->
-            inheritedMethods.removeIf {
-                it.descriptor == m.descriptor || it in declaredPublic
-            }
-        }
-        val result = (declaredPublic + inheritedMethods).toMutableList<MethodMirror?>()
-
-        result.forEach { m ->
-            if(m?.isDefault == true)
-                result.forEachIndexed { i, it ->
-                    if (it != null && it != m && (m.descriptor == it.descriptor) &&
-                        m.declaringClass != it.declaringClass &&
-                        m.declaringClass.isAssignableFrom(it.declaringClass))
-                        result[i] = null
-                }
-        }
-
-        return@lazy result.filterNotNull().unmodifiableView()
+        java.methods.map { this.getMethod(it)!! }
     }
-    //TODO test
     val allMethods: List<MethodMirror> by lazy {
-        (declaredMethods + interfaces.flatMap { it.allMethods } +
-            (superclass?.allMethods ?: emptyList())).uniqueBy { it.descriptor }.unmodifiableView()
+
+        val allInterfaces = mutableSetOf<Class<*>>()
+        val allClasses = mutableSetOf<Class<*>>()
+
+        var current: Class<*>? = this.java
+        while(current != null) {
+            allClasses.add(current)
+            allInterfaces.addAll(current.interfaces)
+            current = current.superclass
+        }
+
+        // java.lang.Class.MethodArray#matchesNameAndDescriptor
+        fun matchesNameAndDescriptor(m1: Method, m2: Method) =
+            m1.returnType == m2.returnType &&
+                m1.name == m2.name &&
+                m1.parameterTypes!!.contentEquals(m2.parameterTypes)
+
+        val allMethodsUnfiltered = mutableListOf<Method>()
+
+        allClasses.forEach { clazz ->
+            allMethodsUnfiltered.addAll(clazz.declaredMethods)
+        }
+        allInterfaces.forEach { iface ->
+            allMethodsUnfiltered.addAll(iface.declaredMethods.filter { !JvmModifier.isStatic(it.modifiers) })
+        }
+
+        val allMethods = mutableListOf<Method>()
+
+        allMethodsUnfiltered.forEach { method ->
+            if(allMethods.none { matchesNameAndDescriptor(method, it) })
+                allMethods.add(method)
+        }
+
+        return@lazy allMethods.map { this.getMethod(it)!! }.unmodifiableView()
     }
 //    fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
 //    fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
@@ -506,8 +616,7 @@ class ClassMirror internal constructor(
     //TODO test
     val fields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
     val allFields: List<FieldMirror> by lazy {
-        (declaredFields + interfaces.flatMap { it.allFields } +
-            (superclass?.allFields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
+        (declaredFields + (superclass?.allFields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
     }
 //    fun getField(name: String): FieldMirror?
 //    fun getDeclaredField(name: String): FieldMirror?
@@ -525,8 +634,8 @@ class ClassMirror internal constructor(
     //TODO test
     val memberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
     val allMemberClasses: List<ClassMirror> by lazy {
-        (declaredMemberClasses + interfaces.flatMap { it.allMemberClasses } +
-            (superclass?.allMemberClasses ?: emptyList())).unmodifiableView()
+        (declaredMemberClasses + (superclass?.allMemberClasses ?: emptyList()) +
+            interfaces.flatMap { it.allMemberClasses }).uniqueBy { it.simpleName }.unmodifiableView()
     }
 //    fun getMemberClass(name: String): ClassMirror?
 //    fun getDeclaredMemberClass(name: String): ClassMirror?

@@ -18,6 +18,9 @@ class ArrayMirror internal constructor(
     override val specialization: TypeSpecialization.Array?
 ): ConcreteTypeMirror() {
 
+    /**
+     * The specialized component type of this mirror
+     */
     val component: TypeMirror by lazy {
         specialization?.component
             ?: cache.types.reflect(
@@ -37,6 +40,10 @@ class ArrayMirror internal constructor(
 
     override fun defaultSpecialization() = TypeSpecialization.Array.DEFAULT
 
+    /**
+     * Creates a type mirror with the passed specialized component. The passed component must be assignable to the raw
+     * component of this mirror.
+     */
     fun withComponent(component: TypeMirror): ArrayMirror {
         if(!this.raw.component.isAssignableFrom(component))
             throw InvalidSpecializationException("Passed component $component is not assignable to raw component type " +

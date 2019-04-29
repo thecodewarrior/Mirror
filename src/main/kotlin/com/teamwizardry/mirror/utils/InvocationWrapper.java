@@ -2,7 +2,6 @@ package com.teamwizardry.mirror.utils;
 
 import java.lang.invoke.MethodHandle;
 
-//TODO figure out licensing
 /**
  * @author WireSegal
  * Created at 7:38 PM on 10/22/16.

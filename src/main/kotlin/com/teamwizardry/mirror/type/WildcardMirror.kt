@@ -31,10 +31,11 @@ class WildcardMirror internal constructor(
      *
      * ```
      * For `? super AbstractList`
-     * - Object          - Valid
-     * - List<T>         - Valid
-     * * AbstractList<T> - Valid
-     * - ArrayList<>     - Invalid. `anArrayList = superAbstractListVariable` will throw
+     * - Object          - Valid   - `Object myVar = myAbstractList;` compiles
+     * - List            - Valid   - `List myVar = myAbstractList;` compiles
+     * * AbstractList    - Valid   - `AbstractList myVar = myAbstractList;` compiles
+     * - ArrayList       - Invalid - `ArrayList myVar = myAbstractList;` does not compile
+     * ```
      */
     val lowerBounds: List<TypeMirror> by lazy {
         annotated?.annotatedLowerBounds?.map { cache.types.reflect(it) }
@@ -51,10 +52,10 @@ class WildcardMirror internal constructor(
      *
      * ```
      * For `? extends List`
-     * - Object          - Invalid. `extendsListVariable = anObject` will throw
-     * * List<T>         - Valid
-     * - AbstractList<T> - Valid
-     * - ArrayList<T>    - Valid
+     * - Object          - Invalid - `public List foo() { return myObject; }` does not compile
+     * * List            - Valid   - `public List foo() { return myList; }` compiles
+     * - AbstractList    - Valid   - `public List foo() { return myAbstractList; }` compiles
+     * - ArrayList       - Valid   - `public List foo() { return myArrayList; }` compiles
      * ```
      */
     val upperBounds: List<TypeMirror> by lazy {

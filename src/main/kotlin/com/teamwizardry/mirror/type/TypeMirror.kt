@@ -7,20 +7,6 @@ import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
-/**
- * An abstract representation of a Java type that allows simpler reflective access to it, its members, and the generic
- * type information provided by the JVM.
- *
- * Mirrors can be "specialized", which results in the generic type arguments being substituted all the way down the
- * chain. This substitution means that the mirror of `HashMap<Foo, Bar>` would have a superclass
- * `AbstractMap<Foo, Bar>` and a `get` method whose return type is `Bar`.
- *
- * @see ClassMirror
- * @see ArrayMirror
- * @see VoidMirror
- * @see VariableMirror
- * @see WildcardMirror
- */
 abstract class TypeMirror internal constructor() {
     /**
      * The cache this mirror was created by. Mirrors from other caches will not be considered equal even if they
@@ -52,10 +38,19 @@ abstract class TypeMirror internal constructor() {
     internal abstract val specialization: TypeSpecialization?
     internal abstract fun defaultSpecialization(): TypeSpecialization
 
+    /**
+     * The mirror representing this type without any generic specialization
+     */
     abstract val raw: TypeMirror
 
     internal abstract fun applySpecialization(specialization: TypeSpecialization): TypeMirror
 
+    /**
+     * Determines if this mirror represents a logical supertype of the passed mirror, i.e. whether a value of type
+     * [other] could be "cast" to the type represented by this mirror, including generic type arguments.
+     *
+     * @see Class.isAssignableFrom
+     */
     abstract fun isAssignableFrom(other: TypeMirror): Boolean
 
     internal inline fun <reified T: TypeSpecialization> defaultApplySpecialization(
