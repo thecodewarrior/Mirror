@@ -60,5 +60,5 @@ tasks.withType<DokkaTask> {
 
 fun <T> Any.dokkaDelegateClosureOf(action: T.() -> Unit) = object : Closure<Any?>(this, this) {
     @Suppress("unused") // to be called dynamically by Groovy
-    fun doCall() = org.gradle.internal.Cast.uncheckedCast<T>(delegate).action()
+    fun doCall() = org.gradle.internal.Cast.uncheckedCast<T>(delegate)!!.action()
 }

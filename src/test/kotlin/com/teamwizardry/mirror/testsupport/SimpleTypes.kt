@@ -5,6 +5,10 @@ package com.teamwizardry.mirror.testsupport
 import com.teamwizardry.mirror.typeToken
 import java.lang.reflect.Type
 
+@Target(AnnotationTarget.TYPE)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class KotlinTypeAnnotation1
+
 interface Interface1
 interface Interface1Sub1: Interface1
 interface Interface1Sub2: Interface1Sub1

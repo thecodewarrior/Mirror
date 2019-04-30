@@ -11,6 +11,8 @@ public class TypeMirrorHolder extends AnnotatedTypeHolder {
     void type_Object1(Object1 a) {}
     @TypeHolder("@TypeAnnotation1 Object1")
     void type_TypeAnnotation1_Object1(@TypeAnnotation1 Object1 a) {}
+    //@TypeHolder("@KotlinTypeAnnotation1 Object1") // kotlin type annotations don't work in Java
+    //void type_KotlinTypeAnnotation1_Object1(Unwrap<@KotlinTypeAnnotation1 Object1> a) {}
     @TypeHolder("@TypeAnnotation1 @TypeAnnotationArg1(arg = 1) Object1")
     void type_TypeAnnotation1_TypeAnnotationArg1_arg_1_Object1(@TypeAnnotation1 @TypeAnnotationArg1(arg = 1) Object1 a) {}
     @TypeHolder("GenericObject1<@TypeAnnotation1 Object1>")

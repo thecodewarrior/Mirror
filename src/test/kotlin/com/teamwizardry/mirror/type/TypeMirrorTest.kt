@@ -3,8 +3,10 @@ package com.teamwizardry.mirror.type
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.annotations.TypeAnnotation1
 import com.teamwizardry.mirror.annotations.TypeAnnotationArg1
+import com.teamwizardry.mirror.testsupport.AnnotatedTypeHolder
 import com.teamwizardry.mirror.testsupport.GenericObject1
 import com.teamwizardry.mirror.testsupport.GenericObject1Sub
+import com.teamwizardry.mirror.testsupport.KotlinTypeAnnotation1
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
 import com.teamwizardry.mirror.testsupport.Object1Sub
@@ -133,6 +135,43 @@ internal class TypeMirrorTest: MirrorTestBase() {
         assertEquals(listOf(
             Mirror.newAnnotation<TypeAnnotation1>()
         ), type.typeAnnotations)
+    }
+
+    @Test
+    fun typeAnnotations_ofJavaTypeWithJavaAnnotation_shouldReturnAnnotation() {
+        val type = Mirror.reflectClass(holder["@TypeAnnotation1 Object1"])
+        assertEquals(listOf(
+            Mirror.newAnnotation<TypeAnnotation1>()
+        ), type.typeAnnotations)
+    }
+
+    @Test
+    fun typeAnnotations_ofJavaTypeWithKotlinAnnotation_shouldReturnAnnotation() {
+//        Kotlin type annotations don't work in Java
+//        val type = Mirror.reflectClass(holder["@KotlinTypeAnnotation1 Object"])
+//        assertEquals(listOf(
+//            Mirror.newAnnotation<KotlinTypeAnnotation1>()
+//        ), type.typeAnnotations)
+    }
+
+    @Test
+    fun typeAnnotations_ofKotlinTypeWithJavaAnnotation_shouldReturnNone() {
+        val localHolder = object: AnnotatedTypeHolder() {
+            @TypeHolder("@TypeAnnotation1 Object1")
+            fun someFun(arg: @TypeAnnotation1 Object1) {}
+        }
+        val type = Mirror.reflectClass(localHolder["@TypeAnnotation1 Object1"])
+        assertEquals(emptyList<Annotation>(), type.typeAnnotations)
+    }
+
+    @Test
+    fun typeAnnotations_ofKotlinTypeWithKotlinAnnotation_shouldReturnNone() {
+        val localHolder = object: AnnotatedTypeHolder() {
+            @TypeHolder("@KotlinTypeAnnotation1 Object1")
+            fun someFun(arg: @KotlinTypeAnnotation1 Object1) {}
+        }
+        val type = Mirror.reflectClass(localHolder["@KotlinTypeAnnotation1 Object1"])
+        assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
