@@ -4,6 +4,9 @@ import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedType
 
+/**
+ * The mirror representing the primitive `void` type
+ */
 class VoidMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: Class<*>,

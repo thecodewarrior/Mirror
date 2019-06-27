@@ -18,6 +18,7 @@ class MethodMirror internal constructor(
     override val name: String = java.name
     val description: String get() = "${declaringClass.java.simpleName}.$name(${raw.parameterTypes.joinToString(", ")})"
 
+    // * **Note: this value is immutable**
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 

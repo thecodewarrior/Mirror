@@ -5,6 +5,12 @@ import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
+/**
+ * The mirror type representing [type parameters](https://docs.oracle.com/javase/tutorial/java/generics/types.html).
+ * Type variables' bounds will never be specialized, as doing so would require a significant increase in complexity in
+ * order to avoid infinite recursion and/or deadlocks.
+ */
+// TODO: rename to TypeVariableMirror/TypeParameterMirror or something. Just as future-proofing in case local variable reflection ever exists.
 class VariableMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: TypeVariable<*>,

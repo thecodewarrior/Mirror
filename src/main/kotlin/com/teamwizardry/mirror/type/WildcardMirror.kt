@@ -6,6 +6,10 @@ import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.WildcardType
 
+/**
+ * The mirror type representing [wildcard types](https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html).
+ * Wildcard mirrors can have their bounds specialized.
+ */
 class WildcardMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: WildcardType,
@@ -24,7 +28,8 @@ class WildcardMirror internal constructor(
 
     /**
      * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
-     * of `T`. Current language spec only allows for one, but multiple may be supported in the future.
+     * of `T`. The current language spec only allows for one, but the Core Reflection API supports multiple for
+     * future-proofing reasons.
      *
      * In plain english, a lower bounded wildcard represents "somewhere I can put a < bound >", as opposed to upper
      * bounded wildcards being "some kind of < bound >".
@@ -43,9 +48,28 @@ class WildcardMirror internal constructor(
     }
 
     /**
+     * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
+     * of `T`. This is a shorthand for the first element of [lowerBounds], if it exists, as currently that is the only
+     * one supported by the language.
+     *
+     * In plain english, a lower bounded wildcard represents "somewhere I can put a < bound >", as opposed to upper
+     * bounded wildcards being "some kind of < bound >".
+     *
+     * ```
+     * For `? super AbstractList`
+     * - Object          - Valid   - `Object myVar = myAbstractList;` compiles
+     * - List            - Valid   - `List myVar = myAbstractList;` compiles
+     * * AbstractList    - Valid   - `AbstractList myVar = myAbstractList;` compiles
+     * - ArrayList       - Invalid - `ArrayList myVar = myAbstractList;` does not compile
+     * ```
+     */
+    val lowerBound: TypeMirror?
+        get() = lowerBounds.getOrNull(0)
+
+    /**
      * `? extends T` or `in T`. The uppermost type in the hierarchy that is valid. Any valid type must be a subclass
-     * of or implement the classes in [upperBounds]. Current language spec only allows for one, but multiple may be
-     * supported in the future.
+     * of and implement the interfaces in [upperBounds]. The current language spec only allows for one, but the Core
+     * Reflection API supports multiple for future-proofing reasons.
      *
      * In plain english, an upper bounded wildcard represents "some kind of < bound >", as opposed to lower bounded
      * wildcards being "somewhere I can put a < bound >".
@@ -63,8 +87,30 @@ class WildcardMirror internal constructor(
             ?: this.coreType.upperBounds.map { cache.types.reflect(it) }
     }
 
+    /**
+     * `? extends T` or `in T`. The uppermost type in the hierarchy that is valid. Any valid type must be a subclass
+     * of or implement the classes in [upperBounds]. This is a shorthand for the first element of [upperBounds], if it
+     * exists, as currently that is the only one supported by the language.
+     *
+     * In plain english, an upper bounded wildcard represents "some kind of < bound >", as opposed to lower bounded
+     * wildcards being "somewhere I can put a < bound >".
+     *
+     * ```
+     * For `? extends List`
+     * - Object          - Invalid - `public List foo() { return myObject; }` does not compile
+     * * List            - Valid   - `public List foo() { return myList; }` compiles
+     * - AbstractList    - Valid   - `public List foo() { return myAbstractList; }` compiles
+     * - ArrayList       - Valid   - `public List foo() { return myArrayList; }` compiles
+     * ```
+     */
+    val upperBound: TypeMirror?
+        get() = upperBounds.getOrNull(0)
+
     override fun defaultSpecialization() = TypeSpecialization.Wildcard.DEFAULT
 
+    /**
+     * Specialize this wildcard with the provided upper and lower bounds. If the upper and lower bounds aren't
+     */
     fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror {
         if(upperBounds != null && (upperBounds.size != raw.upperBounds.size ||
             raw.upperBounds.zip(upperBounds).any { (raw, specialized) ->

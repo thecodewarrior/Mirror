@@ -4,7 +4,8 @@ import com.teamwizardry.mirror.type.ClassMirror
 import com.teamwizardry.mirror.type.TypeMirror
 import com.teamwizardry.mirror.utils.unmodifiableCopy
 
-class ExecutableSpecialization(val enclosing: ClassMirror?, arguments: List<TypeMirror>?) {
+internal class ExecutableSpecialization(val enclosing: ClassMirror?, arguments: List<TypeMirror>?) {
+    // * **Note: this value is immutable**
     val arguments: List<TypeMirror>? = arguments?.unmodifiableCopy()
 
     fun copy(

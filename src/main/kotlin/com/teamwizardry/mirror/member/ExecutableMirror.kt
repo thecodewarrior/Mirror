@@ -24,22 +24,26 @@ abstract class ExecutableMirror internal constructor(
         }
     }
 
+    // * **Note: this value is immutable**
     val parameters: List<ParameterMirror> by lazy {
         java.parameters.map {
             cache.parameters.reflect(it).withDeclaringExecutable(this)
         }.unmodifiableView()
     }
 
+    // * **Note: this value is immutable**
     val parameterTypes: List<TypeMirror> by lazy {
         parameters.map { it.type }.unmodifiableView()
     }
 
+    // * **Note: this value is immutable**
     val exceptionTypes: List<TypeMirror> by lazy {
         java.annotatedExceptionTypes.map {
              genericMapping[cache.types.reflect(it)]
         }.unmodifiableView()
     }
 
+    // * **Note: this value is immutable**
     val typeParameters: List<TypeMirror> by lazy {
         specialization?.arguments ?: java.typeParameters.map {
             cache.types.reflect(it)

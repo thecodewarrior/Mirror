@@ -7,6 +7,15 @@ import com.teamwizardry.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
+/**
+ * The common superclass of all mirrors that represent types.
+ *
+ * @see ArrayMirror
+ * @see ClassMirror
+ * @see VariableMirror
+ * @see VoidMirror
+ * @see WildcardMirror
+ */
 abstract class TypeMirror internal constructor() {
     /**
      * The cache this mirror was created by. Mirrors from other caches will not be considered equal even if they

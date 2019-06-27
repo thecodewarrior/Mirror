@@ -39,6 +39,11 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.javaParameters = true
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 tasks.withType<DokkaTask> {
     val out = "$projectDir/docs"
     outputFormat = "html"

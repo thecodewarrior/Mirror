@@ -22,8 +22,8 @@ import java.lang.reflect.Type
  * The central class used to retrieve mirrors of Core Reflection objects
  */
 object Mirror {
-    // these instances are replaced by the unit tests using reflection. `types` doesn't simply have a private setter
-    // because if it did IDEA would mark it as mutable with an underline, which is incorrect and gets irritating
+    // these instances are replaced by the unit tests using reflection. `types` isn't a `var` with a private setter
+    // because if it was IDEA would mark it as mutable with an underline, which is incorrect and gets irritating
     private var cache = MirrorCache()
     private var _types = createTypes()
     private fun createTypes(): Types {
@@ -32,6 +32,9 @@ object Mirror {
         return c.newInstance()
     }
 
+    /**
+     * Easy access to core Java types (void + primitives + Object)
+     */
     @JvmStatic
     val types: Types get() = _types
 
@@ -41,6 +44,14 @@ object Mirror {
     @JvmStatic
     fun reflect(type: Type): TypeMirror {
         return cache.types.reflect(type)
+    }
+
+    /**
+     * Gets the type mirror representing the passed type
+     */
+    @JvmStatic
+    fun reflect(type: TypeToken<*>): TypeMirror {
+        return cache.types.reflect(type.getAnnotated())
     }
 
     /**
@@ -206,7 +217,7 @@ object Mirror {
      * Transforms the passed type to an equivalent one that implements the [equals] and [hashCode] methods.
      */
     @JvmStatic
-    fun <T: AnnotatedType> toCanonical(type: T) = CoreTypeUtils.toCanonical(type)
+    fun <T: AnnotatedType> toCanonical(type: T): T = CoreTypeUtils.toCanonical(type)
 
     /**
      * Easy access to core Java types (void + primitives + Object)

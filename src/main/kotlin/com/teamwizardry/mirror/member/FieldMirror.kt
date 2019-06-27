@@ -20,15 +20,16 @@ class FieldMirror internal constructor(
 
     val name: String = java.name
 
+    // * **Note: this value is immutable**
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
-    val isPublic = Modifier.PUBLIC in modifiers
-    val isProtected = Modifier.PROTECTED in modifiers
-    val isPrivate = Modifier.PRIVATE in modifiers
-    val isStatic = Modifier.STATIC in modifiers
-    val isFinal = Modifier.FINAL in modifiers
-    val isTransient = Modifier.TRANSIENT in modifiers
-    val isVolatile = Modifier.VOLATILE in modifiers
+    val isPublic: Boolean = Modifier.PUBLIC in modifiers
+    val isProtected: Boolean = Modifier.PROTECTED in modifiers
+    val isPrivate: Boolean = Modifier.PRIVATE in modifiers
+    val isStatic: Boolean = Modifier.STATIC in modifiers
+    val isFinal: Boolean = Modifier.FINAL in modifiers
+    val isTransient: Boolean = Modifier.TRANSIENT in modifiers
+    val isVolatile: Boolean = Modifier.VOLATILE in modifiers
 
     val declaringClass: ClassMirror by lazy {
         _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror

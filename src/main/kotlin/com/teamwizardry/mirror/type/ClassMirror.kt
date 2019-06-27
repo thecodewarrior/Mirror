@@ -96,6 +96,8 @@ class ClassMirror internal constructor(
      * The list of interfaces directly implemented by this type, in the order they appear in the source code.
      * The returned type will be specialized based on this type's specialization and any explicit parameters set in the
      * source code.
+     *
+     * **Note: this value is immutable**
      */
     val interfaces: List<ClassMirror> by lazy {
         java.annotatedInterfaces.map {
@@ -106,6 +108,8 @@ class ClassMirror internal constructor(
     /**
      * The list of type parameters defined by this mirror. These will be replaced when specializing, so you should use
      * [raw] to get the actual type parameters of the class as opposed to their specializations.
+     *
+     * **Note: this value is immutable**
      */
     val typeParameters: List<TypeMirror> by lazy {
         specialization?.arguments ?: java.typeParameters.map { cache.types.reflect(it) }.unmodifiableView()
@@ -195,6 +199,8 @@ class ClassMirror internal constructor(
      * The inner classes declared directly inside of this class.
      *
      * This list is created when it is first accessed and is thread safe.
+     *
+     * **Note: this value is immutable**
      */
     val declaredMemberClasses: List<ClassMirror> by lazy {
         java.declaredClasses.map {
@@ -207,6 +213,8 @@ class ClassMirror internal constructor(
      * this list.
      *
      * This list is created when it is first accessed and is thread safe.
+     *
+     * **Note: this value is immutable**
      */
     val declaredFields: List<FieldMirror> by lazy {
         java.declaredFields.map {
@@ -219,6 +227,8 @@ class ClassMirror internal constructor(
      * this list.
      *
      * This list is created when it is first accessed and is thread safe.
+     *
+     * **Note: this value is immutable**
      */
     val declaredMethods: List<MethodMirror> by lazy {
         java.declaredMethods.map {
@@ -230,6 +240,8 @@ class ClassMirror internal constructor(
      * The constructors declared directly inside this class
      *
      * This list is created when it is first accessed and is thread safe.
+     *
+     * **Note: this value is immutable**
      */
     val declaredConstructors: List<ConstructorMirror> by lazy {
         java.declaredConstructors.map {
@@ -321,6 +333,7 @@ class ClassMirror internal constructor(
     //region Simple helpers
     val kClass: KClass<*>? = java.kotlin
 
+    // * **Note: this value is immutable**
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
     /**
@@ -332,6 +345,7 @@ class ClassMirror internal constructor(
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     val isInternalAccess: Boolean get() = kClass?.visibility == KVisibility.INTERNAL
 
+    // * **Note: this value is immutable**
     val flags: Set<Flag> = listOf(
         Flag.ABSTRACT to (Modifier.ABSTRACT in modifiers),
         Flag.STATIC to (Modifier.STATIC in modifiers),
@@ -435,6 +449,8 @@ class ClassMirror internal constructor(
      * Returns annotations that are present on the class this mirror represents. These are not the annotations
      * present on the use of the type, for those use [typeAnnotations]
      *
+     * **Note: this value is immutable**
+     *
      * @see Class.getAnnotations
      */
     val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
@@ -442,6 +458,8 @@ class ClassMirror internal constructor(
     /**
      * Returns annotations that are directly present on the class this mirror represents. These are not the annotations
      * present on the use of the type, for those use [typeAnnotations]
+     *
+     * **Note: this value is immutable**
      *
      * @see Class.getDeclaredAnnotations
      */
@@ -465,6 +483,8 @@ class ClassMirror internal constructor(
     /**
      * Returns the list of constants in the enum class this mirror represents, or null if this mirror does not
      * represent an enum class. If this mirror represents an anonymous subclass of an enum, this will return null.
+     *
+     * **Note: this value is immutable**
      *
      * @see enumType
      * @see Class.enumConstants
@@ -565,11 +585,12 @@ class ClassMirror internal constructor(
     //endregion
 
     //region Methods
+    // * **Note: this value is immutable**
     val methods: List<MethodMirror> by lazy {
-        java.methods.map { this.getMethod(it)!! }
+        java.methods.map { this.getMethod(it)!! }.unmodifiableView()
     }
+    // * **Note: this value is immutable**
     val allMethods: List<MethodMirror> by lazy {
-
         val allInterfaces = mutableSetOf<Class<*>>()
         val allClasses = mutableSetOf<Class<*>>()
 
@@ -614,7 +635,9 @@ class ClassMirror internal constructor(
 
     //region Fields
     //TODO test
+    // * **Note: this value is immutable**
     val fields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
+    // * **Note: this value is immutable**
     val allFields: List<FieldMirror> by lazy {
         (declaredFields + (superclass?.allFields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
     }
@@ -625,6 +648,7 @@ class ClassMirror internal constructor(
 
     //region Constructors
     //TODO test
+    // * **Note: this value is immutable**
     val constructors: List<ConstructorMirror> by lazy { java.constructors.mapNotNull { getConstructor(it) }.unmodifiableView() }
 //    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
 //    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
@@ -632,7 +656,9 @@ class ClassMirror internal constructor(
 
     //region Member classes
     //TODO test
+    // * **Note: this value is immutable**
     val memberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
+    // * **Note: this value is immutable**
     val allMemberClasses: List<ClassMirror> by lazy {
         (declaredMemberClasses + (superclass?.allMemberClasses ?: emptyList()) +
             interfaces.flatMap { it.allMemberClasses }).uniqueBy { it.simpleName }.unmodifiableView()
@@ -650,6 +676,7 @@ class ClassMirror internal constructor(
 
     private val declaredClassCache = ConcurrentHashMap<String, List<ClassMirror>>()
 
+    // * **Note: this value is immutable**
     fun innerClasses(name: String): List<ClassMirror> {
         return declaredClassCache.getOrPut(name) {
             val list = mutableListOf<ClassMirror>()
@@ -674,12 +701,14 @@ class ClassMirror internal constructor(
         }
     }
 
+    // * **Note: this value is immutable**
     fun declaredMethods(name: String): List<MethodMirror> {
         return declaredMethods.filter { it.name == name }.unmodifiableView()
     }
 
     private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
 
+    // * **Note: this value is immutable**
     fun methods(name: String): List<MethodMirror> {
         return methodNameCache.getOrPut(name) {
             val methods = mutableListOf<MethodMirror>()
@@ -773,19 +802,60 @@ class ClassMirror internal constructor(
         return str
     }
 
+    /**
+     * A set of useful flags for classes, such as whether it is abstract, anonymous, primitive, etc.
+     */
     enum class Flag {
+        /**
+         * This flag is present on abstract classes
+         */
         ABSTRACT,
+        /**
+         * This flag is present on static inner classes
+         */
         STATIC,
+        /**
+         * This flag is present on final classes
+         */
         FINAL,
+        /**
+         * This flag is present on classes with the `strictfp` modifier
+         */
         STRICT,
 
+        /**
+         * This flag is present on annotation classes
+         */
         ANNOTATION,
+        /**
+         * This flag is present on anonymous classes
+         */
         ANONYMOUS,
+        /**
+         * This flag is present on enum classes, but not on anonymous enum element subclasses.
+         */
         ENUM,
+        /**
+         * This flag is present on interfaces
+         */
         INTERFACE,
+        /**
+         * This flag is present on local classes (classes declared within an expression body, such as a method)
+         */
         LOCAL,
+        /**
+         * This flag is present on member classes. This includes inner and static inner classes
+         */
         MEMBER,
+        /**
+         * This flag is present on the primitive classes: `boolean`, `byte`, `char`, `short`, `int`, `long`, `float`,
+         * and `double`
+         */
         PRIMITIVE,
+        /**
+         * This flag is present on synthetic classes (classes generated by the compiler, without a corresponding
+         * construct in the source code)
+         */
         SYNTHETIC
     }
 }
