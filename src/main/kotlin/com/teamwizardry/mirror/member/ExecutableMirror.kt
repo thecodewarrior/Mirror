@@ -58,6 +58,17 @@ abstract class ExecutableMirror internal constructor(
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
     }
 
+    /**
+     * Returns annotations that are present on the executable this mirror represents.
+     *
+     * **Note: this value is immutable**
+     *
+     * @see Executable.getAnnotations
+     */
+    val annotations: List<Annotation> by lazy {
+        java.annotations.toList().unmodifiableView()
+    }
+
     open fun withTypeParameters(vararg parameters: TypeMirror): ExecutableMirror {
         if(parameters.isNotEmpty() && parameters.size != typeParameters.size)
             throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from actual " +

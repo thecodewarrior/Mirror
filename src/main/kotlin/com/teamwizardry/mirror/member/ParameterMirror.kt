@@ -4,6 +4,7 @@ import com.teamwizardry.mirror.InvalidSpecializationException
 import com.teamwizardry.mirror.MirrorCache
 import com.teamwizardry.mirror.type.TypeMapping
 import com.teamwizardry.mirror.type.TypeMirror
+import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.Parameter
 
 class ParameterMirror internal constructor(
@@ -26,6 +27,15 @@ class ParameterMirror internal constructor(
     val genericMapping: TypeMapping by lazy {
         TypeMapping(emptyMap()) + declaringExecutable?.genericMapping
     }
+
+    /**
+     * Returns annotations that are present on the parameter this mirror represents.
+     *
+     * **Note: this value is immutable**
+     *
+     * @see Parameter.getAnnotations
+     */
+    val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
 
     fun withDeclaringExecutable(executable: ExecutableMirror?): ParameterMirror {
         if(executable != null && executable.java != java.declaringExecutable)

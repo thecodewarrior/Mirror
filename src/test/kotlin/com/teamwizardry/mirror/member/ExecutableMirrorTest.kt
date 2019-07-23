@@ -1,12 +1,15 @@
 package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.Mirror
+import com.teamwizardry.mirror.annotations.Annotation1
+import com.teamwizardry.mirror.annotations.AnnotationArg1
 import com.teamwizardry.mirror.testsupport.CheckedExceptionMethodHolder
 import com.teamwizardry.mirror.testsupport.Exception1
 import com.teamwizardry.mirror.testsupport.Exception2
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.NoParamNames
 import com.teamwizardry.mirror.testsupport.assertSameList
+import com.teamwizardry.mirror.testsupport.assertSetEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
@@ -86,5 +89,53 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
         assertSameList(listOf(
             Mirror.reflect(javaMethod.typeParameters[0])
         ), method.typeParameters)
+    }
+
+    @Test
+    @DisplayName("A method that has no annotations should have an empty annotations list")
+    fun nonAnnotatedMethod() {
+        class MethodHolder {
+            fun method() { }
+        }
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
+        assertEquals(emptyList<Annotation>(), method.annotations)
+    }
+
+    @Test
+    @DisplayName("A method that has annotations should have an annotations list containing those annotations")
+    fun annotatedMethod() {
+        class MethodHolder {
+            @Annotation1
+            @AnnotationArg1(arg = 1)
+            fun method() { }
+        }
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
+        assertSetEquals(listOf(
+            Mirror.newAnnotation<Annotation1>(),
+            Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
+        ), method.annotations)
+    }
+
+    @Test
+    @DisplayName("Parameters that have no annotations should have empty annotation lists")
+    fun nonAnnotatedParameter() {
+        class MethodHolder {
+            fun method(paramA: String) {}
+        }
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method", String::class.java))
+        assertEquals(emptyList<Annotation>(), method.parameters[0].annotations)
+    }
+
+    @Test
+    @DisplayName("Parameters that have annotations should have annotation lists containing those annotations")
+    fun annotatedParameter() {
+        class MethodHolder {
+            fun method(@Annotation1 @AnnotationArg1(arg = 1) paramA: String) {}
+        }
+        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method", String::class.java))
+        assertSetEquals(listOf(
+            Mirror.newAnnotation<Annotation1>(),
+            Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
+        ), method.parameters[0].annotations)
     }
 }

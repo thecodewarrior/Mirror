@@ -1,9 +1,12 @@
 package com.teamwizardry.mirror.member
 
 import com.teamwizardry.mirror.Mirror
+import com.teamwizardry.mirror.annotations.Annotation1
+import com.teamwizardry.mirror.annotations.AnnotationArg1
 import com.teamwizardry.mirror.testsupport.FieldFlagTestClass
 import com.teamwizardry.mirror.testsupport.FieldVisibilityTestClass
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
+import com.teamwizardry.mirror.testsupport.assertSetEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -55,5 +58,30 @@ internal class FieldMirrorTest: MirrorTestBase() {
         assertEquals(true, baseType.field("staticField")?.isStatic)
         assertEquals(true, baseType.field("volatileField")?.isVolatile)
         assertEquals(true, baseType.field("transientField")?.isTransient)
+    }
+
+    @Test
+    @DisplayName("A field that has no annotations should have an empty annotations list")
+    fun nonAnnotatedField() {
+        class FieldHolder {
+            val field: String? = null
+        }
+        val field = Mirror.reflect(FieldHolder::class.java.getDeclaredField("field"))
+        assertEquals(emptyList<Annotation>(), field.annotations)
+    }
+
+    @Test
+    @DisplayName("A field that has annotations should have an annotations list containing those annotations")
+    fun annotatedField() {
+        class FieldHolder {
+            @field:Annotation1
+            @field:AnnotationArg1(arg = 1)
+            val field: String? = null
+        }
+        val field = Mirror.reflect(FieldHolder::class.java.getDeclaredField("field"))
+        assertSetEquals(listOf(
+            Mirror.newAnnotation<Annotation1>(),
+            Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
+        ), field.annotations)
     }
 }

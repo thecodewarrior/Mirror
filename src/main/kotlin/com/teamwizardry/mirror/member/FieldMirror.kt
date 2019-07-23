@@ -39,6 +39,15 @@ class FieldMirror internal constructor(
         declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
+    /**
+     * Returns annotations that are present on the field this mirror represents.
+     *
+     * **Note: this value is immutable**
+     *
+     * @see Field.getAnnotations
+     */
+    val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
+
     fun withDeclaringClass(enclosing: ClassMirror): FieldMirror {
         if(enclosing.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $type. " +
