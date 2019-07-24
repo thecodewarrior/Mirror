@@ -262,6 +262,26 @@ internal class IsAssignableTest: MirrorTestBase() {
     }
 
     @Test
+    @DisplayName("A class should be assignable from a wildcard with an equal upper bound")
+    fun classAssignableFromEqualUpperBoundedWildcard() {
+        assertFalse(
+            Mirror.reflect<Object1Sub>().isAssignableFrom(
+                Mirror.reflect(holder["? extends Object1Sub"])
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("A class should be assignable from a wildcard with a more subclass as a upper bound")
+    fun classAssignableFromSubclassUpperBoundedWildcard() {
+        assertFalse(
+            Mirror.reflect<Object1>().isAssignableFrom(
+                Mirror.reflect(holder["? extends Object1Sub"])
+            )
+        )
+    }
+
+    @Test
     @DisplayName("The void mirror should be assignable from itself")
     fun voidAssignableFromSelf() {
         assertTrue(

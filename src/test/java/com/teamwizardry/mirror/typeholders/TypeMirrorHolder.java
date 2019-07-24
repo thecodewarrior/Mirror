@@ -26,6 +26,8 @@ public class TypeMirrorHolder extends AnnotatedTypeHolder {
     @TypeHolder("@TypeAnnotation1 GenericObject1<Object1>[]")
     void type_TypeAnnotation1_GenericObject1_Object1_arr(@TypeAnnotation1 GenericObject1<Object1>[] a) {}
 
+    @TypeHolder("Object1Sub")
+    void type_Object1Sub(Object1Sub a) {}
     @TypeHolder("? extends Object1Sub")
     void type_Q_extends_Object1Sub(Unwrap<? extends Object1Sub> a) {}
     @TypeHolder("? super Object1Sub")

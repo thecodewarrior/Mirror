@@ -139,8 +139,12 @@ abstract class TypeMirror internal constructor() {
     }
 
     /**
-     * The "specificity" of this type.
-     * A more specific type is one where `other.isAssignableFrom(this)`.
+     * The "specificity" of this type. Essentially a more specific type can be cast to a less specific type, but not
+     * the other way around. If neither type can be cast to the other or both types can be cast to each other they have
+     * equal specificity.
+     *
+     * Specifically, a "more specific" type is one where `other.isAssignableFrom(this)` and not
+     * `this.isAssignableFrom(other)`.
      */
     val specificity: Specificity = Specificity(this)
 
