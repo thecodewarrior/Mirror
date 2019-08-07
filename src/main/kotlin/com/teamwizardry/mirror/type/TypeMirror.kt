@@ -169,14 +169,20 @@ abstract class TypeMirror internal constructor() {
 
     /**
      * A wrapper class that allows comparing TypeMirrors by how "specific" they are.
-     * A more specific type is one where `other.isAssignableFrom(this)`.
+     * A more specific type is one where `other.isAssignableFrom(this)` and the inverse is not true.
      */
     class Specificity internal constructor(private val type: TypeMirror): Comparable<Specificity> {
         override fun compareTo(other: Specificity): Int {
             if(this == other) return 0
+            val thisAssignableFromOther = type.isAssignableFrom(other.type)
+            val otherAssignableFromThis = other.type.isAssignableFrom(type)
+
+            if(thisAssignableFromOther == otherAssignableFromThis)
+                return 0
+
             return when {
-                type.isAssignableFrom(other.type) -> -1
-                other.type.isAssignableFrom(type) -> 1
+                thisAssignableFromOther  -> -1
+                otherAssignableFromThis  -> 1
                 else -> 0
             }
         }

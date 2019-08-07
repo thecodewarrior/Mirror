@@ -2,6 +2,7 @@ package com.teamwizardry.mirror.type
 
 import com.teamwizardry.mirror.Mirror
 import com.teamwizardry.mirror.annotations.TypeAnnotation1
+import com.teamwizardry.mirror.annotations.TypeAnnotation2
 import com.teamwizardry.mirror.annotations.TypeAnnotationArg1
 import com.teamwizardry.mirror.testsupport.AnnotatedTypeHolder
 import com.teamwizardry.mirror.testsupport.GenericObject1
@@ -213,6 +214,14 @@ internal class TypeMirrorTest: MirrorTestBase() {
         class ChildClass: ParentType<ChildClass>()
 
         Mirror.reflect(typeToken<ChildClass>())
+    }
+
+    @Test
+    fun specificity_ofMutuallyAssignable_shouldBeEqual() {
+        val type = Mirror.reflect<Object1>()
+        val type1 = type.withTypeAnnotations(listOf(Mirror.newAnnotation<TypeAnnotation1>()))
+        val type2 = type.withTypeAnnotations(listOf(Mirror.newAnnotation<TypeAnnotation2>()))
+        assertEquals(0, type1.specificity.compareTo(type2.specificity))
     }
 
     @Test
