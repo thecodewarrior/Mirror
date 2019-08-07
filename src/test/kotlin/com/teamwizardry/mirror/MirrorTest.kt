@@ -1,10 +1,13 @@
 package com.teamwizardry.mirror
 
+import com.teamwizardry.mirror.coretypes.AnnotationFormatException
+import com.teamwizardry.mirror.testsupport.AnnotationWithParameter
 import com.teamwizardry.mirror.testsupport.MirrorTestBase
 import com.teamwizardry.mirror.testsupport.Object1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.lang.reflect.AnnotatedArrayType
 
 internal class MirrorTest: MirrorTestBase() {
@@ -12,6 +15,17 @@ internal class MirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("newAnnotation delegates to an external tested library")
     fun newAnnotation_needsNoTests() {
+    }
+
+    @Test
+    @DisplayName("newAnnotation with incorrect data should throw")
+    fun newAnnotation_withIncorrectData_shouldThrow() {
+        assertThrows<AnnotationFormatException> {
+            Mirror.newAnnotation<AnnotationWithParameter>("foo" to "invalid")
+        }
+        assertThrows<AnnotationFormatException> {
+            Mirror.newAnnotation<AnnotationWithParameter>("bar" to 0)
+        }
     }
 
     @Test

@@ -9,6 +9,9 @@ import java.lang.reflect.Type
 @Retention(AnnotationRetention.RUNTIME)
 annotation class KotlinTypeAnnotation1
 
+@Target(AnnotationTarget.TYPE)
+annotation class AnnotationWithParameter(val foo: Int)
+
 interface Interface1
 interface Interface1Sub1: Interface1
 interface Interface1Sub2: Interface1Sub1
