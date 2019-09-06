@@ -9,11 +9,12 @@ import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.Executable
 
 abstract class ExecutableMirror internal constructor(
-    internal val cache: MirrorCache,
-    val specialization: ExecutableSpecialization?
-) {
-    abstract val java: Executable
+    cache: MirrorCache,
+    internal val specialization: ExecutableSpecialization?
+): MemberMirror(cache, specialization?.enclosing) {
+    abstract override val java: Executable
 
+    //todo: Also provide reference to what this overrides, if anything
     abstract val raw: ExecutableMirror
 
     abstract val name: String
@@ -50,10 +51,6 @@ abstract class ExecutableMirror internal constructor(
         }.unmodifiableView()
     }
 
-    val declaringClass: ClassMirror by lazy {
-        specialization?.enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
-    }
-
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
     }
@@ -79,7 +76,7 @@ abstract class ExecutableMirror internal constructor(
         return cache.executables.specialize(raw, newSpecialization)
     }
 
-    open fun withDeclaringClass(type: ClassMirror?): ExecutableMirror {
+    override fun withDeclaringClass(type: ClassMirror?): ExecutableMirror {
         if(type != null && type.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $type. " +
                 "$this is declared in ${java.declaringClass}")

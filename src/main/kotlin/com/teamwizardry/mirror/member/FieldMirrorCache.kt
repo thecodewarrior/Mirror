@@ -16,8 +16,10 @@ internal class FieldMirrorCache(private val cache: MirrorCache) {
         }
     }
 
-    fun specialize(field: FieldMirror, enclosing: ClassMirror): FieldMirror {
+    fun specialize(field: FieldMirror, enclosing: ClassMirror?): FieldMirror {
         val raw = field.raw
+        if(enclosing == null)
+            return raw
         return specializedCache.getOrPut(raw to enclosing) {
             if(enclosing == raw.declaringClass)
                 raw

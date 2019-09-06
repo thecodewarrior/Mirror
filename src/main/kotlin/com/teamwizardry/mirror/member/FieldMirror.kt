@@ -9,11 +9,11 @@ import com.teamwizardry.mirror.utils.unmodifiableView
 import java.lang.reflect.Field
 
 class FieldMirror internal constructor(
-    internal val cache: MirrorCache,
+    cache: MirrorCache,
     raw: FieldMirror?,
-    val java: Field,
+    override val java: Field,
     _enclosing: ClassMirror?
-) {
+): MemberMirror(cache, _enclosing) {
 
     var raw: FieldMirror = raw ?: this
     val isEnumConstant: Boolean = java.isEnumConstant
@@ -31,10 +31,6 @@ class FieldMirror internal constructor(
     val isTransient: Boolean = Modifier.TRANSIENT in modifiers
     val isVolatile: Boolean = Modifier.VOLATILE in modifiers
 
-    val declaringClass: ClassMirror by lazy {
-        _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
-    }
-
     val type: TypeMirror by lazy {
         declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
@@ -48,8 +44,8 @@ class FieldMirror internal constructor(
      */
     val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
 
-    fun withDeclaringClass(enclosing: ClassMirror): FieldMirror {
-        if(enclosing.java != java.declaringClass)
+    override fun withDeclaringClass(enclosing: ClassMirror?): FieldMirror {
+        if(enclosing != null && enclosing.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $type. " +
                 "$this is declared in ${java.declaringClass}")
         return cache.fields.specialize(this, enclosing)
