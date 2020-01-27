@@ -10,7 +10,7 @@ plugins {
     maven
 }
 
-group = "com.teamwizardry.mirror"
+group = "dev.thecodewarrior.mirror"
 version = "0.0.1"
 
 repositories {
