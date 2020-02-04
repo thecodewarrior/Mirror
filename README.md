@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-    <img src="https://raw.github.com/TeamWizardry/Mirror/master/logo.svg?sanitize=true" title="Mirror logo by Tris 
+    <img src="https://raw.github.com/TeamWizardry/Mirror/master/logo/logo_500x500.png" title="Mirror logo by Tris 
     Astral" width="200" height="200">
   <br>
   Mirror
