@@ -25,7 +25,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                     when {
                         type == Void.TYPE -> mirror = VoidMirror(cache, type, null, null)
                         type.isArray -> mirror = ArrayMirror(cache, type, null, null)
-                        else -> mirror = ClassMirror(cache, type, null, null)
+                        else -> mirror = ClassMirrorImpl(cache, type, null, null)
                     }
                 }
                 is GenericArrayType -> {

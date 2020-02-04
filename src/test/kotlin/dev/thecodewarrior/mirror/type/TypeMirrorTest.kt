@@ -15,11 +15,6 @@ import dev.thecodewarrior.mirror.testsupport.Object1Sub2
 import dev.thecodewarrior.mirror.testsupport.Object2
 import dev.thecodewarrior.mirror.typeToken
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
-import dev.thecodewarrior.mirror.type.ArrayMirror
-import dev.thecodewarrior.mirror.type.ClassMirror
-import dev.thecodewarrior.mirror.type.VariableMirror
-import dev.thecodewarrior.mirror.type.VoidMirror
-import dev.thecodewarrior.mirror.type.WildcardMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -30,7 +25,7 @@ internal class TypeMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("Reflecting a non-array class should return a ClassMirror")
     fun reflect_shouldReturnClassMirror_whenPassedClass() {
-        assertEquals(ClassMirror::class.java, Mirror.reflect(Any::class.java).javaClass)
+        assertEquals(ClassMirrorImpl::class.java, Mirror.reflect(Any::class.java).javaClass)
     }
 
     @Test
