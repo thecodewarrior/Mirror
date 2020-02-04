@@ -6,11 +6,18 @@ import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
 /**
- * The mirror type representing [type parameters](https://docs.oracle.com/javase/tutorial/java/generics/types.html).
- * Type variables' bounds will never be specialized, as doing so would require a significant increase in complexity in
- * order to avoid infinite recursion and/or deadlocks.
+ * The type of mirror used to represent [type variables](https://docs.oracle.com/javase/tutorial/java/generics/types.html).
+ *
+ * **Note:** Type variables' bounds will never be specialized, as doing so would require a significant increase in
+ * complexity in order to avoid infinite recursion and/or deadlocks. However, should a pressing enough need come up in
+ * the future to outweigh this increase in complexity, it is likely possible it could be added.
+ *
+ * @see ArrayMirror
+ * @see ClassMirror
+ * @see VoidMirror
+ * @see WildcardMirror
  */
-// TODO: rename to TypeVariableMirror/TypeParameterMirror or something. Just as future-proofing in case local variable reflection ever exists.
+// TODO: rename to TypeVariableMirror
 class VariableMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: TypeVariable<*>,

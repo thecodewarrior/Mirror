@@ -5,7 +5,12 @@ import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedType
 
 /**
- * The mirror representing the primitive `void` type
+ * The type of mirror used to represent the `void` type.
+ *
+ * @see ArrayMirror
+ * @see ClassMirror
+ * @see VariableMirror
+ * @see WildcardMirror
  */
 class VoidMirror internal constructor(
     override val cache: MirrorCache,

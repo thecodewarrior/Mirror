@@ -23,8 +23,14 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
-
-
+/**
+ * The type of mirror used to represent classes, as opposed to arrays, type variables, wildcards, and `void`.
+ *
+ * @see ArrayMirror
+ * @see VariableMirror
+ * @see VoidMirror
+ * @see WildcardMirror
+ */
 class ClassMirror internal constructor(
     override val cache: MirrorCache,
     override val java: Class<*>,
@@ -201,6 +207,8 @@ class ClassMirror internal constructor(
      * This list is created when it is first accessed and is thread safe.
      *
      * **Note: this value is immutable**
+     *
+     * @see Class.getDeclaredClasses
      */
     val declaredMemberClasses: List<ClassMirror> by lazy {
         java.declaredClasses.map {
@@ -215,6 +223,8 @@ class ClassMirror internal constructor(
      * This list is created when it is first accessed and is thread safe.
      *
      * **Note: this value is immutable**
+     *
+     * @see Class.getDeclaredFields
      */
     val declaredFields: List<FieldMirror> by lazy {
         java.declaredFields.map {
@@ -229,6 +239,8 @@ class ClassMirror internal constructor(
      * This list is created when it is first accessed and is thread safe.
      *
      * **Note: this value is immutable**
+     *
+     * @see Class.getDeclaredMethods
      */
     val declaredMethods: List<MethodMirror> by lazy {
         java.declaredMethods.map {

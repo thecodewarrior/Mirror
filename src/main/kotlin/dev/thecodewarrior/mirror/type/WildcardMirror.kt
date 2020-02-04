@@ -7,13 +7,17 @@ import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.WildcardType
 
 /**
- * The mirror type representing [wildcard types](https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html).
- * Wildcard mirrors can have their bounds specialized.
+ * The type of mirror used to represent [wildcard types](https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html).
+ *
+ * @see ArrayMirror
+ * @see ClassMirror
+ * @see VariableMirror
+ * @see VoidMirror
  */
 class WildcardMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: WildcardType,
-    // type annotations are ignored, all we care about are the annotated bounds
+    // you can't annotate wildcard types, so type annotations are ignored, all we care about are the annotated bounds
     private val annotated: AnnotatedWildcardType?,
     raw: WildcardMirror?,
     override val specialization: TypeSpecialization.Wildcard?

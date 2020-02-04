@@ -9,7 +9,12 @@ import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.Type
 
 /**
- * A mirror that represents an array type
+ * The type of mirror used to represent arrays, as opposed to classes, type variables, wildcards, and `void`.
+ *
+ * @see ClassMirror
+ * @see VariableMirror
+ * @see VoidMirror
+ * @see WildcardMirror
  */
 class ArrayMirror internal constructor(
     override val cache: MirrorCache,
