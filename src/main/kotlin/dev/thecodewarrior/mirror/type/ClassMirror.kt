@@ -343,7 +343,7 @@ class ClassMirror internal constructor(
     */
 
     //region Simple helpers
-    val kClass: KClass<*>? = java.kotlin
+    val kClass: KClass<*> = java.kotlin
 
     // * **Note: this value is immutable**
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
@@ -355,7 +355,7 @@ class ClassMirror internal constructor(
      * optional dependency for jar size reasons)
      */
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-    val isInternalAccess: Boolean get() = kClass?.visibility == KVisibility.INTERNAL
+    val isInternalAccess: Boolean get() = kClass.visibility == KVisibility.INTERNAL
 
     // * **Note: this value is immutable**
     val flags: Set<Flag> = listOf(
@@ -405,7 +405,7 @@ class ClassMirror internal constructor(
      * optional dependency for jar size reasons)
      */
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-    val isCompanion: Boolean get() = kClass?.isCompanion ?: false
+    val isCompanion: Boolean get() = kClass.isCompanion
     /**
      * Returns true if this object represents a Kotlin class and that class is a data class
      *
@@ -413,7 +413,7 @@ class ClassMirror internal constructor(
      * optional dependency for jar size reasons)
      */
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-    val isData: Boolean get() = kClass?.isData ?: false
+    val isData: Boolean get() = kClass.isData
     /**
      * Returns true if this object represents a Kotlin class and that class is a sealed class
      *
@@ -421,7 +421,7 @@ class ClassMirror internal constructor(
      * optional dependency for jar size reasons)
      */
     @Suppress("NO_REFLECTION_IN_CLASS_PATH")
-    val isSealed: Boolean get() = kClass?.isSealed ?: false
+    val isSealed: Boolean get() = kClass.isSealed
     /**
      * Returns true if this mirror represents an annotation class.
      */
