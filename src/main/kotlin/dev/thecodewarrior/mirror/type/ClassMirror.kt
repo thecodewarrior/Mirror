@@ -1,6 +1,7 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
+import dev.thecodewarrior.mirror.NoSuchMirrorException
 import dev.thecodewarrior.mirror.member.ConstructorMirror
 import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.FieldMirror
@@ -37,7 +38,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * The returned type will be specialized based on this type's specialization and any explicit parameters set in the
      * source code.
      *
-     * **Note: this value is immutable**
+     * **Note: this collection is unmodifiable**
      */
     abstract val interfaces: List<ClassMirror>
 
@@ -45,7 +46,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * The list of type parameters defined by this mirror. These will be replaced when specializing, so you should use
      * [raw] to get the actual type parameters of the class as opposed to their specializations.
      *
-     * **Note: this value is immutable**
+     * **Note: this collection is unmodifiable**
      */
     abstract val typeParameters: List<TypeMirror>
 
@@ -90,49 +91,6 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     abstract fun withEnclosingExecutable(enclosing: ExecutableMirror?): ClassMirror
 
 
-    /**
-     * The inner classes declared directly inside of this class.
-     *
-     * This list is created when it is first accessed and is thread safe.
-     *
-     * **Note: this value is immutable**
-     *
-     * @see Class.getDeclaredClasses
-     */
-    abstract val declaredMemberClasses: List<ClassMirror>
-
-    /**
-     * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
-     * this list.
-     *
-     * This list is created when it is first accessed and is thread safe.
-     *
-     * **Note: this value is immutable**
-     *
-     * @see Class.getDeclaredFields
-     */
-    abstract val declaredFields: List<FieldMirror>
-
-    /**
-     * The methods declared directly inside of this class, any methods inherited from superclasses will not appear in
-     * this list.
-     *
-     * This list is created when it is first accessed and is thread safe.
-     *
-     * **Note: this value is immutable**
-     *
-     * @see Class.getDeclaredMethods
-     */
-    abstract val declaredMethods: List<MethodMirror>
-
-    /**
-     * The constructors declared directly inside this class
-     *
-     * This list is created when it is first accessed and is thread safe.
-     *
-     * **Note: this value is immutable**
-     */
-    abstract val declaredConstructors: List<ConstructorMirror>
 //endregion
 
     /*
@@ -216,21 +174,35 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     */
 
     //region Simple helpers
+    /**
+     * The Kotlin `KClass` instance associated with this class
+     */
     abstract val kClass: KClass<*>
 
-    // * **Note: this value is immutable**
+    /**
+     * The modifiers present on this class. (e.g. `public`, `abstract`, `final`, etc.)
+     *
+     * **Note: this collection is unmodifiable**
+     */
     abstract val modifiers: Set<Modifier>
+
+    /**
+     * The access modifier present on this class
+     */
     abstract val access: Modifier.Access
+
     /**
      * Returns true if this object represents a Kotlin class and that class has an `internal` visibility modifier
      *
-     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
-     * optional dependency for jar size reasons)
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     abstract val isInternalAccess: Boolean
 
-    // * **Note: this value is immutable**
+    /**
+     * A set of flags used to store properties such as whether the class is static, abstract, an enum, etc.
+     *
+     * **Note: this collection is unmodifiable**
+     */
     abstract val flags: Set<Flag>
 
     /**
@@ -248,8 +220,8 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     /**
      * Returns true if the class this mirror represents has the `strictfp` modifier.
      *
-     * NOTE: For unknown reasons the strictfp modifier is not present in the Core Reflection modifiers, so this is
-     * always false
+     * NOTE: For unknown reasons the strictfp modifier seems to not be present in the Core Reflection modifiers, so
+     * this is always false
      */
     abstract val isStrict: Boolean
 
@@ -261,28 +233,22 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     /**
      * Returns true if this object represents a Kotlin class and that class is a companion class
      *
-     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
-     * optional dependency for jar size reasons)
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     abstract val isCompanion: Boolean
 
     /**
      * Returns true if this object represents a Kotlin class and that class is a data class
      *
-     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
-     * optional dependency for jar size reasons)
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     abstract val isData: Boolean
 
     /**
      * Returns true if this object represents a Kotlin class and that class is a sealed class
      *
-     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath (kotlin-reflect is an
-     * optional dependency for jar size reasons)
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    @Suppress("NO_REFLECTION_IN_CLASS_PATH")
     abstract val isSealed: Boolean
 
     /**
@@ -295,7 +261,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     abstract val isAnonymous: Boolean
     /**
      * Returns true if this mirror represents an enum class. This is false for anonymous enum subclasses, so for more
-     * consistent behavior use [enumType].
+     * consistent behavior check if [enumType] is non-null.
      */
     abstract val isEnum: Boolean
     /**
@@ -308,7 +274,14 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      */
     abstract val isLocal: Boolean
     /**
-     * Returns true if the class this mirror represents is a member of another class. Member classes include TODO what?
+     * Returns true if the class this mirror represents is a member of another class. Member classes are non-static
+     * classes defined inside another class.
+     *
+     * ```java
+     * public class Foo {
+     *     public class Member {}
+     * }
+     * ```
      */
     abstract val isMember: Boolean
     /**
@@ -324,7 +297,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * Returns annotations that are present on the class this mirror represents. These are not the annotations
      * present on the use of the type, for those use [typeAnnotations]
      *
-     * **Note: this value is immutable**
+     * **Note: this collection is unmodifiable**
      *
      * @see Class.getAnnotations
      */
@@ -334,7 +307,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * Returns annotations that are directly present on the class this mirror represents. These are not the annotations
      * present on the use of the type, for those use [typeAnnotations]
      *
-     * **Note: this value is immutable**
+     * **Note: this collection is unmodifiable**
      *
      * @see Class.getDeclaredAnnotations
      */
@@ -353,7 +326,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * Returns the list of constants in the enum class this mirror represents, or null if this mirror does not
      * represent an enum class. If this mirror represents an anonymous subclass of an enum, this will return null.
      *
-     * **Note: this value is immutable**
+     * **Note: this collection is unmodifiable**
      *
      * @see enumType
      * @see Class.enumConstants
@@ -392,51 +365,71 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     //region Specializers
 
     /**
-     * Gets the specialized mirror that represents the same method as [other], or null if this type has no
-     * corresponding mirror.
+     * Gets the specialized mirror that represents the same method as [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getMethod(other: MethodMirror): MethodMirror?
+    abstract fun getMethod(other: MethodMirror): MethodMirror
     /**
-     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     * Gets the specialized mirror that represents [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getMethod(other: Method): MethodMirror?
+    abstract fun getMethod(other: Method): MethodMirror
 
     /**
-     * Gets the specialized mirror that represents the same field as [other], or null if this type has no
-     * corresponding mirror.
+     * Gets the specialized mirror that represents the same field as [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getField(other: FieldMirror): FieldMirror?
+    abstract fun getField(other: FieldMirror): FieldMirror
     /**
-     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     * Gets the specialized mirror that represents [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getField(other: Field): FieldMirror?
+    abstract fun getField(other: Field): FieldMirror
 
     /**
-     * Gets the specialized mirror that represents the same constructor as [other], or null if this type has no
-     * corresponding mirror.
+     * Gets the specialized mirror that represents the same constructor as [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getConstructor(other: ConstructorMirror): ConstructorMirror?
+    abstract fun getConstructor(other: ConstructorMirror): ConstructorMirror
     /**
-     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     * Gets the specialized mirror that represents [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getConstructor(other: Constructor<*>): ConstructorMirror?
+    abstract fun getConstructor(other: Constructor<*>): ConstructorMirror
 
     /**
-     * Gets the specialized mirror that represents the same member class as [other], or null if this type has no
-     * corresponding mirror.
+     * Gets the specialized mirror that represents the same member class as [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getMemberClass(other: ClassMirror): ClassMirror?
+    abstract fun getMemberClass(other: ClassMirror): ClassMirror
     /**
-     * Gets the specialized mirror that represents [other], or null if this type has no corresponding mirror.
+     * Gets the specialized mirror that represents [other].
+     * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getMemberClass(other: Class<*>): ClassMirror?
+    abstract fun getMemberClass(other: Class<*>): ClassMirror
 
     //endregion
 
+
     //region Methods
-    // * **Note: this value is immutable**
+    /**
+     * The methods declared directly inside of this class, any methods inherited from superclasses will not appear in
+     * this list.
+     *
+     * **Note: this collection is unmodifiable**
+     *
+     * @see Class.getDeclaredMethods
+     */
+    abstract val declaredMethods: List<MethodMirror>
+    /**
+     * The public methods available on this class, including both ones declared in this class and in superclasses and
+     * superinterfaces.
+     *
+     * **Note: this collection is unmodifiable**
+     *
+     * @see Class.getMethods
+     */
     abstract val methods: List<MethodMirror>
-    // * **Note: this value is immutable**
     abstract val allMethods: List<MethodMirror>
 //    fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
 //    fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
@@ -447,10 +440,16 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     //endregion
 
     //region Fields
-    //TODO test
-    // * **Note: this value is immutable**
+    /**
+     * The fields declared directly inside of this class, any fields inherited from superclasses will not appear in
+     * this list.
+     *
+     * **Note: this collection is unmodifiable**
+     *
+     * @see Class.getDeclaredFields
+     */
+    abstract val declaredFields: List<FieldMirror>
     abstract val fields: List<FieldMirror>
-    // * **Note: this value is immutable**
     abstract val allFields: List<FieldMirror>
 //    fun getField(name: String): FieldMirror?
 //    fun getDeclaredField(name: String): FieldMirror?
@@ -458,18 +457,31 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     //endregion
 
     //region Constructors
-    //TODO test
-    // * **Note: this value is immutable**
+    /**
+     * The constructors declared directly inside this class
+     *
+     * This list is created when it is first accessed and is thread safe.
+     *
+     * **Note: this collection is unmodifiable**
+     */
+    abstract val declaredConstructors: List<ConstructorMirror>
     abstract val constructors: List<ConstructorMirror>
 //    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
 //    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
     //endregion
 
     //region Member classes
-    //TODO test
-    // * **Note: this value is immutable**
+    /**
+     * The inner classes declared directly inside of this class.
+     *
+     * This list is created when it is first accessed and is thread safe.
+     *
+     * **Note: this collection is unmodifiable**
+     *
+     * @see Class.getDeclaredClasses
+     */
+    abstract val declaredMemberClasses: List<ClassMirror>
     abstract val memberClasses: List<ClassMirror>
-    // * **Note: this value is immutable**
     abstract val allMemberClasses: List<ClassMirror>
 //    fun getMemberClass(name: String): ClassMirror?
 //    fun getDeclaredMemberClass(name: String): ClassMirror?

@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.NoSuchMirrorException
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.coretypes.TypeImplAccess
 import dev.thecodewarrior.mirror.member.ConstructorMirror
@@ -233,41 +234,68 @@ internal class ClassMirrorImpl internal constructor(
 
 //endregion
 
-    override fun getMethod(other: MethodMirror): MethodMirror? = getMethod(other.java)
-    override fun getMethod(other: Method): MethodMirror? {
+    override fun getMethod(other: MethodMirror): MethodMirror = getMethod(other.java)
+    override fun getMethod(other: Method): MethodMirror {
         if(other.declaringClass == this.java) {
             return declaredMethods.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find method ${other.name}(${other.parameterTypes.joinToString(", ")}) " +
+                    "in $this")
         }
-        return findSuperclass(other.declaringClass)?.getMethod(other)
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for method " +
+                "${other.name}(${other.parameterTypes.joinToString(", ")}) in $this")
+        return try {
+            superclass.getMethod(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find method ${other.declaringClass.simpleName}.${other.name}" +
+                "(${other.parameterTypes.joinToString(", ")}) in $this", e)
+        }
     }
 
-    override fun getField(other: FieldMirror): FieldMirror? = getField(other.java)
-    override fun getField(other: Field): FieldMirror? {
+    override fun getField(other: FieldMirror): FieldMirror = getField(other.java)
+    override fun getField(other: Field): FieldMirror {
         if(other.declaringClass == this.java) {
             return declaredFields.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find field ${other.name} in $this")
         }
-        return findSuperclass(other.declaringClass)?.getField(other)
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for field ${other.name} in $this")
+        return try {
+            superclass.getField(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find field ${other.declaringClass.simpleName}.${other.name} in $this", e)
+        }
     }
 
-    override fun getConstructor(other: ConstructorMirror): ConstructorMirror? = getConstructor(other.java)
-    override fun getConstructor(other: Constructor<*>): ConstructorMirror? {
+    override fun getConstructor(other: ConstructorMirror): ConstructorMirror = getConstructor(other.java)
+    override fun getConstructor(other: Constructor<*>): ConstructorMirror {
         if(other.declaringClass == this.java) {
             return declaredConstructors.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find constructor (${other.parameterTypes.joinToString(", ")}) " +
+                    "in $this")
         }
-        return findSuperclass(other.declaringClass)?.getConstructor(other)
+        throw NoSuchMirrorException("Can't get constructor ${other.declaringClass.simpleName}" +
+            "(${other.parameterTypes.joinToString(", ")}) from a superclass in $this")
     }
 
-    override fun getMemberClass(other: ClassMirror): ClassMirror? = getMemberClass(other.java)
-    override fun getMemberClass(other: Class<*>): ClassMirror? {
+    override fun getMemberClass(other: ClassMirror): ClassMirror = getMemberClass(other.java)
+    override fun getMemberClass(other: Class<*>): ClassMirror {
         if(other.declaringClass == this.java) {
             return declaredMemberClasses.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find member class ${other.name} in $this")
         }
-        return findSuperclass(other.declaringClass)?.getMemberClass(other)
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for member class ${other.name} in $this")
+        return try {
+            superclass.getMemberClass(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find member class ${other.declaringClass.simpleName}.${other.name} in $this", e)
+        }
     }
 
     //region Methods
     override val methods: List<MethodMirror> by lazy {
-        java.methods.map { this.getMethod(it)!! }.unmodifiableView()
+        java.methods.map { this.getMethod(it) }.unmodifiableView()
     }
     override val allMethods: List<MethodMirror> by lazy {
         val allInterfaces = mutableSetOf<Class<*>>()
