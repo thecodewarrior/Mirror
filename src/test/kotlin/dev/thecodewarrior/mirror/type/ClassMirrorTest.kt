@@ -1,39 +1,23 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.member.Modifier
-import dev.thecodewarrior.mirror.testsupport.ClosedObject1
-import dev.thecodewarrior.mirror.testsupport.CompanionHolder
-import dev.thecodewarrior.mirror.testsupport.DataObject1
-import dev.thecodewarrior.mirror.testsupport.EnumClass1
 import dev.thecodewarrior.mirror.testsupport.GenericObject1
 import dev.thecodewarrior.mirror.testsupport.GenericPairObject1
 import dev.thecodewarrior.mirror.testsupport.Interface1
 import dev.thecodewarrior.mirror.testsupport.Interface2
-import dev.thecodewarrior.mirror.testsupport.KotlinInternalClass
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.OuterClass1
 import dev.thecodewarrior.mirror.testsupport.OuterGenericClass1
-import dev.thecodewarrior.mirror.testsupport.SealedClass
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
-import dev.thecodewarrior.mirror.testsupport.assertSetEquals
-import dev.thecodewarrior.mirror.testsupport.simpletypes.JObject1
-import dev.thecodewarrior.mirror.type.ClassMirror.Flag
-import dev.thecodewarrior.mirror.typeholders.ClassMirrorHolder
-import dev.thecodewarrior.mirror.type.TypeMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import dev.thecodewarrior.mirror.typeholders.ClassMirrorHolder as H
 
 internal class ClassMirrorTest: MirrorTestBase() {
-    private val holder = ClassMirrorHolder()
 
     @Test
     @DisplayName("Getting the raw class of a ClassMirror should return the original class")
@@ -204,124 +188,4 @@ internal class ClassMirrorTest: MirrorTestBase() {
         assertEquals(GenericObject1::class, Mirror.reflectClass<GenericObject1<Object1>>().kClass)
     }
 
-    @Test
-    fun access_ofJavaClass_shouldBeCorrect() {
-        assertEquals(Modifier.Access.PUBLIC, Mirror.reflectClass(holder.getClass("public class")).access)
-        assertEquals(Modifier.Access.DEFAULT, Mirror.reflectClass(holder.getClass("default class")).access)
-        assertEquals(Modifier.Access.PROTECTED, Mirror.reflectClass(holder.getClass("protected class")).access)
-        assertEquals(Modifier.Access.PRIVATE, Mirror.reflectClass(holder.getClass("private class")).access)
-    }
-
-    @Test
-    fun access_ofKotlinInternalClass_shouldBePublicAndInternal() {
-        assertEquals(Modifier.Access.PUBLIC, Mirror.reflectClass<KotlinInternalClass>().access)
-        assertTrue(Mirror.reflectClass<KotlinInternalClass>().isInternalAccess)
-    }
-
-    @Test
-    fun modifiers_ofJavaClass_shouldBeCorrect() {
-        fun test(name: String, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflectClass(holder.getClass(name)).modifiers)
-        test("public class", Modifier.PUBLIC)
-        test("default class")
-        test("protected class", Modifier.PROTECTED)
-        test("private class", Modifier.PRIVATE)
-        test("abstract class", Modifier.ABSTRACT)
-        test("static class", Modifier.STATIC)
-        test("final class", Modifier.FINAL)
-        // test("strictfp class", Modifier.STRICT) // TODO Strictfp class fix
-    }
-
-    private inline fun <reified T> testFlags(vararg flags: Flag) {
-        assertEquals(setOf(*flags), Mirror.reflectClass<T>().flags)
-    }
-
-    private fun testFlags(name: String, vararg flags: Flag) {
-        assertEquals(setOf(*flags), Mirror.reflectClass(holder.getClass(name)).flags)
-    }
-
-    @Test
-    fun kotlinFlags_ofKotlinClass_shouldBeCorrect() {
-        assertAll(
-            { testFlags<ClosedObject1>(Flag.FINAL) },
-            { testFlags<Object1>() },
-            { testFlags<CompanionHolder.Companion>(Flag.FINAL, Flag.STATIC, Flag.MEMBER)
-                assertTrue(Mirror.reflectClass<CompanionHolder.Companion>().isCompanion) },
-            { testFlags<DataObject1>(Flag.FINAL)
-                assertTrue(Mirror.reflectClass<DataObject1>().isData) },
-            { testFlags<SealedClass>(Flag.ABSTRACT)
-                assertTrue(Mirror.reflectClass<SealedClass>().isSealed) },
-            { testFlags<Interface1>(Flag.INTERFACE, Flag.ABSTRACT) }
-        )
-    }
-
-    @Test
-    fun flags_ofClasses_shouldBeCorrect() {
-        assertAll(
-            { testFlags("public static class", Flag.MEMBER) },
-            { testFlags("public class", Flag.MEMBER) },
-            { testFlags("default class", Flag.MEMBER) },
-            { testFlags("protected class", Flag.MEMBER) },
-            { testFlags("private class", Flag.MEMBER) },
-            { testFlags("abstract class", Flag.MEMBER, Flag.ABSTRACT) },
-            { testFlags("static class", Flag.MEMBER, Flag.STATIC) },
-            { testFlags("final class", Flag.MEMBER, Flag.FINAL) },
-            // TODO Strictfp flag missing from java modifiers
-            // { testFlags("strictfp class", Flag.MEMBER, Flag.STRICT) },
-            { testFlags("annotation class", Flag.MEMBER, Flag.INTERFACE, Flag.ABSTRACT, Flag.ANNOTATION, Flag.STATIC) },
-            { testFlags("interface", Flag.MEMBER, Flag.STATIC, Flag.INTERFACE, Flag.ABSTRACT) },
-            { assertEquals(setOf(Flag.ANONYMOUS), Mirror.reflectClass(holder.innerAnonymous.javaClass).flags) },
-            { assertEquals(setOf(Flag.ANONYMOUS), Mirror.reflectClass(holder.anonymous.javaClass).flags) },
-            { assertEquals(setOf(Flag.LOCAL), Mirror.reflectClass(holder.local).flags) },
-            { assertEquals(setOf(Flag.FINAL, Flag.SYNTHETIC), Mirror.reflectClass(holder.lambda.javaClass).flags) },
-            { assertEquals(setOf(Flag.ABSTRACT, Flag.FINAL, Flag.PRIMITIVE), Mirror.types.int.flags) },
-            { testFlags<JObject1>() },
-            { testFlags<EnumClass1>(Flag.ENUM) }
-        )
-    }
-
-    // todo annotations, declaredAnnotations, simpleName, name, canonicalName
-
-    @Test
-    fun enumType_ofNonEnum_shouldReturnNull() {
-        assertNull(Mirror.reflectClass<Object1>().enumType)
-    }
-
-    @Test
-    fun enumType_ofEnumClass_shouldReturnSelf() {
-        assertEquals(Mirror.reflectClass<EnumClass1>(), Mirror.reflectClass<EnumClass1>().enumType)
-    }
-
-    @Test
-    fun enumType_ofAnonymousEnumSubclass_shouldReturnEnumClass() {
-        assertEquals(Mirror.reflectClass<EnumClass1>(), Mirror.reflectClass(EnumClass1.ANONYMOUS.javaClass).enumType)
-    }
-
-    @Test
-    fun enumConstants_ofNonEnum_shouldReturnNull() {
-        assertNull(Mirror.reflectClass<Object1>().enumConstants)
-    }
-
-    @Test
-    fun enumConstants_ofEnumClass_shouldReturnConstants() {
-        assertEquals(listOf(*EnumClass1.values()), Mirror.reflectClass<EnumClass1>().enumConstants)
-    }
-
-    @Test
-    fun enumConstants_ofAnonymousEnumSubclass_shouldReturnNull() {
-        assertNull(Mirror.reflectClass(EnumClass1.ANONYMOUS.javaClass).enumConstants)
-    }
-
-    private inline fun <reified T> testMethodsAgainstJava()
-        = assertSetEquals(T::class.java.methods.map { Mirror.reflect(it) }, Mirror.reflectClass<T>().methods)
-
-    @Test
-    fun methods_ofRawTypes_shouldMatchJava() {
-        assertSetEquals(Mirror.types.int.java.methods.map { Mirror.reflect(it) }, Mirror.types.int.methods)
-        testMethodsAgainstJava<H.EmptyInterface>()
-        testMethodsAgainstJava<H.NonEmptyInterface>()
-        testMethodsAgainstJava<H.NonEmptyInterfaceOverride>()
-        testMethodsAgainstJava<H.NonEmptyInterfaceShadow>()
-        testMethodsAgainstJava<H.NonEmptyInterfaceImplSuperOverrideImpl>()
-        testMethodsAgainstJava<H.ClassWithStaticsInSupertypes>()
-    }
 }

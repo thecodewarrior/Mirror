@@ -186,7 +186,7 @@ object Mirror {
     /**
      * Dynamically creates a new annotation instance.
      *
-     * @throws AnnotationFormatException if the [clazz] isn't an annotation class
+     * @throws AnnotationFormatException if [T] isn't an annotation class
      * @throws AnnotationFormatException if any required annotation values are missing from the passed map
      * @throws AnnotationFormatException if any values in the map have incompatible types with the attributes of the annotation
      */
@@ -197,7 +197,7 @@ object Mirror {
     /**
      * Dynamically creates a new annotation instance.
      *
-     * @throws AnnotationFormatException if the [clazz] isn't an annotation class
+     * @throws AnnotationFormatException if [T] isn't an annotation class
      * @throws AnnotationFormatException if any required annotation values are missing from the passed name-value pair set
      * @throws AnnotationFormatException if any values in the set have incompatible types with the attributes of the annotation
      */
@@ -243,10 +243,8 @@ object Mirror {
         /** The type mirror representing the primitive `double` type */
         val double: ClassMirror = reflectClass(Double::class.javaPrimitiveType!!)
 
-        /** The type mirror representing the `Object` type */
-        val `object`: ClassMirror = reflectClass<Any>()
-        /** The type mirror representing the `Any` type (synonymous with [object]) */
-        @get:JvmSynthetic
+        /** The type mirror representing the `Object` type (`Any` in Kotlin) */
+        @get:JvmName("getObject")
         val any: ClassMirror = reflectClass<Any>()
     }
 }

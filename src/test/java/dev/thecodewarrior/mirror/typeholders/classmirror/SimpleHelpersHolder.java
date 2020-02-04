@@ -1,10 +1,9 @@
-package dev.thecodewarrior.mirror.typeholders;
+package dev.thecodewarrior.mirror.typeholders.classmirror;
 
 import dev.thecodewarrior.mirror.testsupport.AnnotatedTypeHolder;
 import dev.thecodewarrior.mirror.testsupport.Object1;
-import dev.thecodewarrior.mirror.testsupport.Object1Sub;
 
-public class ClassMirrorHolder extends AnnotatedTypeHolder {
+public class SimpleHelpersHolder extends AnnotatedTypeHolder {
     @TypeHolder("Object1")
     void type_Object1(Object1 a) {}
 
@@ -43,32 +42,4 @@ public class ClassMirrorHolder extends AnnotatedTypeHolder {
     @ElementHolder("strictfp class") strictfp class StrictClass {}
     @ElementHolder("annotation class") @interface AnnotationInterface {}
     @ElementHolder("interface") interface Interface {}
-
-    public interface EmptyInterface {}
-    public interface NonEmptyInterface {
-        Object1 getValue();
-    }
-    public interface NonEmptyInterfaceOverride extends NonEmptyInterface {
-        Object1 getValue();
-    }
-    public interface NonEmptyInterfaceShadow extends NonEmptyInterface {
-        Object1Sub getValue();
-    }
-
-    public static abstract class NonEmptyInterfaceOverrideImpl implements NonEmptyInterfaceOverride {}
-    public static abstract class NonEmptyInterfaceImplSuperOverrideImpl extends NonEmptyInterfaceOverrideImpl implements NonEmptyInterface {}
-
-    public interface InterfaceWithStatics {
-        int staticInterfaceField = 0;
-        static void staticInterfaceMethod() {}
-    }
-
-    public static class ClassWithStatics {
-        static int staticField = 0;
-        static void staticMethod() {}
-    }
-
-    public static class ClassWithStaticsInSupertypes extends ClassWithStatics implements InterfaceWithStatics {
-
-    }
 }
