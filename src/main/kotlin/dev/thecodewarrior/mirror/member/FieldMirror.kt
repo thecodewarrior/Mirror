@@ -5,6 +5,8 @@ import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
+import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.UntestedNegative
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Field
 
@@ -16,19 +18,28 @@ class FieldMirror internal constructor(
 ): MemberMirror(cache, _enclosing) {
 
     var raw: FieldMirror = raw ?: this
+    @UntestedNegative
     val isEnumConstant: Boolean = java.isEnumConstant
 
     val name: String = java.name
 
     // * **Note: this value is immutable**
+    @Untested
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    @Untested
     val isPublic: Boolean = Modifier.PUBLIC in modifiers
+    @Untested
     val isProtected: Boolean = Modifier.PROTECTED in modifiers
+    @Untested
     val isPrivate: Boolean = Modifier.PRIVATE in modifiers
+    @UntestedNegative
     val isStatic: Boolean = Modifier.STATIC in modifiers
+    @Untested
     val isFinal: Boolean = Modifier.FINAL in modifiers
+    @UntestedNegative
     val isTransient: Boolean = Modifier.TRANSIENT in modifiers
+    @UntestedNegative
     val isVolatile: Boolean = Modifier.VOLATILE in modifiers
 
     val type: TypeMirror by lazy {
@@ -42,6 +53,7 @@ class FieldMirror internal constructor(
      *
      * @see Field.getAnnotations
      */
+    @UntestedNegative
     val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
 
     override fun withDeclaringClass(enclosing: ClassMirror?): FieldMirror {
@@ -103,6 +115,7 @@ class FieldMirror internal constructor(
         }
     }
 
+    @Untested
     override fun toString(): String {
         var str = ""
         str += "$type $name"

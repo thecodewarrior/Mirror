@@ -4,6 +4,8 @@ import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.type.TypeMapping
 import dev.thecodewarrior.mirror.type.TypeMirror
+import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.UntestedNegative
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Parameter
 
@@ -16,6 +18,7 @@ class ParameterMirror internal constructor(
     val name: String? = if(java.isNamePresent) java.name else null
 
     val raw: ParameterMirror = raw ?: this
+    @Untested
     val isFinal: Boolean = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
 
     val type: TypeMirror by lazy {
@@ -24,6 +27,8 @@ class ParameterMirror internal constructor(
         }
     }
 
+    //todo: Should this be a public API? It is in ClassMirror, should it be private there too?
+    @Untested
     val genericMapping: TypeMapping by lazy {
         TypeMapping(emptyMap()) + declaringExecutable?.genericMapping
     }
@@ -35,6 +40,7 @@ class ParameterMirror internal constructor(
      *
      * @see Parameter.getAnnotations
      */
+    @UntestedNegative
     val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
 
     fun withDeclaringExecutable(executable: ExecutableMirror?): ParameterMirror {
@@ -45,6 +51,9 @@ class ParameterMirror internal constructor(
         return if(executable == null) raw else cache.parameters.specialize(this, executable)
     }
 
+    // todo: document why parameters have `equals` and `hashCode` and why everything else is by identity
+    // todo: this won't even work right when there are annotations that aren't equal. remove this.
+    @Untested
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ParameterMirror) return false
@@ -56,6 +65,7 @@ class ParameterMirror internal constructor(
         return true
     }
 
+    @Untested
     override fun hashCode(): Int {
         var result = cache.hashCode()
         result = 31 * result + java.hashCode()
@@ -63,6 +73,7 @@ class ParameterMirror internal constructor(
         return result
     }
 
+    @Untested
     override fun toString(): String {
         var str = ""
         str += "$type $name"

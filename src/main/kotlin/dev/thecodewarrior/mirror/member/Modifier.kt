@@ -1,5 +1,6 @@
 package dev.thecodewarrior.mirror.member
 
+import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableSetOf
 
 /**
@@ -44,6 +45,7 @@ enum class Modifier(
     /**
      * Returns true if this modifier is present in the passed mods
      */
+    @Untested
     fun test(mods: Int): Boolean = mask and mods != 0
 
     companion object {
@@ -93,6 +95,7 @@ enum class Modifier(
         /**
          * Extracts a set of [Modifiers][Modifier] from the given Core Reflection mods
          */
+        @Untested
         @JvmStatic fun fromModifiers(mods: Int): Set<Modifier> {
             return values().filter { it.test(mods) }.toSet()
         }
@@ -130,6 +133,7 @@ enum class Modifier(
              * returned.
              */
             @JvmStatic
+            @Untested
             fun fromModifiers(mods: Int): Access {
                 return when {
                     JvmModifier.isPublic(mods) -> PUBLIC

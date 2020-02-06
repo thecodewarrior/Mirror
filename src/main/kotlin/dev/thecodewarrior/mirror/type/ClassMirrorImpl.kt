@@ -11,6 +11,7 @@ import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.member.JvmModifier
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
+import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.checkedCast
 import dev.thecodewarrior.mirror.utils.uniqueBy
 import dev.thecodewarrior.mirror.utils.unmodifiableView
@@ -461,6 +462,7 @@ internal class ClassMirrorImpl internal constructor(
             return str
         }
 
+    @Untested
     override fun toString(): String {
         val specialization = this.specialization
         var str = ""

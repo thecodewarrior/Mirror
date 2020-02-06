@@ -5,6 +5,8 @@ import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMapping
 import dev.thecodewarrior.mirror.type.TypeMirror
+import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.UntestedNegative
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Executable
 
@@ -17,6 +19,7 @@ abstract class ExecutableMirror internal constructor(
     //todo: Also provide reference to what this overrides, if anything
     abstract val raw: ExecutableMirror
 
+    @Untested
     abstract val name: String
 
     val returnType: TypeMirror by lazy {
@@ -33,11 +36,13 @@ abstract class ExecutableMirror internal constructor(
     }
 
     // * **Note: this value is immutable**
+    @Untested("only tested after specialization")
     val parameterTypes: List<TypeMirror> by lazy {
         parameters.map { it.type }.unmodifiableView()
     }
 
     // * **Note: this value is immutable**
+    @UntestedNegative
     val exceptionTypes: List<TypeMirror> by lazy {
         java.annotatedExceptionTypes.map {
              genericMapping[cache.types.reflect(it)]
@@ -45,12 +50,15 @@ abstract class ExecutableMirror internal constructor(
     }
 
     // * **Note: this value is immutable**
+    @UntestedNegative
     val typeParameters: List<TypeMirror> by lazy {
         specialization?.arguments ?: java.typeParameters.map {
             cache.types.reflect(it)
         }.unmodifiableView()
     }
 
+    //todo: Should this be a public API? It is in ClassMirror, should it be private there too?
+    @Untested
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
     }
@@ -62,6 +70,7 @@ abstract class ExecutableMirror internal constructor(
      *
      * @see Executable.getAnnotations
      */
+    @UntestedNegative
     val annotations: List<Annotation> by lazy {
         java.annotations.toList().unmodifiableView()
     }
@@ -85,6 +94,7 @@ abstract class ExecutableMirror internal constructor(
         return cache.executables.specialize(raw, newSpecialization)
     }
 
+    // todo: do something with this? Make it public?
     internal val descriptor: Any = Descriptor(this)
 
     private class Descriptor(val mirror: ExecutableMirror) {

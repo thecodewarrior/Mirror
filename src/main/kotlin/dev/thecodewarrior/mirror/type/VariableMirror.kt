@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
@@ -59,6 +60,7 @@ class VariableMirror internal constructor(
         }
     }
 
+    @Untested
     override fun toString(): String {
         var str = ""
         str += coreType.name

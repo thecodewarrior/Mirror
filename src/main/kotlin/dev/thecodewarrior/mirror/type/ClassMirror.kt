@@ -7,6 +7,8 @@ import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
+import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.UntestedFailure
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -208,14 +210,17 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     /**
      * Returns true if this mirror represents an abstract class.
      */
+    @Untested
     abstract val isAbstract: Boolean
     /**
      * Returns true if this mirror represents a static class.
      */
+    @Untested
     abstract val isStatic: Boolean
     /**
      * Returns true if this mirror represents a final class.
      */
+    @Untested
     abstract val isFinal: Boolean
     /**
      * Returns true if the class this mirror represents has the `strictfp` modifier.
@@ -223,11 +228,13 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * NOTE: For unknown reasons the strictfp modifier seems to not be present in the Core Reflection modifiers, so
      * this is always false
      */
+    @Untested
     abstract val isStrict: Boolean
 
     /**
      * Returns true if the class this mirror represents is not final.
      */
+    @Untested
     abstract val isOpen: Boolean
 
     /**
@@ -254,24 +261,29 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     /**
      * Returns true if this mirror represents an annotation class.
      */
+    @Untested
     abstract val isAnnotation: Boolean
     /**
      * Returns true if this mirror represents an anonymous class.
      */
+    @Untested
     abstract val isAnonymous: Boolean
     /**
      * Returns true if this mirror represents an enum class. This is false for anonymous enum subclasses, so for more
      * consistent behavior check if [enumType] is non-null.
      */
+    @Untested
     abstract val isEnum: Boolean
     /**
      * Returns true if the class this mirror represents is an interface.
      */
+    @Untested
     abstract val isInterface: Boolean
     /**
      * Returns true if this mirror represents a local class. Local classes are classes declared within a block of code
      * such as a method or constructor.
      */
+    @Untested
     abstract val isLocal: Boolean
     /**
      * Returns true if the class this mirror represents is a member of another class. Member classes are non-static
@@ -283,14 +295,17 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * }
      * ```
      */
+    @Untested
     abstract val isMember: Boolean
     /**
      * Returns true if this mirror represents a primitive class.
      */
+    @Untested
     abstract val isPrimitive: Boolean
     /**
      * Returns true if this mirror represents a synthetic class.
      */
+    @Untested
     abstract val isSynthetic: Boolean
 
     /**
@@ -301,6 +316,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * @see Class.getAnnotations
      */
+    @Untested
     abstract val annotations: List<Annotation>
 
     /**
@@ -311,6 +327,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * @see Class.getDeclaredAnnotations
      */
+    @Untested
     abstract val declaredAnnotations: List<Annotation>
 
     /**
@@ -338,6 +355,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * See [Class.getSimpleName] for nuances.
      */
+    @Untested
     abstract val simpleName: String
     /**
      * Returns the internal name of the class this mirror represents. (e.g. `boolean` = `Z`,
@@ -345,12 +363,14 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * See [Class.getName] for nuances.
      */
+    @Untested
     abstract val name: String
     /**
      * Returns the simple name of the class this mirror represents.
      *
      * See [Class.getCanonicalName] for nuances.
      */
+    @Untested
     abstract val canonicalName: String?
     //endregion
 
@@ -368,44 +388,52 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * Gets the specialized mirror that represents the same method as [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getMethod(other: MethodMirror): MethodMirror
     /**
      * Gets the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getMethod(other: Method): MethodMirror
 
     /**
      * Gets the specialized mirror that represents the same field as [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getField(other: FieldMirror): FieldMirror
     /**
      * Gets the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getField(other: Field): FieldMirror
 
     /**
      * Gets the specialized mirror that represents the same constructor as [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getConstructor(other: ConstructorMirror): ConstructorMirror
     /**
      * Gets the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getConstructor(other: Constructor<*>): ConstructorMirror
 
     /**
      * Gets the specialized mirror that represents the same member class as [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getMemberClass(other: ClassMirror): ClassMirror
     /**
      * Gets the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
+    @Untested
     abstract fun getMemberClass(other: Class<*>): ClassMirror
 
     //endregion
@@ -430,6 +458,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * @see Class.getMethods
      */
     abstract val methods: List<MethodMirror>
+    @Untested
     abstract val allMethods: List<MethodMirror>
 //    fun getMethod(name: String, vararg args: TypeMirror): MethodMirror?
 //    fun getMethod(raw: Boolean, name: String, vararg args: TypeMirror): MethodMirror?
@@ -449,7 +478,9 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * @see Class.getDeclaredFields
      */
     abstract val declaredFields: List<FieldMirror>
+    @Untested
     abstract val fields: List<FieldMirror>
+    @Untested
     abstract val allFields: List<FieldMirror>
 //    fun getField(name: String): FieldMirror?
 //    fun getDeclaredField(name: String): FieldMirror?
@@ -465,6 +496,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * **Note: this collection is unmodifiable**
      */
     abstract val declaredConstructors: List<ConstructorMirror>
+    @Untested
     abstract val constructors: List<ConstructorMirror>
 //    fun getConstructor(vararg args: TypeMirror): ConstructorMirror?
 //    fun getConstructor(raw: Boolean, vararg args: TypeMirror): ConstructorMirror?
@@ -481,7 +513,9 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * @see Class.getDeclaredClasses
      */
     abstract val declaredMemberClasses: List<ClassMirror>
+    @Untested
     abstract val memberClasses: List<ClassMirror>
+    @Untested
     abstract val allMemberClasses: List<ClassMirror>
 //    fun getMemberClass(name: String): ClassMirror?
 //    fun getDeclaredMemberClass(name: String): ClassMirror?
@@ -490,21 +524,32 @@ abstract class ClassMirror : ConcreteTypeMirror() {
 
     //endregion
 
+    // todo: throw, don't return null
+    @Untested
     abstract fun declaredClass(name: String): ClassMirror?
 
     // * **Note: this value is immutable**
+    @Untested
     abstract fun innerClasses(name: String): List<ClassMirror>
 
+    // todo: throw, don't return null
+    @Untested
     abstract fun declaredField(name: String): FieldMirror?
 
+    // todo: throw, don't return null
+    @Untested
     abstract fun field(name: String): FieldMirror?
 
     // * **Note: this value is immutable**
+    @Untested
     abstract fun declaredMethods(name: String): List<MethodMirror>
 
     // * **Note: this value is immutable**
+    @Untested
     abstract fun methods(name: String): List<MethodMirror>
 
+    // todo: throw, don't return null
+    @UntestedFailure
     abstract fun declaredConstructor(vararg params: TypeMirror): ConstructorMirror?
 
     /**
@@ -513,12 +558,15 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * @return The specialized superclass with the passed type, or null if none were found.
      */
+    // todo: throw, don't return null
+    @UntestedFailure
     abstract fun findSuperclass(clazz: Class<*>): ClassMirror?
 
     /**
      * Returns a string representing the declaration of this type with type parameters substituted in,
      * as opposed to [toString] which returns the string representing the usage of this type
      */
+    @Untested
     abstract val declarationString: String
 
     /**

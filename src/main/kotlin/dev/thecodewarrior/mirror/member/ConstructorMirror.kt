@@ -4,6 +4,7 @@ import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
+import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.Constructor
 
 //TODO tests
@@ -16,7 +17,11 @@ class ConstructorMirror internal constructor(
 
     override val raw: ConstructorMirror = raw ?: this
     override val name: String = java.name
+    // todo: why have this? Shouldn't this be just `toString()`? Should we move this into ExecutableMirror?
+    @Untested
     val description: String get() = "${declaringClass.java.simpleName}(${raw.parameterTypes.joinToString(", ")})"
+    // todo: move this into ExecutableMirror?
+    @Untested
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
     override fun withTypeParameters(vararg parameters: TypeMirror): ConstructorMirror {
@@ -33,8 +38,8 @@ class ConstructorMirror internal constructor(
         MethodHandleHelper.wrapperForConstructor(java as Constructor<Any>)
     }
 
-    //TODO test
     @Suppress("UNCHECKED_CAST")
+    @Untested
     fun <T : Any?> call(vararg args: Any?): T {
         if(args.size != parameters.size)
             throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$description`")
@@ -44,6 +49,7 @@ class ConstructorMirror internal constructor(
     @JvmSynthetic
     operator fun <T> invoke(vararg args: Any?): T = call(*args)
 
+    @Untested
     override fun toString(): String {
         var str = name
         if(typeParameters.isNotEmpty()) {

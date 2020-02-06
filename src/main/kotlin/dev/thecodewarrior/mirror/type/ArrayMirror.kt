@@ -5,6 +5,7 @@ import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.coretypes.TypeImplAccess
+import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.Type
 
@@ -73,6 +74,7 @@ class ArrayMirror internal constructor(
         return component.isAssignableFrom(other.component)
     }
 
+    @Untested
     override fun toString(): String {
         var str = "$component"
         if(specialization?.annotations?.isNotEmpty() == true) {

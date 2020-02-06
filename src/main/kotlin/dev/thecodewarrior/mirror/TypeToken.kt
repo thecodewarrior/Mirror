@@ -44,6 +44,8 @@ abstract class TypeToken<T> {
 
     /**
      * Gets the kotlin type represented by this TypeToken
+     *
+     * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
     fun getKotlin(): KTypeProjection {
         return javaClass.kotlin.supertypes[0].arguments[0]
@@ -52,8 +54,6 @@ abstract class TypeToken<T> {
 
 /**
  * Create a type token with the given type
- *
- * **NOTE!!** Due to a bug in javac before JDK 10, in most cases annotated type tokens will not work. https://github.com/raphw/byte-buddy/issues/583
  *
  * **NOTE!!** As of 1.3, Kotlin does not support runtime type annotations. Thus, type annotations in kotlin code will not work.
  */

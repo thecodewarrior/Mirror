@@ -11,6 +11,9 @@ import dev.thecodewarrior.mirror.type.ArrayMirror
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.type.VoidMirror
+import dev.thecodewarrior.mirror.utils.IndirectTests
+import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.UntestedNegative
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -21,6 +24,7 @@ import java.lang.reflect.Type
 /**
  * The central class used to retrieve mirrors of Core Reflection objects
  */
+@Untested("there should be tests to ensure all the different `reflect` methods agree")
 object Mirror {
     // these instances are replaced by the unit tests using reflection. `types` isn't a `var` with a private setter
     // because if it was IDEA would mark it as mutable with an underline, which is incorrect and gets irritating
@@ -50,6 +54,7 @@ object Mirror {
      * Gets the type mirror representing the passed type
      */
     @JvmStatic
+    @Untested("Only being tested from java in a temporary test")
     fun reflect(type: TypeToken<*>): TypeMirror {
         return cache.types.reflect(type.getAnnotated())
     }
@@ -76,6 +81,7 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
+    @Untested
     fun reflectClass(token: TypeToken<*>): ClassMirror {
         return reflectClass(token.getAnnotated())
     }
@@ -87,6 +93,7 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
+    @UntestedNegative
     fun reflectClass(type: AnnotatedType): ClassMirror {
         val reflected = reflect(type)
         if(reflected is ClassMirror) {
@@ -103,6 +110,7 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
+    @UntestedNegative
     fun reflectClass(type: Type): ClassMirror {
         val reflected = reflect(type)
         if(reflected is ClassMirror) {
@@ -118,6 +126,7 @@ object Mirror {
      *
      * @throws IllegalArgumentException if the input type is an array or void
      */
+    @UntestedNegative
     inline fun <reified T> reflectClass(): ClassMirror {
         if(T::class.java.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
         if(T::class.java == Void.TYPE) throw IllegalArgumentException("reflectClass cannot reflect the void type")
@@ -152,6 +161,7 @@ object Mirror {
      * Gets the method or constructor mirror representing the passed method or constructor
      */
     @JvmStatic
+    @Untested
     fun reflect(executable: Executable): ExecutableMirror {
         return cache.executables.reflect(executable)
     }
@@ -166,6 +176,7 @@ object Mirror {
     @JvmStatic
     @JvmOverloads
     @Throws(AnnotationFormatException::class)
+    @Untested
     fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
         return CoreTypeUtils.createAnnotation(clazz, arguments)
     }
@@ -179,6 +190,7 @@ object Mirror {
      */
     @JvmStatic
     @Throws(AnnotationFormatException::class)
+    @IndirectTests
     fun <T: Annotation> newAnnotation(clazz: Class<T>, vararg arguments: Pair<String, Any>): T {
         return newAnnotation(clazz, mapOf(*arguments))
     }
@@ -190,6 +202,7 @@ object Mirror {
      * @throws AnnotationFormatException if any required annotation values are missing from the passed map
      * @throws AnnotationFormatException if any values in the map have incompatible types with the attributes of the annotation
      */
+    @IndirectTests
     inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
         return newAnnotation(T::class.java, arguments)
     }
@@ -217,6 +230,7 @@ object Mirror {
      * Transforms the passed type to an equivalent one that implements the [equals] and [hashCode] methods.
      */
     @JvmStatic
+    @Untested
     fun <T: AnnotatedType> toCanonical(type: T): T = CoreTypeUtils.toCanonical(type)
 
     /**

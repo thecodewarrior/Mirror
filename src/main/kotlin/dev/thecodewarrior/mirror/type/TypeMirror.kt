@@ -4,6 +4,7 @@ import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
@@ -148,6 +149,7 @@ abstract class TypeMirror internal constructor() {
      */
     val specificity: Specificity = Specificity(this)
 
+    @Untested
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TypeMirror) return false

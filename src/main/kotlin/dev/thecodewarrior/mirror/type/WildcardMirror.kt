@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.type
 import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.WildcardType
 
@@ -67,6 +68,7 @@ class WildcardMirror internal constructor(
      * - ArrayList       - Invalid - `ArrayList myVar = myAbstractList;` does not compile
      * ```
      */
+    @Untested
     val lowerBound: TypeMirror?
         get() = lowerBounds.getOrNull(0)
 
@@ -107,6 +109,7 @@ class WildcardMirror internal constructor(
      * - ArrayList       - Valid   - `public List foo() { return myArrayList; }` compiles
      * ```
      */
+    @Untested
     val upperBound: TypeMirror?
         get() = upperBounds.getOrNull(0)
 
@@ -115,6 +118,7 @@ class WildcardMirror internal constructor(
     /**
      * Specialize this wildcard with the provided upper and lower bounds. If the upper and lower bounds aren't
      */
+    @Untested
     fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror {
         if(upperBounds != null && (upperBounds.size != raw.upperBounds.size ||
             raw.upperBounds.zip(upperBounds).any { (raw, specialized) ->
@@ -156,6 +160,7 @@ class WildcardMirror internal constructor(
         }
     }
 
+    @Untested
     override fun toString(): String {
         var str = "?"
         if(upperBounds.isNotEmpty()) {

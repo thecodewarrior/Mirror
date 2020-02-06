@@ -1,7 +1,7 @@
 package dev.thecodewarrior.mirror
 
 /**
- * The common superclas s of Mirror exceptions
+ * The common superclass of Mirror exceptions
  */
 open class MirrorException: RuntimeException {
     constructor(): super()
@@ -23,6 +23,9 @@ class InvalidSpecializationException: MirrorException {
     constructor(cause: Throwable): super(cause)
 }
 
+/**
+ * Thrown when a Mirror was requested but could not be found (e.g. no methods exist with the given name and parameters)
+ */
 class NoSuchMirrorException : MirrorException {
     constructor(): super()
     constructor(message: String): super(message)
