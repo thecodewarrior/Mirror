@@ -91,7 +91,7 @@ class EnclosingClassTest: MirrorTestBase() {
     fun fieldType_ofFieldInClassWithGenericOuterClass_shouldReturnOuterClassTypeParameter() {
         val outer = Mirror.reflectClass(OuterGenericClass1::class.java)
         val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val specialized = inner.field("innerField")?.type
+        val specialized = inner.findPublicField("innerField")?.type
         assertSame(outer.typeParameters[0], specialized)
     }
 
@@ -100,7 +100,7 @@ class EnclosingClassTest: MirrorTestBase() {
     fun fieldType_ofFieldInInnerClassWithSpecializedOuterClass_shouldReturnSpecializedFieldType() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
         val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val specialized = inner.withEnclosingClass(outer).field("innerField")?.type
+        val specialized = inner.withEnclosingClass(outer).findPublicField("innerField")?.type
         assertSame(outer.typeParameters[0], specialized)
     }
 
@@ -109,7 +109,7 @@ class EnclosingClassTest: MirrorTestBase() {
     fun returnType_ofMethodInInnerClassWithSpecializedOuterClass_shouldReturnSpecializedReturnType() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
         val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val specialized = inner.withEnclosingClass(outer).methods("innerMethod")[0].returnType
+        val specialized = inner.withEnclosingClass(outer).findPublicMethods("innerMethod")[0].returnType
         assertSame(outer.typeParameters[0], specialized)
     }
 

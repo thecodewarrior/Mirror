@@ -11,14 +11,14 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun get_static() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticCounterValue")!!
+        val field = thisType.findDeclaredField("staticCounterValue")!!
         assertEquals(1, field.get(null))
     }
 
     @Test
     fun set_static() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticCounterValue")!!
+        val field = thisType.findDeclaredField("staticCounterValue")!!
         field.set(null, 5)
         assertEquals(5, staticCounterValue)
     }
@@ -26,14 +26,14 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun get_instance() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceCounterValue")!!
+        val field = thisType.findDeclaredField("instanceCounterValue")!!
         assertEquals(2, field.get(this))
     }
 
     @Test
     fun set_instance() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceCounterValue")!!
+        val field = thisType.findDeclaredField("instanceCounterValue")!!
         field.set(this, 5)
         assertEquals(5, instanceCounterValue)
     }
@@ -41,14 +41,14 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun get_staticPrivate() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticPrivateField")!!
+        val field = thisType.findDeclaredField("staticPrivateField")!!
         assertEquals(1, field.get(null))
     }
 
     @Test
     fun set_staticPrivate() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticPrivateField")!!
+        val field = thisType.findDeclaredField("staticPrivateField")!!
         field.set(null, 5)
         assertEquals(5, staticPrivateField)
     }
@@ -56,14 +56,14 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun get_instancePrivate() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instancePrivateField")!!
+        val field = thisType.findDeclaredField("instancePrivateField")!!
         assertEquals(2, field.get(this))
     }
 
     @Test
     fun set_instancePrivate() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instancePrivateField")!!
+        val field = thisType.findDeclaredField("instancePrivateField")!!
         field.set(this, 5)
         assertEquals(5, instancePrivateField)
     }
@@ -71,7 +71,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_staticFinal() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticFinalValue")!!
+        val field = thisType.findDeclaredField("staticFinalValue")!!
         assertThrows<IllegalStateException> {
             field.set(null, 5)
         }
@@ -80,7 +80,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_instanceFinal() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceFinalValue")!!
+        val field = thisType.findDeclaredField("instanceFinalValue")!!
         assertThrows<IllegalStateException> {
             field.set(this, 5)
         }
@@ -89,7 +89,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun get_static_passingReceiver() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticCounterValue")!!
+        val field = thisType.findDeclaredField("staticCounterValue")!!
         assertThrows<IllegalArgumentException> {
             field.get(this)
         }
@@ -98,7 +98,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_static_passingReceiver() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticCounterValue")!!
+        val field = thisType.findDeclaredField("staticCounterValue")!!
         assertThrows<IllegalArgumentException> {
             field.set(this, 5)
         }
@@ -107,7 +107,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun get_instance_withoutReceiver() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceCounterValue")!!
+        val field = thisType.findDeclaredField("instanceCounterValue")!!
         assertThrows<NullPointerException> {
             field.get(null)
         }
@@ -116,7 +116,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_instance_withoutReceiver() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceCounterValue")!!
+        val field = thisType.findDeclaredField("instanceCounterValue")!!
         assertThrows<NullPointerException> {
             field.set(null, 5)
         }
@@ -125,7 +125,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_static_withWrongType() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("staticCounterValue")!!
+        val field = thisType.findDeclaredField("staticCounterValue")!!
         assertThrows<ClassCastException> {
             field.set(null, "whoops!")
         }
@@ -134,7 +134,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_instance_withWrongType() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceCounterValue")!!
+        val field = thisType.findDeclaredField("instanceCounterValue")!!
         assertThrows<ClassCastException> {
             field.set(this, "whoops!")
         }
@@ -143,7 +143,7 @@ internal class Fields: MirrorTestBase() {
     @Test
     fun set_instance_withWrongReceiverType() {
         val thisType = Mirror.reflectClass<Fields>()
-        val field = thisType.declaredField("instanceCounterValue")!!
+        val field = thisType.findDeclaredField("instanceCounterValue")!!
         assertThrows<IllegalArgumentException> {
             field.set("whoops!", 5)
         }

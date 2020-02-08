@@ -21,7 +21,7 @@ internal class ArraySpecializationTest: MirrorTestBase() {
         val genericType = Mirror.reflectClass(GenericArrayHolder::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
         val specialized = genericType.withTypeArguments(specializeWith)
-        val specializedArray = specialized.field("array")!!.type as ArrayMirror
+        val specializedArray = specialized.findPublicField("array")!!.type as ArrayMirror
 
         assertEquals(specializeWith, specializedArray.component)
     }

@@ -11,7 +11,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_zeroArg() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor()!!
+        val constructor = testClass.getDeclaredConstructor()!!
         val obj = constructor<TestClass>()
         assertEquals(1, obj.v)
     }
@@ -19,7 +19,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_private() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor(Mirror.reflect<String>())!!
+        val constructor = testClass.getDeclaredConstructor(Mirror.reflect<String>())!!
         val obj = constructor<TestClass>("hello")
         assertEquals("hello".length, obj.v)
     }
@@ -27,7 +27,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_withParam() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor(Mirror.types.int)!!
+        val constructor = testClass.getDeclaredConstructor(Mirror.types.int)!!
         val obj = constructor<TestClass>(4)
         assertEquals(4, obj.v)
     }
@@ -35,7 +35,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_zeroArg_passingParam() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor()!!
+        val constructor = testClass.getDeclaredConstructor()!!
         assertThrows<IllegalArgumentException> {
             constructor<TestClass>(2)
         }
@@ -44,7 +44,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_withParam_withoutParam() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor(Mirror.types.int)!!
+        val constructor = testClass.getDeclaredConstructor(Mirror.types.int)!!
         assertThrows<IllegalArgumentException> {
             constructor<TestClass>()
         }
@@ -53,7 +53,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_withParam_withIncorrectParamType() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor(Mirror.types.int)!!
+        val constructor = testClass.getDeclaredConstructor(Mirror.types.int)!!
         assertThrows<ClassCastException> {
             constructor<TestClass>("whoops!")
         }
@@ -62,7 +62,7 @@ internal class Constructors: MirrorTestBase() {
     @Test
     fun call_withParam_withExtraParam() {
         val testClass = Mirror.reflectClass<TestClass>()
-        val constructor = testClass.declaredConstructor(Mirror.types.int)!!
+        val constructor = testClass.getDeclaredConstructor(Mirror.types.int)!!
         assertThrows<IllegalArgumentException> {
             constructor<TestClass>(4, "whoops!")
         }

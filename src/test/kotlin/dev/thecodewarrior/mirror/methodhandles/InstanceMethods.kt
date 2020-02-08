@@ -11,7 +11,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_void() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("incrementCounter")[0]
+        val method = thisType.findDeclaredMethods("incrementCounter")[0]
         method<Unit>(this)
         assertEquals(1, counterValue)
     }
@@ -19,7 +19,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_private() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("privateIncrementCounter")[0]
+        val method = thisType.findDeclaredMethods("privateIncrementCounter")[0]
         method<Unit>(this)
         assertEquals(1, counterValue)
     }
@@ -27,7 +27,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_withParam() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("addCounter")[0]
+        val method = thisType.findDeclaredMethods("addCounter")[0]
         method<Unit>(this, 5)
         assertEquals(5, counterValue)
     }
@@ -35,7 +35,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_withReturn() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("getCounter")[0]
+        val method = thisType.findDeclaredMethods("getCounter")[0]
         counterValue = 3
         assertEquals(3, method(this))
     }
@@ -43,7 +43,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_void_passingNoReceiver() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("incrementCounter")[0]
+        val method = thisType.findDeclaredMethods("incrementCounter")[0]
         assertThrows<NullPointerException> {
             method<Unit>(null)
         }
@@ -52,7 +52,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_void_passingWrongReceiverType() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("incrementCounter")[0]
+        val method = thisType.findDeclaredMethods("incrementCounter")[0]
         assertThrows<IllegalArgumentException> {
             method<Unit>("whoops!")
         }
@@ -61,7 +61,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_void_passingParam() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("incrementCounter")[0]
+        val method = thisType.findDeclaredMethods("incrementCounter")[0]
         assertThrows<IllegalArgumentException> {
             method<Unit>(this, "whoops!")
         }
@@ -70,7 +70,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_withParam_withoutParam() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("addCounter")[0]
+        val method = thisType.findDeclaredMethods("addCounter")[0]
         assertThrows<IllegalArgumentException> {
             method<Unit>(this)
         }
@@ -79,7 +79,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_withParam_withIncorrectParamType() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("addCounter")[0]
+        val method = thisType.findDeclaredMethods("addCounter")[0]
         assertThrows<ClassCastException> {
             method<Unit>(this, "whoops!")
         }
@@ -88,7 +88,7 @@ internal class InstanceMethods: MirrorTestBase() {
     @Test
     fun call_withParam_withExtraParam() {
         val thisType = Mirror.reflectClass<InstanceMethods>()
-        val method = thisType.declaredMethods("addCounter")[0]
+        val method = thisType.findDeclaredMethods("addCounter")[0]
         assertThrows<IllegalArgumentException> {
             method<Unit>(this, 5, "whoops!")
         }

@@ -3,8 +3,6 @@ package dev.thecodewarrior.mirror;
 import dev.thecodewarrior.mirror.annotations.TypeAnnotation1;
 import dev.thecodewarrior.mirror.testsupport.Object1;
 import dev.thecodewarrior.mirror.type.TypeMirror;
-import dev.thecodewarrior.mirror.Mirror;
-import dev.thecodewarrior.mirror.TypeToken;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

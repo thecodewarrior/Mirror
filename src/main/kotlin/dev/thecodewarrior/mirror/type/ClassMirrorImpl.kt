@@ -76,8 +76,9 @@ internal class ClassMirrorImpl internal constructor(
         }
     }
 
-//region Specialized
     override val raw: ClassMirror = raw ?: this
+
+//region Specialization =========================================================================================================
 
     override val superclass: ClassMirror? by lazy {
         java.annotatedSuperclass?.let {
@@ -146,33 +147,28 @@ internal class ClassMirrorImpl internal constructor(
             ClassMirrorImpl(cache, java, raw, it)
         }
     }
+//endregion =====================================================================================================================
 
-    override val declaredMemberClasses: List<ClassMirror> by lazy {
-        java.declaredClasses.map {
-            (cache.types.reflect(it) as ClassMirror).withEnclosingClass(this)
-        }.unmodifiableView()
+//region Relationships ==========================================================================================================
+    override fun findSuperclass(clazz: Class<*>): ClassMirror? {
+        if(java == clazz) return this
+        var supertype = superclass?.findSuperclass(clazz)
+        for(it in interfaces) {
+            val candidate = it.findSuperclass(clazz)
+            if(candidate != null && (supertype == null || supertype.specificity < candidate.specificity))
+                supertype = candidate
+        }
+        return supertype
     }
 
-    override val declaredFields: List<FieldMirror> by lazy {
-        java.declaredFields.map {
-            cache.fields.reflect(it).withDeclaringClass(this)
-        }.unmodifiableView()
+    override fun getSuperclass(clazz: Class<*>): ClassMirror {
+        return findSuperclass(clazz)
+            ?: throw NoSuchMirrorException("$this has no superclass of type ${clazz.simpleName}")
     }
 
-    override val declaredMethods: List<MethodMirror> by lazy {
-        java.declaredMethods.map {
-            cache.executables.reflect(it).withDeclaringClass(this) as MethodMirror
-        }.unmodifiableView()
-    }
+//endregion =====================================================================================================================
 
-    override val declaredConstructors: List<ConstructorMirror> by lazy {
-        java.declaredConstructors.map {
-            cache.executables.reflect(it).withDeclaringClass(this) as ConstructorMirror
-        }.unmodifiableView()
-    }
-//endregion
-
-//region Simple helpers
+//region Simple helpers =========================================================================================================
     override val kClass: KClass<*> = java.kotlin
 
     override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
@@ -235,70 +231,18 @@ internal class ClassMirrorImpl internal constructor(
 
 //endregion
 
-    override fun getMethod(other: MethodMirror): MethodMirror = getMethod(other.java)
-    override fun getMethod(other: Method): MethodMirror {
-        if(other.declaringClass == this.java) {
-            return declaredMethods.find { it.java == other }
-                ?: throw NoSuchMirrorException("Could not find method ${other.name}(${other.parameterTypes.joinToString(", ")}) " +
-                    "in $this")
-        }
-        val superclass = findSuperclass(other.declaringClass)
-            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for method " +
-                "${other.name}(${other.parameterTypes.joinToString(", ")}) in $this")
-        return try {
-            superclass.getMethod(other)
-        } catch (e: NoSuchMirrorException) {
-            throw NoSuchMirrorException("Could not find method ${other.declaringClass.simpleName}.${other.name}" +
-                "(${other.parameterTypes.joinToString(", ")}) in $this", e)
-        }
+//region Methods ================================================================================================================
+    override val declaredMethods: List<MethodMirror> by lazy {
+        java.declaredMethods.map {
+            cache.executables.reflect(it).withDeclaringClass(this) as MethodMirror
+        }.unmodifiableView()
     }
 
-    override fun getField(other: FieldMirror): FieldMirror = getField(other.java)
-    override fun getField(other: Field): FieldMirror {
-        if(other.declaringClass == this.java) {
-            return declaredFields.find { it.java == other }
-                ?: throw NoSuchMirrorException("Could not find field ${other.name} in $this")
-        }
-        val superclass = findSuperclass(other.declaringClass)
-            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for field ${other.name} in $this")
-        return try {
-            superclass.getField(other)
-        } catch (e: NoSuchMirrorException) {
-            throw NoSuchMirrorException("Could not find field ${other.declaringClass.simpleName}.${other.name} in $this", e)
-        }
-    }
-
-    override fun getConstructor(other: ConstructorMirror): ConstructorMirror = getConstructor(other.java)
-    override fun getConstructor(other: Constructor<*>): ConstructorMirror {
-        if(other.declaringClass == this.java) {
-            return declaredConstructors.find { it.java == other }
-                ?: throw NoSuchMirrorException("Could not find constructor (${other.parameterTypes.joinToString(", ")}) " +
-                    "in $this")
-        }
-        throw NoSuchMirrorException("Can't get constructor ${other.declaringClass.simpleName}" +
-            "(${other.parameterTypes.joinToString(", ")}) from a superclass in $this")
-    }
-
-    override fun getMemberClass(other: ClassMirror): ClassMirror = getMemberClass(other.java)
-    override fun getMemberClass(other: Class<*>): ClassMirror {
-        if(other.declaringClass == this.java) {
-            return declaredMemberClasses.find { it.java == other }
-                ?: throw NoSuchMirrorException("Could not find member class ${other.name} in $this")
-        }
-        val superclass = findSuperclass(other.declaringClass)
-            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for member class ${other.name} in $this")
-        return try {
-            superclass.getMemberClass(other)
-        } catch (e: NoSuchMirrorException) {
-            throw NoSuchMirrorException("Could not find member class ${other.declaringClass.simpleName}.${other.name} in $this", e)
-        }
-    }
-
-    //region Methods
-    override val methods: List<MethodMirror> by lazy {
+    override val publicMethods: List<MethodMirror> by lazy {
         java.methods.map { this.getMethod(it) }.unmodifiableView()
     }
-    override val allMethods: List<MethodMirror> by lazy {
+
+    override val methods: List<MethodMirror> by lazy {
         val allInterfaces = mutableSetOf<Class<*>>()
         val allClasses = mutableSetOf<Class<*>>()
 
@@ -331,81 +275,244 @@ internal class ClassMirrorImpl internal constructor(
                 allMethods.add(method)
         }
 
-        return@lazy allMethods.map { this.getMethod(it)!! }.unmodifiableView()
-    }
-//endregion
-
-//region Fields
-    override val fields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
-    override val allFields: List<FieldMirror> by lazy {
-        (declaredFields + (superclass?.allFields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
-    }
-//endregion
-
-//region Constructors
-    override val constructors: List<ConstructorMirror> by lazy { java.constructors.mapNotNull { getConstructor(it) }.unmodifiableView() }
-//endregion
-
-//region Member classes
-    override val memberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
-    override val allMemberClasses: List<ClassMirror> by lazy {
-        (declaredMemberClasses + (superclass?.allMemberClasses ?: emptyList()) +
-            interfaces.flatMap { it.allMemberClasses }).uniqueBy { it.simpleName }.unmodifiableView()
-    }
-//endregion
-
-//endregion
-
-    override fun declaredClass(name: String): ClassMirror? {
-        return declaredMemberClasses.find { it.java.simpleName == name }
+        return@lazy allMethods.map { this.getMethod(it) }.unmodifiableView()
     }
 
-    private val declaredClassCache = ConcurrentHashMap<String, List<ClassMirror>>()
+    override fun getMethod(other: MethodMirror): MethodMirror = getMethod(other.java)
 
-    override fun innerClasses(name: String): List<ClassMirror> {
-        return declaredClassCache.getOrPut(name) {
-            val list = mutableListOf<ClassMirror>()
-            declaredMemberClasses.find { it.java.simpleName == name }?.also { list.add(it) }
-            superclass?.also { list.addAll(it.innerClasses(name)) }
-            return@getOrPut list.unmodifiableView()
+    override fun getMethod(other: Method): MethodMirror {
+        if(other.declaringClass == this.java) {
+            return declaredMethods.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find method ${other.name}(${other.parameterTypes.joinToString(", ")}) " +
+                    "in $this")
+        }
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for method " +
+                "${other.name}(${other.parameterTypes.joinToString(", ")}) in $this")
+        return try {
+            superclass.getMethod(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find method ${other.declaringClass.simpleName}.${other.name}" +
+                "(${other.parameterTypes.joinToString(", ")}) in $this", e)
         }
     }
 
-    override fun declaredField(name: String): FieldMirror? {
-        return declaredFields.find { it.name == name }
-    }
-
-    private val fieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
-
-    override fun field(name: String): FieldMirror? {
-        return fieldNameCache.getOrPut(name) {
-            var field: FieldMirror? = null
-            field = field ?: declaredFields.find { it.name == name }
-            field = field ?: superclass?.field(name)
-            return@getOrPut field
-        }
-    }
-
-    override fun declaredMethods(name: String): List<MethodMirror> {
+    override fun findDeclaredMethods(name: String): List<MethodMirror> {
         return declaredMethods.filter { it.name == name }.unmodifiableView()
     }
 
-    private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
-
-    override fun methods(name: String): List<MethodMirror> {
-        return methodNameCache.getOrPut(name) {
+    private val publicMethodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
+    override fun findPublicMethods(name: String): List<MethodMirror> {
+        return publicMethodNameCache.getOrPut(name) {
             val methods = mutableListOf<MethodMirror>()
+            //todo: this shouldn't return private methods. write a test to fail this.
             methods.addAll(declaredMethods.filter { it.name == name })
-            methods.addAll(superclass?.methods(name) ?: emptyList())
+            //todo: this should return methods from interfaces. write a test to fail this.
+            methods.addAll(superclass?.findPublicMethods(name) ?: emptyList())
             return@getOrPut methods.unmodifiableView()
         }
     }
 
-    override fun declaredConstructor(vararg params: TypeMirror): ConstructorMirror? {
+    private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
+    override fun findMethods(name: String): List<MethodMirror> {
+        return methodNameCache.getOrPut(name) {
+            val methods = mutableListOf<MethodMirror>()
+            methods.addAll(declaredMethods.filter { it.name == name })
+            //todo: this should return methods from interfaces. write a test to fail this.
+            methods.addAll(superclass?.findMethods(name) ?: emptyList())
+            return@getOrPut methods.unmodifiableView()
+        }
+    }
+
+    override fun findDeclaredMethod(name: String, vararg params: TypeMirror): MethodMirror? {
+        TODO("it")
+    }
+
+    override fun findPublicMethod(name: String, vararg params: TypeMirror): MethodMirror? {
+        TODO("it")
+    }
+
+    override fun findMethod(name: String, vararg params: TypeMirror): MethodMirror? {
+        TODO("it")
+    }
+
+    override fun getDeclaredMethod(name: String, vararg params: TypeMirror): MethodMirror? {
+        TODO("it")
+    }
+
+    override fun getPublicMethod(name: String, vararg params: TypeMirror): MethodMirror? {
+        TODO("it")
+    }
+
+    override fun getMethod(name: String, vararg params: TypeMirror): MethodMirror? {
+        TODO("it")
+    }
+
+//endregion =====================================================================================================================
+
+//region Fields =================================================================================================================
+    override val declaredFields: List<FieldMirror> by lazy {
+        java.declaredFields.map {
+            cache.fields.reflect(it).withDeclaringClass(this)
+        }.unmodifiableView()
+    }
+    override val publicFields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
+    override val fields: List<FieldMirror> by lazy {
+        (declaredFields + (superclass?.fields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
+    }
+
+    override fun getField(other: FieldMirror): FieldMirror = getField(other.java)
+    override fun getField(other: Field): FieldMirror {
+        if(other.declaringClass == this.java) {
+            return declaredFields.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find field ${other.name} in $this")
+        }
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for field ${other.name} in $this")
+        return try {
+            superclass.getField(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find field ${other.declaringClass.simpleName}.${other.name} in $this", e)
+        }
+    }
+
+    override fun findDeclaredField(name: String): FieldMirror? {
+        return declaredFields.find { it.name == name }
+    }
+
+    private val publicFieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
+    override fun findPublicField(name: String): FieldMirror? {
+        return publicFieldNameCache.getOrPut(name) {
+            var field: FieldMirror? = null
+            field = field ?: declaredFields.find { it.name == name }
+            field = field ?: superclass?.findPublicField(name)
+            return@getOrPut field
+        }
+    }
+
+    private val fieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
+    override fun findField(name: String): FieldMirror? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDeclaredField(name: String): FieldMirror? {
+        return findDeclaredField(name)
+            ?: throw NoSuchMirrorException("Could not find field with name $name declared in $this")
+    }
+
+    override fun getPublicField(name: String): FieldMirror? {
+        return findPublicField(name)
+            ?: throw NoSuchMirrorException("Could not find public field with name $name in $this")
+    }
+
+    override fun getField(name: String): FieldMirror? {
+        return findField(name)
+            ?: throw NoSuchMirrorException("Could not find field with name $name in $this")
+    }
+//endregion =====================================================================================================================
+
+//region Constructors ===========================================================================================================
+    override val declaredConstructors: List<ConstructorMirror> by lazy {
+        java.declaredConstructors.map {
+            cache.executables.reflect(it).withDeclaringClass(this) as ConstructorMirror
+        }.unmodifiableView()
+    }
+    override val publicConstructors: List<ConstructorMirror> by lazy {
+        java.constructors.mapNotNull { getConstructor(it) }.unmodifiableView()
+    }
+
+    override fun getConstructor(other: ConstructorMirror): ConstructorMirror = getConstructor(other.java)
+    override fun getConstructor(other: Constructor<*>): ConstructorMirror {
+        if(other.declaringClass == this.java) {
+            return declaredConstructors.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find constructor (${other.parameterTypes.joinToString(", ")}) " +
+                    "in $this")
+        }
+        throw NoSuchMirrorException("Can't get constructor ${other.declaringClass.simpleName}" +
+            "(${other.parameterTypes.joinToString(", ")}) from a superclass in $this")
+    }
+
+    override fun findDeclaredConstructor(vararg params: TypeMirror): ConstructorMirror? {
         val match = params.toList()
         return declaredConstructors.find { it.parameterTypes == match }
     }
 
+    override fun getDeclaredConstructor(vararg params: TypeMirror): ConstructorMirror {
+        return findDeclaredConstructor(*params)
+            ?: throw NoSuchMirrorException("No constructor found in $this with parameters (${params.joinToString(", ")})")
+    }
+//endregion =====================================================================================================================
+
+//region Member classes =========================================================================================================
+    override val declaredMemberClasses: List<ClassMirror> by lazy {
+        java.declaredClasses.map {
+            (cache.types.reflect(it) as ClassMirror).withEnclosingClass(this)
+        }.unmodifiableView()
+    }
+    override val publicMemberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
+    override val memberClasses: List<ClassMirror> by lazy {
+        sequenceOf(
+            declaredMemberClasses,
+            superclass?.memberClasses ?: emptyList(),
+            *interfaces.map { it.memberClasses }.toTypedArray()
+        ).flatten().toList().uniqueBy { it.simpleName }.unmodifiableView()
+    }
+
+    override fun getMemberClass(other: ClassMirror): ClassMirror = getMemberClass(other.java)
+    override fun getMemberClass(other: Class<*>): ClassMirror {
+        if(other.declaringClass == this.java) {
+            return declaredMemberClasses.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find member class ${other.name} in $this")
+        }
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for member class ${other.name} in $this")
+        return try {
+            superclass.getMemberClass(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find member class ${other.declaringClass.simpleName}.${other.name} in $this", e)
+        }
+    }
+
+    override fun findDeclaredMemberClass(name: String): ClassMirror? {
+        return declaredMemberClasses.find { it.java.simpleName == name }
+    }
+
+    private val publicMemberClassCache = ConcurrentHashMap<String, ClassMirror?>()
+    override fun findPublicMemberClass(name: String): ClassMirror? {
+        return publicMemberClassCache.getOrPut(name) {
+            return@getOrPut publicMemberClasses.find { it.java.simpleName == name }
+                ?: superclass?.also { it.findPublicMemberClass(name) }
+                ?: interfaces.map { it.findPublicMemberClass(name) }.find { it != null }
+        }
+    }
+
+    private val memberClassCache = ConcurrentHashMap<String, ClassMirror?>()
+    override fun findMemberClass(name: String): ClassMirror? {
+        return memberClassCache.getOrPut(name) {
+            return@getOrPut memberClasses.find { it.java.simpleName == name } ?:
+            superclass?.also { it.findMemberClass(name) } ?:
+            interfaces.map { it.findMemberClass(name) }.find { it != null }
+        }
+    }
+
+    override fun getDeclaredMemberClass(name: String): ClassMirror? {
+        return findDeclaredMemberClass(name)
+            ?: throw NoSuchMirrorException("Could not find member class with name $name declared in $this")
+    }
+
+    override fun getPublicMemberClass(name: String): ClassMirror? {
+        return findPublicMemberClass(name)
+            ?: throw NoSuchMirrorException("Could not find public member class with name $name in $this")
+    }
+
+    override fun getMemberClass(name: String): ClassMirror? {
+        return findMemberClass(name)
+            ?: throw NoSuchMirrorException("Could not find member class with name $name in $this")
+    }
+//endregion =====================================================================================================================
+
+
+//region TypeMirror =============================================================================================================
     private val isAssignableCache = ConcurrentHashMap<TypeMirror, Boolean>()
 
     override fun isAssignableFrom(other: TypeMirror): Boolean {
@@ -433,17 +540,7 @@ internal class ClassMirrorImpl internal constructor(
             return@getOrPut false
         }
     }
-
-    override fun findSuperclass(clazz: Class<*>): ClassMirror? {
-        if(java == clazz) return this
-        var supertype = superclass?.findSuperclass(clazz)
-        for(it in interfaces) {
-            val candidate = it.findSuperclass(clazz)
-            if(candidate != null && (supertype == null || supertype.specificity < candidate.specificity))
-                supertype = candidate
-        }
-        return supertype
-    }
+//endregion =====================================================================================================================
 
     override val declarationString: String
         get() {

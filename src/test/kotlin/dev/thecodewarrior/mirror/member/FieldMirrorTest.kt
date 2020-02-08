@@ -7,7 +7,6 @@ import dev.thecodewarrior.mirror.testsupport.FieldFlagTestClass
 import dev.thecodewarrior.mirror.testsupport.FieldVisibilityTestClass
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
-import dev.thecodewarrior.mirror.member.Modifier
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -38,27 +37,27 @@ internal class FieldMirrorTest: MirrorTestBase() {
             "set to true")
     fun declaredFields_onEnumType() {
         val baseType = Mirror.reflectClass<TestEnum>()
-        assertEquals(true, baseType.field("FIRST")?.isEnumConstant)
-        assertEquals(true, baseType.field("SECOND")?.isEnumConstant)
+        assertEquals(true, baseType.findPublicField("FIRST")?.isEnumConstant)
+        assertEquals(true, baseType.findPublicField("SECOND")?.isEnumConstant)
     }
 
     @Test
     @DisplayName("The access levels of fields should be correctly mapped and stored")
     fun field_visibility() {
         val baseType = Mirror.reflectClass<FieldVisibilityTestClass>()
-        assertEquals(Modifier.Access.PUBLIC, baseType.field("publicField")?.access)
-        assertEquals(Modifier.Access.DEFAULT, baseType.field("defaultField")?.access)
-        assertEquals(Modifier.Access.PROTECTED, baseType.field("protectedField")?.access)
-        assertEquals(Modifier.Access.PRIVATE, baseType.field("privateField")?.access)
+        assertEquals(Modifier.Access.PUBLIC, baseType.findPublicField("publicField")?.access)
+        assertEquals(Modifier.Access.DEFAULT, baseType.findPublicField("defaultField")?.access)
+        assertEquals(Modifier.Access.PROTECTED, baseType.findPublicField("protectedField")?.access)
+        assertEquals(Modifier.Access.PRIVATE, baseType.findPublicField("privateField")?.access)
     }
 
     @Test
     @DisplayName("The access levels of fields should be correctly mapped and stored")
     fun field_flags() {
         val baseType = Mirror.reflectClass<FieldFlagTestClass>()
-        assertEquals(true, baseType.field("staticField")?.isStatic)
-        assertEquals(true, baseType.field("volatileField")?.isVolatile)
-        assertEquals(true, baseType.field("transientField")?.isTransient)
+        assertEquals(true, baseType.findPublicField("staticField")?.isStatic)
+        assertEquals(true, baseType.findPublicField("volatileField")?.isVolatile)
+        assertEquals(true, baseType.findPublicField("transientField")?.isTransient)
     }
 
     @Test

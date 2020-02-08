@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
+//todo: self-referential class, for deadlock tests
 internal class ClassMirrorTest: MirrorTestBase() {
 
     @Test
@@ -115,7 +116,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @DisplayName("Field types of inner classes that use outer generics should have outer generic types")
     fun fieldType_ofInnerClassFieldWithOuterGenericType_shouldReturnOuterGenericType() {
         val innerClass = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val fieldType = innerClass.field("innerField")?.type
+        val fieldType = innerClass.findPublicField("innerField")?.type
         assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], fieldType)
     }
 
@@ -123,7 +124,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @DisplayName("Method types of inner classes that use outer generics should have outer generic types")
     fun returnType_ofMethodInNestedClassWithOuterGenericType_shouldReturnOuterGenericType() {
         val innerClass = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val methodType = innerClass.methods("innerMethod")[0].returnType
+        val methodType = innerClass.findPublicMethods("innerMethod")[0].returnType
         assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], methodType)
     }
 
