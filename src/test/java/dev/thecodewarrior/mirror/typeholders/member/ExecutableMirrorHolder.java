@@ -12,6 +12,17 @@ public class ExecutableMirrorHolder extends AnnotatedTypeHolder {
     @ElementHolder("<init>()")
     public ExecutableMirrorHolder() { }
 
+    @ElementHolder("<init>(String)")
+    public ExecutableMirrorHolder(String arg) { }
+
+    @ElementHolder("<init>(String...)")
+    public ExecutableMirrorHolder(String... args) { }
+
+    public static class InnerConstructor {
+        @ElementHolder("InnerConstructor()")
+        public InnerConstructor() {}
+    }
+
     @ElementHolder("void name()")
     public void name() {}
 
@@ -30,6 +41,9 @@ public class ExecutableMirrorHolder extends AnnotatedTypeHolder {
     @ElementHolder("<T> void (T)")
     public <T> void generic(@TypeHolder("> T") T t) {}
 
+    @ElementHolder("void (String...)")
+    public void varargMethod(String... args) { }
+
     @Annotation1
     @AnnotationArg1(arg = 1)
     public void methodAnnotations() {}
@@ -39,4 +53,40 @@ public class ExecutableMirrorHolder extends AnnotatedTypeHolder {
     public void parameterAnnotations(@Annotation1 @AnnotationArg1(arg = 1) String s) {}
     @ElementHolder("void (_)")
     public void noParameterAnnotations(String s) {}
+
+
+    // synthetic methods
+    public void privateAccessor() {
+        SyntheticHolder nested = new SyntheticHolder();
+        String needsAccess = nested.needsAccess;
+        String noSyntheticNeeded = nested.noSyntheticNeeded;
+    }
+
+    @ElementHolder("SyntheticHolder")
+    private static class SyntheticHolder {
+        private String needsAccess = "Shhh. Be vewy vewy quiet,";
+        public String noSyntheticNeeded = "I'm hunting wabbits";
+
+        public void nonSynthetic() {
+
+        }
+    }
+
+    @ElementHolder("public void ()")
+    public void publicMethod() {}
+    @ElementHolder("default void ()")
+    void defaultMethod() {}
+    @ElementHolder("protected void ()")
+    protected void protectedMethod() {}
+    @ElementHolder("private void ()")
+    private void privateMethod() {}
+
+    @ElementHolder("public <init>()")
+    public ExecutableMirrorHolder(byte uniqueSignature) {}
+    @ElementHolder("default <init>()")
+    ExecutableMirrorHolder(short uniqueSignature) {}
+    @ElementHolder("protected <init>()")
+    protected ExecutableMirrorHolder(int uniqueSignature) {}
+    @ElementHolder("private <init>()")
+    private ExecutableMirrorHolder(long uniqueSignature) {}
 }

@@ -7,7 +7,7 @@ import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class WildcardMirrorTest: MirrorTestBase() {
+internal class WildcardMirrorTest: MirrorTestBase() {
     private val holder = TypeMirror_CoreTypesHolder()
 
     @Test

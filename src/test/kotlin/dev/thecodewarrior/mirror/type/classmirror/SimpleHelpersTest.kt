@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-class SimpleHelpersTest: MirrorTestBase() {
+internal class SimpleHelpersTest: MirrorTestBase() {
     private val holder = SimpleHelpersHolder()
 
     @Test

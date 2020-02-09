@@ -19,6 +19,7 @@ class MethodMirror internal constructor(
     override val name: String = java.name
     override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    override val isVarArgs: Boolean = java.isVarArgs
 
     @Untested
     val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
@@ -33,15 +34,26 @@ class MethodMirror internal constructor(
     @Untested
     val isStrict: Boolean = Modifier.STRICT in modifiers
 
-    @Untested
-    val isSynthetic: Boolean = java.isSynthetic
-    @Untested
-    val isVarArgs: Boolean = java.isVarArgs
-    @Untested
+    override val isSynthetic: Boolean = java.isSynthetic
+
+    /**
+     * Returns true if this method is a [bridge method](https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html#bridgeMethods).
+     *
+     * @see Method.isBridge
+     */
     val isBridge: Boolean = java.isBridge
-    @Untested
+    /**
+     * Returns true if this method is a default interface method. Implementations of default interface methods don't
+     * have this flag.
+     *
+     * @see Method.isDefault
+     */
     val isDefault: Boolean = java.isDefault
-    @Untested
+    /**
+     * Returns the default value of the annotation method, if it has one
+     *
+     * @see Method.getDefaultValue
+     */
     val defaultValue: Any? = java.defaultValue
 
     override fun withTypeParameters(vararg parameters: TypeMirror): MethodMirror {

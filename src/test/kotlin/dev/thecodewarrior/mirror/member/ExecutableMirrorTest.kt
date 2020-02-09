@@ -6,12 +6,15 @@ import dev.thecodewarrior.mirror.annotations.Annotation1
 import dev.thecodewarrior.mirror.annotations.AnnotationArg1
 import dev.thecodewarrior.mirror.testsupport.Exception1
 import dev.thecodewarrior.mirror.testsupport.Exception2
+import dev.thecodewarrior.mirror.testsupport.FieldVisibilityTestClass
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
 import dev.thecodewarrior.mirror.typeholders.member.ExecutableMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.reflect.jvm.javaMethod
@@ -20,21 +23,41 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     private val holder = ExecutableMirrorHolder()
 
     @Test
-    fun name_ofConstructor_shouldBeClassName() {
+    fun name_ofConstructor_shouldBeBinaryName() {
         val constructor = Mirror.reflect(holder.getConstructor("<init>()"))
-        assertEquals(ExecutableMirrorHolder::class.qualifiedName!!, constructor.name)
+        assertEquals(ExecutableMirrorHolder::class.java.name, constructor.name)
     }
 
     @Test
-    fun name_withName_shouldReturnCorrectName() {
+    fun name_ofInnerConstructor_shouldBeBinaryName() {
+        val constructor = Mirror.reflect(holder.getConstructor("InnerConstructor()"))
+        assertEquals(ExecutableMirrorHolder.InnerConstructor::class.java.name, constructor.name)
+    }
+
+    @Test
+    fun name_withName_shouldReturnMethodName() {
         val method = Mirror.reflect(holder.m("void name()"))
         assertEquals("name", method.name)
     }
 
     @Test
-    fun parameters_withNoParameters_shouldReturnEmptyList() {
-        val method = Mirror.reflect(holder.m("void ()"))
-        assertEquals(emptyList<Any>(), method.parameters)
+    fun isVarArgs_withNonVarArgMethod_shouldReturnFalse() {
+        assertFalse(Mirror.reflect(holder.m("void (String, int)")).isVarArgs)
+    }
+
+    @Test
+    fun isVarArgs_withVarArgMethod_shouldReturnTrue() {
+        assertTrue(Mirror.reflect(holder.m("void (String...)")).isVarArgs)
+    }
+
+    @Test
+    fun isVarArgs_withNonVarArgConstructor_shouldReturnFalse() {
+        assertFalse(Mirror.reflect(holder.getConstructor("<init>(String)")).isVarArgs)
+    }
+
+    @Test
+    fun isVarArgs_withVarArgConstructor_shouldReturnTrue() {
+        assertTrue(Mirror.reflect(holder.getConstructor("<init>(String...)")).isVarArgs)
     }
 
     @Test
@@ -47,6 +70,12 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     fun returnType_withReturnType_shouldReturnCorrectType() {
         val method = Mirror.reflect(holder.m("String ()"))
         assertSame(Mirror.reflect<String>(), method.returnType)
+    }
+
+    @Test
+    fun parameters_withNoParameters_shouldReturnEmptyList() {
+        val method = Mirror.reflect(holder.m("void ()"))
+        assertEquals(emptyList<Any>(), method.parameters)
     }
 
     @Test
@@ -141,12 +170,51 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Parameters that have annotations should have annotation lists containing those annotations")
     fun parameterAnnotations_withAnnotations_shouldReturnAnnotations() {
         val method = Mirror.reflect(holder.m("void (@- @- String)"))
         assertSetEquals(listOf(
             Mirror.newAnnotation<Annotation1>(),
             Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
         ), method.parameters[0].annotations)
+    }
+
+    @Test
+    fun isSynthetic_withNonSyntheticMethod_shouldReturnFalse() {
+        val synthetic = Mirror.reflect(holder.c("SyntheticHolder").m("nonSynthetic"))
+        assertFalse(synthetic.isSynthetic)
+    }
+
+    @Test
+    fun isSynthetic_withSyntheticMethod_shouldReturnTrue() {
+        val synthetic = Mirror.reflect(holder.c("SyntheticHolder").m("access\$100", holder.c("SyntheticHolder")))
+        assertTrue(synthetic.isSynthetic)
+    }
+
+    @Test
+    fun isSynthetic_withNonSyntheticConstructor_shouldReturnFalse() {
+        val synthetic = Mirror.reflect(holder.c("SyntheticHolder").declaredConstructors.first { it.parameterCount == 0})
+        assertFalse(synthetic.isSynthetic)
+    }
+
+    @Test
+    fun isSynthetic_withSyntheticConstructor_shouldReturnTrue() {
+        val synthetic = Mirror.reflect(holder.c("SyntheticHolder").declaredConstructors.first { it.parameterCount == 1})
+        assertTrue(synthetic.isSynthetic)
+    }
+
+    @Test
+    fun access_withMethod_shouldReturnCorrectAccess() {
+        assertEquals(Modifier.Access.PUBLIC, Mirror.reflect(holder.m("public void ()")).access)
+        assertEquals(Modifier.Access.DEFAULT, Mirror.reflect(holder.m("default void ()")).access)
+        assertEquals(Modifier.Access.PROTECTED, Mirror.reflect(holder.m("protected void ()")).access)
+        assertEquals(Modifier.Access.PRIVATE, Mirror.reflect(holder.m("private void ()")).access)
+    }
+
+    @Test
+    fun access_withConstructor_shouldReturnCorrectAccess() {
+        assertEquals(Modifier.Access.PUBLIC, Mirror.reflect(holder.getConstructor("public <init>()")).access)
+        assertEquals(Modifier.Access.DEFAULT, Mirror.reflect(holder.getConstructor("default <init>()")).access)
+        assertEquals(Modifier.Access.PROTECTED, Mirror.reflect(holder.getConstructor("protected <init>()")).access)
+        assertEquals(Modifier.Access.PRIVATE, Mirror.reflect(holder.getConstructor("private <init>()")).access)
     }
 }

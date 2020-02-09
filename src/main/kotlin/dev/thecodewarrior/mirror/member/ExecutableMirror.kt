@@ -8,6 +8,8 @@ import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Executable
+import java.lang.reflect.Method
+import java.lang.reflect.Constructor
 
 abstract class ExecutableMirror internal constructor(
     cache: MirrorCache,
@@ -20,11 +22,25 @@ abstract class ExecutableMirror internal constructor(
 
     @Untested
     abstract val modifiers: Set<Modifier>
-    @Untested
     abstract val access: Modifier.Access
 
     /**
-     * The method name. `<init>` for constructors
+     * Returns true if this method takes a variable number of arguments.
+     *
+     * @see Method.isVarArgs
+     */
+    abstract val isVarArgs: Boolean
+
+    /**
+     * Returns true if this method/constructor is synthetic.
+     *
+     * @see Method.isSynthetic
+     * @see Constructor.isSynthetic
+     */
+    abstract val isSynthetic: Boolean
+
+    /**
+     * The method name. The class's [binary name][Class.getName] for constructors.
      */
     abstract val name: String
 

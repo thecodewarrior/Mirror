@@ -8,7 +8,6 @@ import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Constructor
 
-//TODO tests
 class ConstructorMirror internal constructor(
     cache: MirrorCache,
     override val java: Constructor<*>,
@@ -20,6 +19,8 @@ class ConstructorMirror internal constructor(
     override val name: String = java.name
     override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    override val isVarArgs: Boolean = java.isVarArgs
+    override val isSynthetic: Boolean = java.isSynthetic
 
     override fun withTypeParameters(vararg parameters: TypeMirror): ConstructorMirror {
         return super.withTypeParameters(*parameters) as ConstructorMirror

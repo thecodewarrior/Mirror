@@ -33,4 +33,26 @@ public class MethodHelpersHolder extends AnnotatedTypeHolder {
     public static class ClassWithStaticsInSupertypes extends ClassWithStatics implements InterfaceWithStatics {
 
     }
+
+    @ElementHolder("MethodsToInherit")
+    public static class MethodsToInherit {
+        @ElementHolder("int methodToInherit()")
+        public int methodToInherit() {
+            return 0;
+        }
+
+        @ElementHolder("int methodToOverride()")
+        public int methodToOverride() {
+            return 0;
+        }
+    }
+
+    @ElementHolder("MethodInheritor")
+    public static class MethodInheritor extends MethodsToInherit {
+        @ElementHolder("int overriddenMethod()")
+        @Override
+        public int methodToOverride() {
+            return super.methodToOverride();
+        }
+    }
 }

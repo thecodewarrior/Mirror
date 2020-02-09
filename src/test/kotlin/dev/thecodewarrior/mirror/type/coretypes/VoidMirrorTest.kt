@@ -7,7 +7,7 @@ import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class VoidMirrorTest: MirrorTestBase() {
+internal class VoidMirrorTest: MirrorTestBase() {
     @Test
     fun coreType_ofNotAnnotated_shouldReturnVoidClass() {
         assertEquals(Void.TYPE, Mirror.types.void.coreType)

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class EnclosingClassTest: MirrorTestBase() {
+internal class EnclosingClassTest: MirrorTestBase() {
     @Test
     @DisplayName("Getting the enclosing class of a root class should return null")
     fun enclosingClass_ofRootClass_shouldReturnNull() {
