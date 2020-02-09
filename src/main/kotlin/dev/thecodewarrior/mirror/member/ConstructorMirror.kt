@@ -7,6 +7,11 @@ import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Constructor
+import kotlin.reflect.KFunction
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.functions
+import kotlin.reflect.jvm.javaConstructor
+import kotlin.reflect.jvm.javaMethod
 
 class ConstructorMirror internal constructor(
     cache: MirrorCache,
@@ -21,6 +26,11 @@ class ConstructorMirror internal constructor(
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
     override val isVarArgs: Boolean = java.isVarArgs
     override val isSynthetic: Boolean = java.isSynthetic
+    override val isInternalAccess: Boolean get() = kCallable?.visibility == KVisibility.INTERNAL
+
+    override val kCallable: KFunction<*>? by lazy {
+        declaringClass.kClass.constructors.find { it.javaConstructor == java }
+    }
 
     override fun withTypeParameters(vararg parameters: TypeMirror): ConstructorMirror {
         return super.withTypeParameters(*parameters) as ConstructorMirror

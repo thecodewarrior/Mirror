@@ -10,6 +10,7 @@ import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
 import java.lang.reflect.Constructor
+import kotlin.reflect.KCallable
 
 abstract class ExecutableMirror internal constructor(
     cache: MirrorCache,
@@ -38,6 +39,20 @@ abstract class ExecutableMirror internal constructor(
      * @see Constructor.isSynthetic
      */
     abstract val isSynthetic: Boolean
+
+    /**
+     * Returns true if this method/constructor has internal visibility in Kotlin
+     */
+    @Untested
+    abstract val isInternalAccess: Boolean
+
+    /**
+     * Returns the Kotlin [KCallable] instance that represents the same method/constructor as this. This is null if this
+     * is [synthetic][isSynthetic] or if this is a [bridge method][MethodMirror.isBridge]. Other cases where no
+     * KCallable exists are not yet known, but may exist.
+     */
+    @Untested
+    abstract val kCallable: KCallable<*>?
 
     /**
      * The method name. The class's [binary name][Class.getName] for constructors.

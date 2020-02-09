@@ -72,21 +72,32 @@ public class ExecutableMirrorHolder extends AnnotatedTypeHolder {
         }
     }
 
-    @ElementHolder("public void ()")
-    public void publicMethod() {}
-    @ElementHolder("default void ()")
-    void defaultMethod() {}
-    @ElementHolder("protected void ()")
-    protected void protectedMethod() {}
-    @ElementHolder("private void ()")
-    private void privateMethod() {}
+    public abstract static class Abstract {
+        @ElementHolder("public <init>()")
+        public Abstract(byte uniqueSignature) {}
+        @ElementHolder("default <init>()")
+        Abstract(short uniqueSignature) {}
+        @ElementHolder("protected <init>()")
+        protected Abstract(int uniqueSignature) {}
+        @ElementHolder("private <init>()")
+        private Abstract(long uniqueSignature) {}
 
-    @ElementHolder("public <init>()")
-    public ExecutableMirrorHolder(byte uniqueSignature) {}
-    @ElementHolder("default <init>()")
-    ExecutableMirrorHolder(short uniqueSignature) {}
-    @ElementHolder("protected <init>()")
-    protected ExecutableMirrorHolder(int uniqueSignature) {}
-    @ElementHolder("private <init>()")
-    private ExecutableMirrorHolder(long uniqueSignature) {}
+        @ElementHolder("public void ()")
+        public void publicMethod() {}
+        @ElementHolder("default void ()")
+        void defaultMethod() {}
+        @ElementHolder("protected void ()")
+        protected void protectedMethod() {}
+        @ElementHolder("private void ()")
+        private void privateMethod() {}
+        @ElementHolder("abstract void ()")
+        abstract void abstractMethod();
+        @ElementHolder("static void ()")
+        static void staticMethod() {}
+        @ElementHolder("final void ()")
+        final void finalMethod() {}
+        @ElementHolder("strictfp void ()")
+        strictfp void strictfpMethod() {}
+    }
+
 }

@@ -39,6 +39,9 @@ interface NonEmptyInterface1Shadow: NonEmptyInterface1 {
 }
 
 internal class KotlinInternalClass
+class KotlinInternalConstructor internal constructor() {
+    internal fun internalMethod() {}
+}
 
 open class Object1
 open class GenericObject1<T>

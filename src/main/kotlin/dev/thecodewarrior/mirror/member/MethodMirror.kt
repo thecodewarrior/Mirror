@@ -7,6 +7,10 @@ import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Method
+import kotlin.reflect.KFunction
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.functions
+import kotlin.reflect.jvm.javaMethod
 
 class MethodMirror internal constructor(
     cache: MirrorCache,
@@ -20,6 +24,12 @@ class MethodMirror internal constructor(
     override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
     override val isVarArgs: Boolean = java.isVarArgs
+    override val isSynthetic: Boolean = java.isSynthetic
+    override val isInternalAccess: Boolean get() = kCallable?.visibility == KVisibility.INTERNAL
+
+    override val kCallable: KFunction<*>? by lazy {
+        declaringClass.kClass.functions.find { it.javaMethod == java }
+    }
 
     @Untested
     val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
@@ -34,7 +44,6 @@ class MethodMirror internal constructor(
     @Untested
     val isStrict: Boolean = Modifier.STRICT in modifiers
 
-    override val isSynthetic: Boolean = java.isSynthetic
 
     /**
      * Returns true if this method is a [bridge method](https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html#bridgeMethods).

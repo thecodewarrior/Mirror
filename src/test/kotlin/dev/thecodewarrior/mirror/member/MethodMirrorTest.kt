@@ -5,11 +5,18 @@ import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.typeholders.member.MethodMirrorHolder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class MethodMirrorTest : MirrorTestBase() {
     val holder = MethodMirrorHolder()
+
+    @Test
+    fun kCallable_withBridgeMethod_shouldReturnNull() {
+        val bridge = Mirror.reflect(holder.c("GenericInheritor").m("genericMethod", Any::class.java))
+        assertNull(bridge.kCallable)
+    }
 
     @Test
     fun isBridge_withNonBridgeMethod_shouldReturnFalse() {
