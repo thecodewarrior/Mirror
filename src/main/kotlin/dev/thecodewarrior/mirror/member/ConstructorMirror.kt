@@ -5,6 +5,7 @@ import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Constructor
 
 //TODO tests
@@ -17,12 +18,8 @@ class ConstructorMirror internal constructor(
 
     override val raw: ConstructorMirror = raw ?: this
     override val name: String = java.name
-    // todo: why have this? Shouldn't this be just `toString()`? Should we move this into ExecutableMirror?
-    @Untested
-    val description: String get() = "${declaringClass.java.simpleName}(${raw.parameterTypes.joinToString(", ")})"
-    // todo: move this into ExecutableMirror?
-    @Untested
-    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
     override fun withTypeParameters(vararg parameters: TypeMirror): ConstructorMirror {
         return super.withTypeParameters(*parameters) as ConstructorMirror
@@ -41,7 +38,7 @@ class ConstructorMirror internal constructor(
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> call(vararg args: Any?): T {
         if(args.size != parameters.size)
-            throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$description`")
+            throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$this`")
         return raw.wrapper(args as Array<Any?>) as T
     }
 

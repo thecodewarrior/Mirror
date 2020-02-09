@@ -18,6 +18,11 @@ abstract class ExecutableMirror internal constructor(
     //todo: Also provide reference to what this overrides, if anything
     abstract val raw: ExecutableMirror
 
+    @Untested
+    abstract val modifiers: Set<Modifier>
+    @Untested
+    abstract val access: Modifier.Access
+
     /**
      * The method name. `<init>` for constructors
      */

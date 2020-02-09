@@ -17,15 +17,8 @@ class MethodMirror internal constructor(
 
     override val raw: MethodMirror = raw ?: this
     override val name: String = java.name
-    // todo: why have this? Shouldn't this be just `toString()`? Should we move this into ExecutableMirror?
-    @Untested
-    val description: String get() = "${declaringClass.java.simpleName}.$name(${raw.parameterTypes.joinToString(", ")})"
-
-    // * **Note: this value is immutable**
-    @Untested
-    val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
-    @Untested
-    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
     @Untested
     val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
@@ -76,7 +69,7 @@ class MethodMirror internal constructor(
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static method `${declaringClass.java.simpleName}.$name`. Expected null.")
             if(args.size != parameters.size)
-                throw IllegalArgumentException("Incorrect argument count (${args.size}) for static method `$description`")
+                throw IllegalArgumentException("Incorrect argument count (${args.size}) for static method `$this`")
 
             return raw.staticWrapper(args as Array<Any?>) as T
         } else {
@@ -85,7 +78,7 @@ class MethodMirror internal constructor(
             if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
                 throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance method `${declaringClass.java.simpleName}.$name`")
             if(args.size != parameters.size)
-                throw IllegalArgumentException("Incorrect argument count (${args.size}) for instance method `$description`")
+                throw IllegalArgumentException("Incorrect argument count (${args.size}) for instance method `$this`")
 
             return raw.instanceWrapper(receiver, args as Array<Any?>) as T
         }
