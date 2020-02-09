@@ -4,6 +4,7 @@ import dev.thecodewarrior.mirror.testsupport.AnnotatedTypeHolder;
 import dev.thecodewarrior.mirror.testsupport.Object1;
 import dev.thecodewarrior.mirror.testsupport.Object1Sub;
 
+@SuppressWarnings("JavaDoc")
 public class MethodHelpersHolder extends AnnotatedTypeHolder {
     public interface EmptyInterface {}
     public interface NonEmptyInterface {

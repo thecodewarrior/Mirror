@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.typeholders;
 import dev.thecodewarrior.mirror.annotations.TypeAnnotation1;
 import dev.thecodewarrior.mirror.testsupport.*;
 
+@SuppressWarnings("JavaDoc")
 public class TypeMirror_CoreTypesHolder extends AnnotatedTypeHolder {
     @TypeHolder("T")
     <T> void type_T(T a) {}

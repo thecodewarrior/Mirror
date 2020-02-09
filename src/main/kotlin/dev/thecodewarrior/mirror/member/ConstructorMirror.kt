@@ -39,7 +39,6 @@ class ConstructorMirror internal constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    @Untested
     fun <T : Any?> call(vararg args: Any?): T {
         if(args.size != parameters.size)
             throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$description`")

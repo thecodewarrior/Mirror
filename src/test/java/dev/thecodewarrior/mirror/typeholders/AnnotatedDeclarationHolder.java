@@ -4,6 +4,7 @@ import dev.thecodewarrior.mirror.annotations.Annotation1;
 import dev.thecodewarrior.mirror.annotations.AnnotationArg1;
 import dev.thecodewarrior.mirror.testsupport.AnnotatedTypeHolder;
 
+@SuppressWarnings("JavaDoc")
 public class AnnotatedDeclarationHolder extends AnnotatedTypeHolder {
 
     class NonAnnotatedClass {}

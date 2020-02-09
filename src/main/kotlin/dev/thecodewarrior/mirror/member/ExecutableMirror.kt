@@ -6,7 +6,6 @@ import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMapping
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.UntestedNegative
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Executable
 
@@ -22,8 +21,6 @@ abstract class ExecutableMirror internal constructor(
     /**
      * The method name. `<init>` for constructors
      */
-    //todo: test that name is in fact `<init>` for constructors
-    @Untested
     abstract val name: String
 
     val returnType: TypeMirror by lazy {
@@ -40,13 +37,11 @@ abstract class ExecutableMirror internal constructor(
     }
 
     // * **Note: this value is immutable**
-    @Untested("only tested after specialization")
     val parameterTypes: List<TypeMirror> by lazy {
         parameters.map { it.type }.unmodifiableView()
     }
 
     // * **Note: this value is immutable**
-    @UntestedNegative
     val exceptionTypes: List<TypeMirror> by lazy {
         java.annotatedExceptionTypes.map {
              genericMapping[cache.types.reflect(it)]
@@ -54,7 +49,6 @@ abstract class ExecutableMirror internal constructor(
     }
 
     // * **Note: this value is immutable**
-    @UntestedNegative
     val typeParameters: List<TypeMirror> by lazy {
         specialization?.arguments ?: java.typeParameters.map {
             cache.types.reflect(it)
@@ -74,7 +68,6 @@ abstract class ExecutableMirror internal constructor(
      *
      * @see Executable.getAnnotations
      */
-    @UntestedNegative
     val annotations: List<Annotation> by lazy {
         java.annotations.toList().unmodifiableView()
     }

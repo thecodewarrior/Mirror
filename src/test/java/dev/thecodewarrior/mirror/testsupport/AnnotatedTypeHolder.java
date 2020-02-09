@@ -9,21 +9,48 @@ import java.lang.annotation.Target;
 import java.lang.reflect.*;
 import java.util.*;
 
+@SuppressWarnings("rawtypes")
 public class AnnotatedTypeHolder {
-    @NotNull
-    private Map<String, Map<Integer, AnnotatedType>> types = new HashMap<>();
-    @NotNull
-    private Map<String, Object> elements = new HashMap<>();
+    /**
+     * An exception to use for methods that technically need a return. Just use `throw e;` and call it a day.
+     */
+    public static RuntimeException e = new RuntimeException();
+    @NotNull private Map<String, Map<Integer, AnnotatedType>> types = new HashMap<>();
+    @NotNull private Map<String, Method> methodElements = new HashMap<>();
+    @NotNull private Map<String, Field> fieldElements = new HashMap<>();
+    @NotNull private Map<String, Constructor> constructorElements = new HashMap<>();
+    @NotNull private Map<String, Parameter> parameterElements = new HashMap<>();
+    @NotNull private Map<String, Class> classElements = new HashMap<>();
 
     protected AnnotatedTypeHolder() {
         populateTypes();
     }
 
-    public Method getMethod(String name) { return (Method) elements.get(name); }
-    public Field getField(String name) { return (Field) elements.get(name); }
-    public Constructor getConstructor(String name) { return (Constructor) elements.get(name); }
-    public Parameter getParameter(String name) { return (Parameter) elements.get(name); }
-    public Class getClass(String name) { return (Class) elements.get(name); }
+    /** Gets a method element by name */
+    public Method getMethod(String name) { return methodElements.get(name); }
+    /** Gets a method element by name */
+    public Method m(String name) { return getMethod(name); }
+
+    /** Gets a field element by name */
+    public Field getField(String name) { return fieldElements.get(name); }
+    /** Gets a field element by name */
+    public Field f(String name) { return getField(name); }
+
+    /** Gets a constructor element by name */
+    public Constructor getConstructor(String name) { return constructorElements.get(name); }
+
+    /** Gets a parameter element by name */
+    public Parameter getParameter(String name) { return parameterElements.get(name); }
+    /** Gets a parameter element by name */
+    public Parameter p(String name) { return getParameter(name); }
+
+    /** Gets a class element by name*/
+    public Class getClass(String name) { return classElements.get(name); }
+    /** Gets a class element by name*/
+    public Class c(String name) { return getClass(name); }
+
+    /** Gets a type by name*/
+    public AnnotatedType t(String name) { return get(name); }
 
     @NotNull
     public AnnotatedType get(String name) {
@@ -74,7 +101,7 @@ public class AnnotatedTypeHolder {
 
             ElementHolder elementHolder = clazz.getDeclaredAnnotation(ElementHolder.class);
             if(elementHolder != null) {
-                elements.put(elementHolder.value(), clazz);
+                classElements.put(elementHolder.value(), clazz);
             }
         }
 
@@ -93,7 +120,7 @@ public class AnnotatedTypeHolder {
             }
             ElementHolder elementHolder = method.getDeclaredAnnotation(ElementHolder.class);
             if(elementHolder != null) {
-                elements.put(elementHolder.value(), method);
+                methodElements.put(elementHolder.value(), method);
             }
         }
 
@@ -104,18 +131,27 @@ public class AnnotatedTypeHolder {
             }
             ElementHolder elementHolder = field.getDeclaredAnnotation(ElementHolder.class);
             if(elementHolder != null) {
-                elements.put(elementHolder.value(), field);
+                fieldElements.put(elementHolder.value(), field);
             }
         }
 
         for(Parameter parameter : parameters) {
             TypeHolder holder = parameter.getDeclaredAnnotation(TypeHolder.class);
+            ElementHolder parentHolder = parameter.getDeclaringExecutable().getDeclaredAnnotation(ElementHolder.class);
             if(holder != null) {
-                addType(holder.value(), holder.index(), parameter.getAnnotatedType());
+                String name = holder.value();
+                if(name.startsWith(">") && parentHolder != null) {
+                    name = parentHolder.value() + " " + name;
+                }
+                addType(name, holder.index(), parameter.getAnnotatedType());
             }
             ElementHolder elementHolder = parameter.getDeclaredAnnotation(ElementHolder.class);
             if(elementHolder != null) {
-                elements.put(elementHolder.value(), parameter);
+                String name = elementHolder.value();
+                if(name.startsWith(">") && parentHolder != null) {
+                    name = parentHolder.value() + " " + name;
+                }
+                parameterElements.put(name, parameter);
             }
         }
 
@@ -123,7 +159,7 @@ public class AnnotatedTypeHolder {
             TypeHolder holder = constructor.getDeclaredAnnotation(TypeHolder.class);
             ElementHolder elementHolder = constructor.getDeclaredAnnotation(ElementHolder.class);
             if(elementHolder != null) {
-                elements.put(elementHolder.value(), constructor);
+                constructorElements.put(elementHolder.value(), constructor);
             }
         }
     }
@@ -179,6 +215,9 @@ public class AnnotatedTypeHolder {
 
     /**
      * Marks something to be accessed by name. Used to provided named access to methods, fields, types, etc.
+     *
+     * If a parameter name starts with {@code ">"} and its containing method has an {@code ElementHolder} annotation,
+     * it will be accessible via {@code "methodElementName > parameterElementName}
      */
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR,
             ElementType.PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
@@ -196,6 +235,8 @@ public class AnnotatedTypeHolder {
      * </pre>
      * @param <T> The type to resolve to
      */
+    // note: don't make this static. For some reason that breaks everything.
+    @SuppressWarnings("InnerClassMayBeStatic")
     protected final class Unwrap<T> {
     }
 }

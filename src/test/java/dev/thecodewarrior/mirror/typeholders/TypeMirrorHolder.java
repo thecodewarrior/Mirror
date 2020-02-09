@@ -6,6 +6,7 @@ import dev.thecodewarrior.mirror.testsupport.*;
 
 import java.util.List;
 
+@SuppressWarnings("JavaDoc")
 public class TypeMirrorHolder extends AnnotatedTypeHolder {
     @TypeHolder("Object1")
     void type_Object1(Object1 a) {}

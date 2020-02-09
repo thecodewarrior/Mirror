@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.typeholders.classmirror;
 import dev.thecodewarrior.mirror.testsupport.AnnotatedTypeHolder;
 import dev.thecodewarrior.mirror.testsupport.Object1;
 
+@SuppressWarnings("JavaDoc")
 public class SimpleHelpersHolder extends AnnotatedTypeHolder {
     @TypeHolder("Object1")
     void type_Object1(Object1 a) {}

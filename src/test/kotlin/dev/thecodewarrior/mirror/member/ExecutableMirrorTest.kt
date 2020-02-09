@@ -1,77 +1,104 @@
 package dev.thecodewarrior.mirror.member
 
-import com.teamwizardry.mirror.testsupport.NoParamNames
 import dev.thecodewarrior.mirror.Mirror
+import dev.thecodewarrior.mirror.NoParamNames
 import dev.thecodewarrior.mirror.annotations.Annotation1
 import dev.thecodewarrior.mirror.annotations.AnnotationArg1
-import dev.thecodewarrior.mirror.testsupport.CheckedExceptionMethodHolder
 import dev.thecodewarrior.mirror.testsupport.Exception1
 import dev.thecodewarrior.mirror.testsupport.Exception2
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
+import dev.thecodewarrior.mirror.typeholders.member.ExecutableMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.reflect.jvm.javaMethod
 
 internal class ExecutableMirrorTest: MirrorTestBase() {
+    private val holder = ExecutableMirrorHolder()
+
     @Test
-    @DisplayName("A void method should have no parameters and a VoidMirror return type")
-    fun voidMethod() {
-        class MethodHolder {
-            fun method() {}
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
-        assertSame(Mirror.reflect(Void.TYPE), method.returnType)
+    fun name_ofConstructor_shouldBeClassName() {
+        val constructor = Mirror.reflect(holder.getConstructor("<init>()"))
+        assertEquals(ExecutableMirrorHolder::class.qualifiedName!!, constructor.name)
+    }
+
+    @Test
+    fun name_withName_shouldReturnCorrectName() {
+        val method = Mirror.reflect(holder.m("void name()"))
+        assertEquals("name", method.name)
+    }
+
+    @Test
+    fun parameters_withNoParameters_shouldReturnEmptyList() {
+        val method = Mirror.reflect(holder.m("void ()"))
         assertEquals(emptyList<Any>(), method.parameters)
     }
 
     @Test
-    @DisplayName("A method that returns a value should have the corresponding return type")
-    fun methodReturnType() {
-        class MethodHolder {
-            fun method(): String { null!! }
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
+    fun returnType_withVoidReturn_shouldReturnVoid() {
+        val method = Mirror.reflect(holder.m("void ()"))
+        assertSame(Mirror.types.void, method.returnType)
+    }
+
+    @Test
+    fun returnType_withReturnType_shouldReturnCorrectType() {
+        val method = Mirror.reflect(holder.m("String ()"))
         assertSame(Mirror.reflect<String>(), method.returnType)
     }
 
     @Test
-    @DisplayName("A void method with parameters should have corresponding parameter mirrors")
-    fun voidMethodWithParameters() {
-        class MethodHolder {
-            fun method(paramA: String, paramB: Int) {}
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method", String::class.java, Int::class.javaPrimitiveType))
+    fun parameters_withParameters_shouldHaveCorrectNameTypeAndJava() {
+        val method = Mirror.reflect(holder.m("void (String, int)"))
         assertSameList(listOf(
             Mirror.reflect<String>(),
-            Mirror.reflect(Int::class.javaPrimitiveType!!)
+            Mirror.types.int
         ), method.parameters.map { it.type })
         assertEquals(listOf(
-            "paramA",
-            "paramB"
+            "s",
+            "i"
         ), method.parameters.map { it.name })
+        assertEquals(listOf(
+            holder.p("void (String, int) > s"),
+            holder.p("void (String, int) > i")
+        ), method.parameters.map { it.java })
+    }
+
+    @Test
+    fun parameterTypes_withNoParameters_shouldBeEmpty() {
+        val method = Mirror.reflect(holder.m("void ()"))
+        assertSameList(emptyList(), method.parameterTypes)
+    }
+
+    @Test
+    fun parameterTypes_withParameters_shouldHaveCorrectTypes() {
+        val method = Mirror.reflect(holder.m("void (String, int)"))
+        assertSameList(listOf(
+            Mirror.reflect<String>(),
+            Mirror.types.int
+        ), method.parameterTypes)
     }
 
     @Test
     @DisplayName("A void method with unnamed parameters should have corresponding parameter mirrors with null names")
-    fun voidMethodWithUnnamedParameters() {
-        val method = Mirror.reflect(NoParamNames::class.java.getDeclaredMethod("stringIntParams", String::class.java, Int::class.javaPrimitiveType))
-        assertSameList(listOf(
-            Mirror.reflect<String>(),
-            Mirror.reflect(Int::class.javaPrimitiveType!!)
-        ), method.parameters.map { it.type })
+    fun parameters_withNoBytecodeNames_shouldHaveNullNames() {
+        val method = Mirror.reflect(NoParamNames::noNames.javaMethod!!)
         assertEquals(listOf(
-            null,
             null
         ), method.parameters.map { it.name })
     }
 
     @Test
-    @DisplayName("A method with checked exceptions should have corresponding type mirrors")
-    fun voidMethodWithCheckedExceptions() {
-        val method = Mirror.reflect(CheckedExceptionMethodHolder::class.java.getDeclaredMethod("method"))
+    fun exceptionTypes_withNoExceptions_shouldReturnExceptionTypes() {
+        val method = Mirror.reflect(holder.m("void ()"))
+        assertSameList(emptyList(), method.exceptionTypes)
+    }
+
+    @Test
+    fun exceptionTypes_withCheckedExceptions_shouldReturnExceptionTypes() {
+        val method = Mirror.reflect(holder.m("void () throws"))
         assertSameList(listOf(
             Mirror.reflect<Exception1>(),
             Mirror.reflect<Exception2>()
@@ -79,37 +106,28 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("A method with checked exceptions should have corresponding type mirrors")
-    fun voidMethodWithTypeParameters() {
-        class MethodHolder {
-            fun <T> method() {}
-        }
-        val javaMethod = MethodHolder::class.java.getDeclaredMethod("method")
-        val method = Mirror.reflect(javaMethod)
+    fun typeParameters_withNoTypeParameters_shouldBeEmpty() {
+        val method = Mirror.reflect(holder.m("void ()"))
+        assertSameList(emptyList(), method.typeParameters)
+    }
+
+    @Test
+    fun typeParameters_withTypeParameters_shouldHaveCorrectTypeParameters() {
+        val method = Mirror.reflect(holder.m("<T> void (T)"))
         assertSameList(listOf(
-            Mirror.reflect(javaMethod.typeParameters[0])
+            Mirror.reflect(holder.t("<T> void (T) > T"))
         ), method.typeParameters)
     }
 
     @Test
-    @DisplayName("A method that has no annotations should have an empty annotations list")
-    fun nonAnnotatedMethod() {
-        class MethodHolder {
-            fun method() { }
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
+    fun annotations_withNoAnnotations_shouldReturnEmptyList() {
+        val method = Mirror.reflect(ExecutableMirrorHolder::noMethodAnnotations.javaMethod!!)
         assertEquals(emptyList<Annotation>(), method.annotations)
     }
 
     @Test
-    @DisplayName("A method that has annotations should have an annotations list containing those annotations")
-    fun annotatedMethod() {
-        class MethodHolder {
-            @Annotation1
-            @AnnotationArg1(arg = 1)
-            fun method() { }
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method"))
+    fun annotations_withAnnotatedMethod_shouldReturnAnnotations() {
+        val method = Mirror.reflect(ExecutableMirrorHolder::methodAnnotations.javaMethod!!)
         assertSetEquals(listOf(
             Mirror.newAnnotation<Annotation1>(),
             Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
@@ -117,22 +135,15 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Parameters that have no annotations should have empty annotation lists")
-    fun nonAnnotatedParameter() {
-        class MethodHolder {
-            fun method(paramA: String) {}
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method", String::class.java))
+    fun parameterAnnotations_withNoAnnotations_shouldReturnEmptyList() {
+        val method = Mirror.reflect(holder.m("void (_)"))
         assertEquals(emptyList<Annotation>(), method.parameters[0].annotations)
     }
 
     @Test
     @DisplayName("Parameters that have annotations should have annotation lists containing those annotations")
-    fun annotatedParameter() {
-        class MethodHolder {
-            fun method(@Annotation1 @AnnotationArg1(arg = 1) paramA: String) {}
-        }
-        val method = Mirror.reflect(MethodHolder::class.java.getDeclaredMethod("method", String::class.java))
+    fun parameterAnnotations_withAnnotations_shouldReturnAnnotations() {
+        val method = Mirror.reflect(holder.m("void (@- @- String)"))
         assertSetEquals(listOf(
             Mirror.newAnnotation<Annotation1>(),
             Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
