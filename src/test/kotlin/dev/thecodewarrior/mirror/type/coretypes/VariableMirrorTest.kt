@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.canonical
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,7 +28,7 @@ internal class VariableMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotated_shouldReturnTypeParameter() {
         assertEquals(
-            holder["T"].canonical,
+            Mirror.toCanonical(holder["T"]),
             Mirror.reflect(holder["T"]).coreAnnotatedType
         )
     }
@@ -37,7 +36,7 @@ internal class VariableMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotated_shouldReturnAnnotatedTypeParameter() {
         assertEquals(
-            holder["@TypeAnnotation1 T; T", 0].canonical,
+            Mirror.toCanonical(holder["@TypeAnnotation1 T; T", 0]),
             Mirror.reflect(holder["@TypeAnnotation1 T; T", 0]).coreAnnotatedType
         )
     }

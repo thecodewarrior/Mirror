@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.canonical
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -53,7 +52,7 @@ internal class WildcardMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotated_shouldReturnWildcard() {
         assertEquals(
-            holder["? extends Object1"].canonical,
+            Mirror.toCanonical(holder["? extends Object1"]),
             Mirror.reflect(holder["? extends Object1"]).coreAnnotatedType
         )
     }
@@ -61,7 +60,7 @@ internal class WildcardMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotated_shouldReturnAnnotatedWildcard() {
         assertEquals(
-            holder["@TypeAnnotation1 ? extends Object1"].canonical,
+            Mirror.toCanonical(holder["@TypeAnnotation1 ? extends Object1"]),
             Mirror.reflect(holder["@TypeAnnotation1 ? extends Object1"]).coreAnnotatedType
         )
     }
@@ -69,7 +68,7 @@ internal class WildcardMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotatedBound_shouldReturnWithBound() {
         val mirror = Mirror.reflect(holder["? extends @TypeAnnotation1 Object1"])
-        val canon = holder["? extends @TypeAnnotation1 Object1"].canonical
+        val canon = Mirror.toCanonical(holder["? extends @TypeAnnotation1 Object1"])
         assertEquals(
             canon,
             mirror.coreAnnotatedType

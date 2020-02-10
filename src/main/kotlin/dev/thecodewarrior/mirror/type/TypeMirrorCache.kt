@@ -1,7 +1,7 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.MirrorCache
-import dev.thecodewarrior.mirror.canonical
+import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
@@ -55,7 +55,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
     }
 
     fun reflect(type: AnnotatedType): TypeMirror {
-        return rawCache.getOrPut(type.canonical) {
+        return rawCache.getOrPut(CoreTypeUtils.toCanonical(type)) {
             val mirror: TypeMirror
             when (type) {
                 is AnnotatedArrayType -> {

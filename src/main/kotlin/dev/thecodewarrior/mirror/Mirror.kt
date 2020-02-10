@@ -228,7 +228,7 @@ object Mirror {
      * Transforms the passed type to an equivalent one that implements the [equals] and [hashCode] methods.
      */
     @JvmStatic
-    @Untested
+    @IndirectTests
     fun <T: AnnotatedType> toCanonical(type: T): T = CoreTypeUtils.toCanonical(type)
 
     /**

@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.canonical
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -45,7 +44,7 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofRawNotAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            holder["Object1[]"].canonical,
+            Mirror.toCanonical(holder["Object1[]"]),
             Mirror.reflect(holder["Object1[]"]).coreAnnotatedType
         )
     }
@@ -53,7 +52,7 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofGenericNotAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            holder["GenericObject1<Object1>[]"].canonical,
+            Mirror.toCanonical(holder["GenericObject1<Object1>[]"]),
             Mirror.reflect(holder["GenericObject1<Object1>[]"]).coreAnnotatedType
         )
     }
@@ -61,7 +60,7 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofRawAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"].canonical,
+            Mirror.toCanonical(holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"]),
             Mirror.reflect(holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"]).coreAnnotatedType
         )
     }
@@ -69,7 +68,7 @@ internal class ArrayMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofGenericAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            holder["GenericObject1<@TypeAnnotation1 Object1>[]"].canonical,
+            Mirror.toCanonical(holder["GenericObject1<@TypeAnnotation1 Object1>[]"]),
             Mirror.reflect(holder["GenericObject1<@TypeAnnotation1 Object1>[]"]).coreAnnotatedType
         )
     }

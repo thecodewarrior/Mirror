@@ -36,7 +36,6 @@ abstract class TypeMirror internal constructor() {
      * **!!NOTE!!** The JVM implementations of `AnnotatedType` don't implement `equals` or `hashCode`, so they will
      * equal neither each other nor this.
      * If you need these methods pass any annotated type through [Mirror.toCanonical].
-     * In Kotlin code you can use the [AnnotatedType.canonical][dev.thecodewarrior.mirror.canonical] extension.
      */
     abstract val coreAnnotatedType: AnnotatedType
 

@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.canonical
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -93,7 +92,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotatedNoOwnerNoParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["GenericObject1"].canonical,
+            Mirror.toCanonical(holder["GenericObject1"]),
             Mirror.reflect(holder["GenericObject1"]).coreAnnotatedType
         )
     }
@@ -101,7 +100,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotatedNoOwnerWithParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["GenericObject1<Object1>"].canonical,
+            Mirror.toCanonical(holder["GenericObject1<Object1>"]),
             Mirror.reflect(holder["GenericObject1<Object1>"]).coreAnnotatedType
         )
     }
@@ -109,7 +108,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotatedRawOwnerNoParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["OuterGenericClass1.InnerGenericClass"].canonical,
+            Mirror.toCanonical(holder["OuterGenericClass1.InnerGenericClass"]),
             Mirror.reflect(holder["OuterGenericClass1.InnerGenericClass"]).coreAnnotatedType
         )
     }
@@ -117,7 +116,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotatedGenericOwnerNoParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["OuterGenericClass1<Object1>.InnerClass"].canonical,
+            Mirror.toCanonical(holder["OuterGenericClass1<Object1>.InnerClass"]),
             Mirror.reflect(holder["OuterGenericClass1<Object1>.InnerClass"]).coreAnnotatedType
         )
     }
@@ -125,7 +124,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofNotAnnotatedGenericOwnerWithParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["OuterGenericClass1<Object1>.InnerGenericClass<Object2>"].canonical,
+            Mirror.toCanonical(holder["OuterGenericClass1<Object1>.InnerGenericClass<Object2>"]),
             Mirror.reflect(holder["OuterGenericClass1<Object1>.InnerGenericClass<Object2>"]).coreAnnotatedType
         )
     }
@@ -133,7 +132,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotatedNoOwnerNoParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["@TypeAnnotation1 GenericObject1"].canonical,
+            Mirror.toCanonical(holder["@TypeAnnotation1 GenericObject1"]),
             Mirror.reflect(holder["@TypeAnnotation1 GenericObject1"]).coreAnnotatedType
         )
     }
@@ -141,7 +140,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotatedNoOwnerWithParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["@TypeAnnotation1 GenericObject1<@TypeAnnotation1 Object1>"].canonical,
+            Mirror.toCanonical(holder["@TypeAnnotation1 GenericObject1<@TypeAnnotation1 Object1>"]),
             Mirror.reflect(holder["@TypeAnnotation1 GenericObject1<@TypeAnnotation1 Object1>"]).coreAnnotatedType
         )
     }
@@ -149,7 +148,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotatedRawOwnerNoParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["@TypeAnnotation1 OuterGenericClass1.InnerGenericClass"].canonical,
+            Mirror.toCanonical(holder["@TypeAnnotation1 OuterGenericClass1.InnerGenericClass"]),
             Mirror.reflect(holder["@TypeAnnotation1 OuterGenericClass1.InnerGenericClass"]).coreAnnotatedType
         )
     }
@@ -157,7 +156,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotatedGenericOwnerNoParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["OuterGenericClass1<@TypeAnnotation1 Object1>.@TypeAnnotation1 InnerClass"].canonical,
+            Mirror.toCanonical(holder["OuterGenericClass1<@TypeAnnotation1 Object1>.@TypeAnnotation1 InnerClass"]),
             Mirror.reflect(holder["OuterGenericClass1<@TypeAnnotation1 Object1>.@TypeAnnotation1 InnerClass"]).coreAnnotatedType
         )
     }
@@ -165,7 +164,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @Test
     fun coreAnnotatedType_ofAnnotatedGenericOwnerWithParams_shouldReturnAnnotationsStripped() {
         assertEquals(
-            holder["OuterGenericClass1<@TypeAnnotation1 Object1>.@TypeAnnotation1 InnerGenericClass<Object2>"].canonical,
+            Mirror.toCanonical(holder["OuterGenericClass1<@TypeAnnotation1 Object1>.@TypeAnnotation1 InnerGenericClass<Object2>"]),
             Mirror.reflect(holder["OuterGenericClass1<@TypeAnnotation1 Object1>.@TypeAnnotation1 InnerGenericClass<Object2>"]).coreAnnotatedType
         )
     }
