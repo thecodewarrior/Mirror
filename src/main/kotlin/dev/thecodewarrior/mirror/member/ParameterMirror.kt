@@ -40,7 +40,6 @@ class ParameterMirror internal constructor(
      *
      * @see Parameter.getAnnotations
      */
-    @UntestedNegative
     val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
 
     fun withDeclaringExecutable(executable: ExecutableMirror?): ParameterMirror {

@@ -93,7 +93,6 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
-    @UntestedNegative
     fun reflectClass(type: AnnotatedType): ClassMirror {
         val reflected = reflect(type)
         if(reflected is ClassMirror) {
@@ -110,7 +109,6 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
-    @UntestedNegative
     fun reflectClass(type: Type): ClassMirror {
         val reflected = reflect(type)
         if(reflected is ClassMirror) {
@@ -126,7 +124,6 @@ object Mirror {
      *
      * @throws IllegalArgumentException if the input type is an array or void
      */
-    @UntestedNegative
     inline fun <reified T> reflectClass(): ClassMirror {
         if(T::class.java.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
         if(T::class.java == Void.TYPE) throw IllegalArgumentException("reflectClass cannot reflect the void type")

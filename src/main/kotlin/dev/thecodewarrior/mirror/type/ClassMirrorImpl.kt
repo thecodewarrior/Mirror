@@ -395,17 +395,17 @@ internal class ClassMirrorImpl internal constructor(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getDeclaredField(name: String): FieldMirror? {
+    override fun getDeclaredField(name: String): FieldMirror {
         return findDeclaredField(name)
             ?: throw NoSuchMirrorException("Could not find field with name $name declared in $this")
     }
 
-    override fun getPublicField(name: String): FieldMirror? {
+    override fun getPublicField(name: String): FieldMirror {
         return findPublicField(name)
             ?: throw NoSuchMirrorException("Could not find public field with name $name in $this")
     }
 
-    override fun getField(name: String): FieldMirror? {
+    override fun getField(name: String): FieldMirror {
         return findField(name)
             ?: throw NoSuchMirrorException("Could not find field with name $name in $this")
     }

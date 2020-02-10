@@ -8,12 +8,17 @@ import dev.thecodewarrior.mirror.testsupport.FieldVisibilityTestClass
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class FieldMirrorTest: MirrorTestBase() {
     private enum class TestEnum {
         FIRST, SECOND;
+
+        @JvmField
+        val nonConstant = 1
     }
 
     @Test
@@ -33,31 +38,38 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Getting the declared fields of an enum type should return fields with the `isEnumConstant` flag " +
-            "set to true")
-    fun declaredFields_onEnumType() {
+    fun isEnumConstant_withEnumConstant_shouldReturnTrue() {
         val baseType = Mirror.reflectClass<TestEnum>()
-        assertEquals(true, baseType.findPublicField("FIRST")?.isEnumConstant)
-        assertEquals(true, baseType.findPublicField("SECOND")?.isEnumConstant)
+        assertTrue(baseType.getPublicField("FIRST").isEnumConstant)
+        assertTrue(baseType.getPublicField("SECOND").isEnumConstant)
+    }
+
+    @Test
+    fun isEnumConstant_withNonEnumConstant_shouldReturnFalse() {
+        val baseType = Mirror.reflectClass<TestEnum>()
+        assertFalse(baseType.getPublicField("nonConstant").isEnumConstant)
     }
 
     @Test
     @DisplayName("The access levels of fields should be correctly mapped and stored")
     fun field_visibility() {
         val baseType = Mirror.reflectClass<FieldVisibilityTestClass>()
-        assertEquals(Modifier.Access.PUBLIC, baseType.findPublicField("publicField")?.access)
-        assertEquals(Modifier.Access.DEFAULT, baseType.findPublicField("defaultField")?.access)
-        assertEquals(Modifier.Access.PROTECTED, baseType.findPublicField("protectedField")?.access)
-        assertEquals(Modifier.Access.PRIVATE, baseType.findPublicField("privateField")?.access)
+        assertEquals(Modifier.Access.PUBLIC, baseType.getPublicField("publicField").access)
+        assertEquals(Modifier.Access.DEFAULT, baseType.getPublicField("defaultField").access)
+        assertEquals(Modifier.Access.PROTECTED, baseType.getPublicField("protectedField").access)
+        assertEquals(Modifier.Access.PRIVATE, baseType.getPublicField("privateField").access)
     }
 
     @Test
-    @DisplayName("The access levels of fields should be correctly mapped and stored")
     fun field_flags() {
         val baseType = Mirror.reflectClass<FieldFlagTestClass>()
-        assertEquals(true, baseType.findPublicField("staticField")?.isStatic)
-        assertEquals(true, baseType.findPublicField("volatileField")?.isVolatile)
-        assertEquals(true, baseType.findPublicField("transientField")?.isTransient)
+        fun test(name: String, static: Boolean, volatile: Boolean, transient: Boolean) {
+            val field = baseType.getPublicField(name)
+            assertEquals(listOf(static, volatile, transient), listOf(field.isStatic, field.isVolatile, field.isTransient))
+        }
+        test("staticField", static = true, volatile = false, transient = false)
+        test("volatileField", static = false, volatile = true, transient = false)
+        test("transientField", static = false, volatile = false, transient = true)
     }
 
     @Test

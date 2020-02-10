@@ -13,67 +13,102 @@ import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.Object1Sub
 import dev.thecodewarrior.mirror.testsupport.Object1Sub2
 import dev.thecodewarrior.mirror.testsupport.Object2
+import dev.thecodewarrior.mirror.testsupport.assertInstanceOf
 import dev.thecodewarrior.mirror.typeToken
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.lang.IllegalArgumentException
 
 internal class TypeMirrorTest: MirrorTestBase() {
     private val holder = TypeMirrorHolder()
 
     @Test
-    @DisplayName("Reflecting a non-array class should return a ClassMirror")
-    fun reflect_shouldReturnClassMirror_whenPassedClass() {
-        assertEquals(ClassMirrorImpl::class.java, Mirror.reflect(Any::class.java).javaClass)
+    fun reflect_withClass_shouldReturnClassMirror() {
+        assertInstanceOf<ClassMirror>(Mirror.reflect(Any::class.java))
     }
 
     @Test
-    @DisplayName("Reflecting an array class should return an ArrayMirror")
-    fun reflect_shouldReturnArrayMirror_whenPassedArray() {
-        assertEquals(ArrayMirror::class.java, Mirror.reflect(typeToken<Array<Any>>()).javaClass)
+    fun reflect_withArray_shouldReturnArrayMirror() {
+        assertInstanceOf<ArrayMirror>(Mirror.reflect(typeToken<Array<Any>>()))
     }
 
     @Test
-    @DisplayName("Reflecting a generic array should return an ArrayMirror")
-    fun reflect_shouldReturnArrayMirror_whenPassedGenericArray() {
-        assertEquals(ArrayMirror::class.java, Mirror.reflect(holder["T[]; T"]).javaClass)
+    fun reflect_withGenericArray_shouldReturnArrayMirror() {
+        assertInstanceOf<ArrayMirror>(Mirror.reflect(holder["T[]; T"]))
     }
 
     @Test
-    @DisplayName("Reflecting a type variable should return a VariableMirror")
-    fun reflect_shouldReturnVariableMirror_whenPassedVariable() {
-        assertEquals(VariableMirror::class.java, Mirror.reflect(holder["T"]).javaClass)
+    fun reflect_withVariable_shouldReturnVariableMirror() {
+        assertInstanceOf<VariableMirror>(Mirror.reflect(holder["T"]))
     }
 
     @Test
-    @DisplayName("Reflecting a wildcard type should return a WildcardMirror")
-    fun reflect_shouldReturnWildcardMirror_whenPassedWildcard() {
-        assertEquals(WildcardMirror::class.java, Mirror.reflect(holder["? extends Object1Sub"]).javaClass)
+    fun reflect_withWildcard_shouldReturnWildcardMirror() {
+        assertInstanceOf<WildcardMirror>(Mirror.reflect(holder["? extends Object1Sub"]))
     }
 
     @Test
-    @DisplayName("Reflecting void should return a VoidMirror")
-    fun reflect_shouldReturnVoidMirror_whenPassedVoid() {
-        assertEquals(VoidMirror::class.java, Mirror.reflect(Void.TYPE).javaClass)
+    fun reflect_withVoid_shouldReturnVoidMirror() {
+        assertInstanceOf<VoidMirror>(Mirror.reflect(Void.TYPE))
     }
 
     @Test
-    @DisplayName("Reflecting a method should return the same method as the one in the class mirror")
-    fun reflect_withMethod_shouldReturnSameAsClassMethod() {
-        val method = holder.getMethod("void method()")
-        val mirror = Mirror.reflectClass<TypeMirrorHolder.DirectInClassEquality>()
-            .declaredMethods.find { it.name == "method" }!!
-        assertEquals(mirror, Mirror.reflect(method))
+    fun reflectClass_withClass_shouldReturnClassMirror() {
+        assertInstanceOf<ClassMirror>(Mirror.reflectClass(Any::class.java))
     }
 
     @Test
-    @DisplayName("Reflecting a field should return the same field as the one in the class mirror")
-    fun reflect_withField_shouldReturnSameAsClassField() {
-        val field = holder.getField("int field")
-        val mirror = Mirror.reflectClass<TypeMirrorHolder.DirectInClassEquality>()
-            .declaredFields.find { it.name == "field" }!!
-        assertEquals(mirror, Mirror.reflect(field))
+    fun reflectClass_withArray_shouldThrow() {
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflectClass(typeToken<Array<Any>>())
+        }
+    }
+
+    @Test
+    fun reflectClass_withGenericArray_shouldThrow() {
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflectClass(holder["T[]; T"])
+        }
+    }
+
+    @Test
+    fun reflectClass_withVariable_shouldThrow() {
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflectClass(holder["T"])
+        }
+    }
+
+    @Test
+    fun reflectClass_withWildcard_shouldThrow() {
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflectClass(holder["? extends Object1Sub"])
+        }
+    }
+
+    @Test
+    fun reflectClass_withVoid_shouldThrow() {
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflectClass(Void.TYPE)
+        }
+    }
+
+    @Test
+    fun reflect_withCoreMethod_shouldReturnSameObjectAsClassMirror() {
+        val method = holder.m("void method()")
+        val fromClassMirror = Mirror.reflectClass(holder.c("ReflectAndClassMirrorGetSame"))
+            .declaredMethods.first { it.name == "method" }
+        assertSame(fromClassMirror, Mirror.reflect(method))
+    }
+
+    @Test
+    fun reflect_withCoreField_shouldReturnSameObjectAsClassMirror() {
+        val field = holder.f("int field")
+        val fromClassMirror = Mirror.reflectClass(holder.c("ReflectAndClassMirrorGetSame")).getDeclaredField("field")
+        assertSame(fromClassMirror, Mirror.reflect(field))
     }
 
     @Test

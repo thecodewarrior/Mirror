@@ -566,7 +566,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * @throws NoSuchMirrorException if no field with the specified name exists
      */
     @Untested
-    abstract fun getDeclaredField(name: String): FieldMirror?
+    abstract fun getDeclaredField(name: String): FieldMirror
 
     /**
      * Returns the public field declared in this class or inherited from its superclasses that has the specified name,
@@ -576,7 +576,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * @throws NoSuchMirrorException if no field with the specified name exists
      */
     @Untested
-    abstract fun getPublicField(name: String): FieldMirror?
+    abstract fun getPublicField(name: String): FieldMirror
 
     /**
      * Returns the field declared in this class or inherited from its superclasses that has the specified name, or
@@ -586,7 +586,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * @throws NoSuchMirrorException if no field with the specified name exists
      */
     @Untested
-    abstract fun getField(name: String): FieldMirror?
+    abstract fun getField(name: String): FieldMirror
 
 //endregion =====================================================================================================================
 
