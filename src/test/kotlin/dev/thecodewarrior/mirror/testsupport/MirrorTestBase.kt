@@ -3,9 +3,13 @@ package dev.thecodewarrior.mirror.testsupport
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
 import org.junit.jupiter.api.BeforeEach
+import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.jvm.javaConstructor
+import kotlin.reflect.jvm.javaMethod
 
 internal open class MirrorTestBase {
     @BeforeEach
@@ -28,6 +32,8 @@ internal open class MirrorTestBase {
         = this.java.getDeclaredMethod(name, *parameters)
     protected inline fun <reified T> m(name: String, vararg parameters: Class<*>): Method
         = T::class.java.getDeclaredMethod(name, *parameters)
+    protected val KFunction<*>.m: Method get() = this.javaMethod!!
+    protected val KFunction<*>.c: Constructor<*> get() = this.javaConstructor!!
 
     private companion object {
         val cacheField = Mirror::class.java.getDeclaredField("cache")

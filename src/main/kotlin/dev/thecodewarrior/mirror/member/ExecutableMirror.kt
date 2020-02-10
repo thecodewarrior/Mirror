@@ -21,7 +21,6 @@ abstract class ExecutableMirror internal constructor(
     //todo: Also provide reference to what this overrides, if anything
     abstract val raw: ExecutableMirror
 
-    @Untested
     abstract val modifiers: Set<Modifier>
     abstract val access: Modifier.Access
 
@@ -43,7 +42,6 @@ abstract class ExecutableMirror internal constructor(
     /**
      * Returns true if this method/constructor has internal visibility in Kotlin
      */
-    @Untested
     abstract val isInternalAccess: Boolean
 
     /**

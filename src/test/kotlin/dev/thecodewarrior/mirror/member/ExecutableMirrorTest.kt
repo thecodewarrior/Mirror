@@ -4,26 +4,14 @@ import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.NoParamNames
 import dev.thecodewarrior.mirror.annotations.Annotation1
 import dev.thecodewarrior.mirror.annotations.AnnotationArg1
-import dev.thecodewarrior.mirror.testsupport.ClosedObject1
-import dev.thecodewarrior.mirror.testsupport.CompanionHolder
-import dev.thecodewarrior.mirror.testsupport.DataObject1
-import dev.thecodewarrior.mirror.testsupport.EnumClass1
 import dev.thecodewarrior.mirror.testsupport.Exception1
 import dev.thecodewarrior.mirror.testsupport.Exception2
-import dev.thecodewarrior.mirror.testsupport.FieldVisibilityTestClass
-import dev.thecodewarrior.mirror.testsupport.Interface1
-import dev.thecodewarrior.mirror.testsupport.KotlinInternalClass
 import dev.thecodewarrior.mirror.testsupport.KotlinInternalConstructor
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.Object1
-import dev.thecodewarrior.mirror.testsupport.SealedClass
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
-import dev.thecodewarrior.mirror.testsupport.simpletypes.JObject1
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.typeholders.member.ExecutableMirrorHolder
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -32,8 +20,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import kotlin.reflect.jvm.javaConstructor
-import kotlin.reflect.jvm.javaMethod
+import java.lang.reflect.Method
 
 internal class ExecutableMirrorTest: MirrorTestBase() {
     private val holder = ExecutableMirrorHolder()
@@ -129,7 +116,7 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     @Test
     @DisplayName("A void method with unnamed parameters should have corresponding parameter mirrors with null names")
     fun parameters_withNoBytecodeNames_shouldHaveNullNames() {
-        val method = Mirror.reflect(NoParamNames::noNames.javaMethod!!)
+        val method = Mirror.reflect(NoParamNames::noNames.m)
         assertEquals(listOf(
             null
         ), method.parameters.map { it.name })
@@ -166,13 +153,13 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
 
     @Test
     fun annotations_withNoAnnotations_shouldReturnEmptyList() {
-        val method = Mirror.reflect(ExecutableMirrorHolder::noMethodAnnotations.javaMethod!!)
+        val method = Mirror.reflect(ExecutableMirrorHolder::noMethodAnnotations.m)
         assertEquals(emptyList<Annotation>(), method.annotations)
     }
 
     @Test
     fun annotations_withAnnotatedMethod_shouldReturnAnnotations() {
-        val method = Mirror.reflect(ExecutableMirrorHolder::methodAnnotations.javaMethod!!)
+        val method = Mirror.reflect(ExecutableMirrorHolder::methodAnnotations.m)
         assertSetEquals(listOf(
             Mirror.newAnnotation<Annotation1>(),
             Mirror.newAnnotation<AnnotationArg1>("arg" to 1)
@@ -236,14 +223,14 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
 
     @Test
     fun access_ofKotlinInternalMethod_shouldBePublicAndInternal() {
-        val constructor = Mirror.reflect(KotlinInternalConstructor::internalMethod.javaMethod!!)
+        val constructor = Mirror.reflect(KotlinInternalConstructor::internalMethod.m)
         assertEquals(Modifier.Access.PUBLIC, constructor.access)
         assertTrue(constructor.isInternalAccess)
     }
 
     @Test
     fun access_ofKotlinInternalConstructor_shouldBePublicAndInternal() {
-        val constructor = Mirror.reflect(::KotlinInternalConstructor.javaConstructor!!)
+        val constructor = Mirror.reflect(::KotlinInternalConstructor.c)
         assertEquals(Modifier.Access.PUBLIC, constructor.access)
         assertTrue(constructor.isInternalAccess)
     }
@@ -263,64 +250,97 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     @Test
     fun modifiers_ofJavaMethod_shouldBeCorrect() {
         fun test(name: String, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(holder.m(name)).modifiers)
-        test("public void ()", Modifier.PUBLIC)
-        test("default void ()")
-        test("protected void ()", Modifier.PROTECTED)
-        test("private void ()", Modifier.PRIVATE)
-        test("abstract void ()", Modifier.ABSTRACT)
-        test("static void ()", Modifier.STATIC)
-        test("final void ()", Modifier.FINAL)
-        // TODO Strictfp flag missing from java modifiers
-         test("strictfp void ()", Modifier.STRICT)
-    }
-
-    /*
-    private inline fun <reified T> testFlags(vararg flags: ClassMirror.Flag) {
-        assertEquals(setOf(*flags), Mirror.reflectClass<T>().flags)
-    }
-
-    private fun testFlags(name: String, vararg flags: ClassMirror.Flag) {
-        assertEquals(setOf(*flags), Mirror.reflectClass(holder.getClass(name)).flags)
-    }
-
-    @Test
-    fun kotlinFlags_ofKotlinClass_shouldBeCorrect() {
         assertAll(
-            { testFlags<ClosedObject1>(ClassMirror.Flag.FINAL) },
-            { testFlags<Object1>() },
-            { testFlags<CompanionHolder.Companion>(ClassMirror.Flag.FINAL, ClassMirror.Flag.STATIC, ClassMirror.Flag.MEMBER)
-                assertTrue(Mirror.reflectClass<CompanionHolder.Companion>().isCompanion) },
-            { testFlags<DataObject1>(ClassMirror.Flag.FINAL)
-                assertTrue(Mirror.reflectClass<DataObject1>().isData) },
-            { testFlags<SealedClass>(ClassMirror.Flag.ABSTRACT)
-                assertTrue(Mirror.reflectClass<SealedClass>().isSealed) },
-            { testFlags<Interface1>(ClassMirror.Flag.INTERFACE, ClassMirror.Flag.ABSTRACT) }
+            { test("public void ()", Modifier.PUBLIC) },
+            { test("default void ()") },
+            { test("protected void ()", Modifier.PROTECTED) },
+            { test("private void ()", Modifier.PRIVATE) },
+            { test("abstract void ()", Modifier.ABSTRACT) },
+            { test("static void ()", Modifier.STATIC) },
+            { test("final void ()", Modifier.FINAL) },
+            { test("strictfp void ()", Modifier.STRICT) }
         )
     }
 
     @Test
-    fun flags_ofClasses_shouldBeCorrect() {
+    fun modifiers_ofJavaConstructor_shouldBeCorrect() {
+        fun test(name: String, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(holder.getConstructor(name)).modifiers)
         assertAll(
-            { testFlags("public static class", ClassMirror.Flag.MEMBER) },
-            { testFlags("public class", ClassMirror.Flag.MEMBER) },
-            { testFlags("default class", ClassMirror.Flag.MEMBER) },
-            { testFlags("protected class", ClassMirror.Flag.MEMBER) },
-            { testFlags("private class", ClassMirror.Flag.MEMBER) },
-            { testFlags("abstract class", ClassMirror.Flag.MEMBER, ClassMirror.Flag.ABSTRACT) },
-            { testFlags("static class", ClassMirror.Flag.MEMBER, ClassMirror.Flag.STATIC) },
-            { testFlags("final class", ClassMirror.Flag.MEMBER, ClassMirror.Flag.FINAL) },
-            // TODO Strictfp flag missing from java modifiers
-            // { testFlags("strictfp class", Flag.MEMBER, Flag.STRICT) },
-            { testFlags("annotation class", ClassMirror.Flag.MEMBER, ClassMirror.Flag.INTERFACE, ClassMirror.Flag.ABSTRACT, ClassMirror.Flag.ANNOTATION, ClassMirror.Flag.STATIC) },
-            { testFlags("interface", ClassMirror.Flag.MEMBER, ClassMirror.Flag.STATIC, ClassMirror.Flag.INTERFACE, ClassMirror.Flag.ABSTRACT) },
-            { assertEquals(setOf(ClassMirror.Flag.ANONYMOUS), Mirror.reflectClass(holder.innerAnonymous.javaClass).flags) },
-            { assertEquals(setOf(ClassMirror.Flag.ANONYMOUS), Mirror.reflectClass(holder.anonymous.javaClass).flags) },
-            { assertEquals(setOf(ClassMirror.Flag.LOCAL), Mirror.reflectClass(holder.local).flags) },
-            { assertEquals(setOf(ClassMirror.Flag.FINAL, ClassMirror.Flag.SYNTHETIC), Mirror.reflectClass(holder.lambda.javaClass).flags) },
-            { assertEquals(setOf(ClassMirror.Flag.ABSTRACT, ClassMirror.Flag.FINAL, ClassMirror.Flag.PRIMITIVE), Mirror.types.int.flags) },
-            { testFlags<JObject1>() },
-            { testFlags<EnumClass1>(ClassMirror.Flag.ENUM) }
+            { test("public <init>()", Modifier.PUBLIC) },
+            { test("default <init>()") },
+            { test("protected <init>()", Modifier.PROTECTED) },
+            { test("private <init>()", Modifier.PRIVATE) }
         )
     }
-    */
+
+    @Test
+    fun modifiers_ofKotlinMethod_shouldBeCorrect() {
+        @Suppress("TestFunctionName")
+        abstract class K {
+            fun final() {}
+            internal fun _internal() {}
+            protected fun _protected() {}
+            private fun _private() {}
+            open fun _open() {}
+            abstract fun _abstract()
+            @Synchronized
+            open fun _synchronized() {}
+            @Strictfp
+            open fun _strictfp() {}
+        }
+
+        fun test(method: Method, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(method).modifiers)
+        assertAll(
+            { test(K::final.m, Modifier.PUBLIC, Modifier.FINAL)
+                assertFalse(Mirror.reflect(K::final.m).isInternalAccess) },
+            { test(K::_internal.m, Modifier.PUBLIC, Modifier.FINAL)
+                assertTrue(Mirror.reflect(K::_internal.m).isInternalAccess) },
+            { test(K::class.m("_protected"), Modifier.PROTECTED, Modifier.FINAL)
+                assertFalse(Mirror.reflect(K::class.m("_protected")).isInternalAccess) },
+            { test(K::class.m("_private"), Modifier.PRIVATE, Modifier.FINAL)
+                assertFalse(Mirror.reflect(K::class.m("_private")).isInternalAccess) },
+            { test(K::_open.m, Modifier.PUBLIC)
+                assertFalse(Mirror.reflect(K::_open.m).isInternalAccess) },
+            { test(K::_abstract.m, Modifier.PUBLIC, Modifier.ABSTRACT)
+                assertFalse(Mirror.reflect(K::_abstract.m).isInternalAccess) },
+            { test(ExecutableMirrorTest::class.m("kotlinStatic"), Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC)
+                assertFalse(Mirror.reflect(ExecutableMirrorTest::class.m("kotlinStatic")).isInternalAccess) },
+            { test(K::_synchronized.m, Modifier.PUBLIC, Modifier.SYNCHRONIZED)
+                assertFalse(Mirror.reflect(K::_synchronized.m).isInternalAccess) },
+            { test(K::_strictfp.m, Modifier.PUBLIC, Modifier.STRICT)
+                assertFalse(Mirror.reflect(K::_strictfp.m).isInternalAccess) }
+        )
+    }
+
+    @Test
+    fun modifiers_ofKotlinConstructor_shouldBeCorrect() {
+        open class K {
+            constructor(uniqueSignature: Byte) {}
+            internal constructor(uniqueSignature: Short) {}
+            protected constructor(uniqueSignature: Int) {}
+            private constructor(uniqueSignature: Long) {}
+        }
+
+        fun getConstructor(type: ClassMirror) = K::class.java.getDeclaredConstructor(type.java)
+
+        fun test(type: ClassMirror, vararg mods: Modifier) = assertEquals(
+            setOf(*mods),
+            Mirror.reflect(getConstructor(type)).modifiers
+        )
+        assertAll(
+            { test(Mirror.types.byte, Modifier.PUBLIC)
+                assertFalse(Mirror.reflect(getConstructor(Mirror.types.byte)).isInternalAccess) },
+            { test(Mirror.types.short, Modifier.PUBLIC)
+                assertTrue(Mirror.reflect(getConstructor(Mirror.types.short)).isInternalAccess) },
+            { test(Mirror.types.int, Modifier.PROTECTED)
+                assertFalse(Mirror.reflect(getConstructor(Mirror.types.int)).isInternalAccess) },
+            { test(Mirror.types.long, Modifier.PRIVATE)
+                assertFalse(Mirror.reflect(getConstructor(Mirror.types.long)).isInternalAccess) }
+        )
+    }
+
+    companion object {
+        @JvmStatic
+        fun kotlinStatic() {}
+    }
 }
