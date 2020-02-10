@@ -54,7 +54,7 @@ object Mirror {
      * Gets the type mirror representing the passed type
      */
     @JvmStatic
-    @Untested("Only being tested from java in a temporary test")
+    @IndirectTests
     fun reflect(type: TypeToken<*>): TypeMirror {
         return cache.types.reflect(type.getAnnotated())
     }
@@ -175,8 +175,7 @@ object Mirror {
      */
     @JvmStatic
     @JvmOverloads
-    @Throws(AnnotationFormatException::class)
-    @Untested
+    @IndirectTests("via the <reified T> newAnnotation(pairs)")
     fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
         return CoreTypeUtils.createAnnotation(clazz, arguments)
     }
@@ -189,7 +188,6 @@ object Mirror {
      * @throws AnnotationFormatException if any values in the set have incompatible types with the attributes of the annotation
      */
     @JvmStatic
-    @Throws(AnnotationFormatException::class)
     @IndirectTests
     fun <T: Annotation> newAnnotation(clazz: Class<T>, vararg arguments: Pair<String, Any>): T {
         return newAnnotation(clazz, mapOf(*arguments))

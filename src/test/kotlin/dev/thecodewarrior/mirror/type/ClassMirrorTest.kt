@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-//todo: self-referential class, for deadlock tests
 internal class ClassMirrorTest: MirrorTestBase() {
 
     @Test
