@@ -109,7 +109,6 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * @return The specialized superclass with the passed type, or null if none were found.
      */
-    @UntestedFailure
     abstract fun findSuperclass(clazz: Class<*>): ClassMirror?
 
     /**

@@ -5,6 +5,7 @@ import dev.thecodewarrior.mirror.testsupport.GenericInterface1
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 internal class ClassMirrorHelperTest: MirrorTestBase() {
@@ -32,5 +33,11 @@ internal class ClassMirrorHelperTest: MirrorTestBase() {
             Mirror.reflectClass<GenericInterface1<Object1>>(),
             Mirror.reflectClass<GenericObject<Object1>>().findSuperclass(GenericInterface1::class.java)
         )
+    }
+
+    @Test
+    fun findSuperclass_withUnrelatedType_shouldThrow() {
+        class GenericObject<T>: GenericInterface1<T>
+        assertNull(Mirror.reflectClass<GenericObject<Object1>>().findSuperclass(List::class.java))
     }
 }
