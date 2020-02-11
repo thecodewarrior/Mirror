@@ -2,73 +2,73 @@ package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
+import dev.thecodewarrior.mirror.typeholders.type.coretypes.ArrayMirrorTypeHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class ArrayMirrorTest: MirrorTestBase(TypeMirror_CoreTypesHolder()) {
+internal class ArrayMirrorTest: MirrorTestBase(ArrayMirrorTypeHolder()) {
 
     @Test
     fun coreType_ofRawNotAnnotated_shouldReturnRaw() {
         assertEquals(
-            holder["Object1[]"].type,
-            Mirror.reflect(holder["Object1[]"]).coreType
+            _t("X[]").type,
+            Mirror.reflect(_t("X[]")).coreType
         )
     }
 
     @Test
     fun coreType_ofGenericNotAnnotated_shouldReturnRaw() {
         assertEquals(
-            holder["GenericObject1<Object1>[]"].type,
-            Mirror.reflect(holder["GenericObject1<Object1>[]"]).coreType
+            _t("Generic<X>[]").type,
+            Mirror.reflect(_t("Generic<X>[]")).coreType
         )
     }
 
     @Test
     fun coreType_ofRawAnnotated_shouldReturnRaw() {
         assertEquals(
-            holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"].type,
-            Mirror.reflect(holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"]).coreType
+            _t("@A X @A []").type,
+            Mirror.reflect(_t("@A X @A []")).coreType
         )
     }
 
     @Test
     fun coreType_ofGenericAnnotated_shouldReturnRaw() {
         assertEquals(
-            holder["GenericObject1<@TypeAnnotation1 Object1>[]"].type,
-            Mirror.reflect(holder["GenericObject1<@TypeAnnotation1 Object1>[]"]).coreType
+            _t("Generic<@A X>[]").type,
+            Mirror.reflect(_t("Generic<@A X>[]")).coreType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofRawNotAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            Mirror.toCanonical(holder["Object1[]"]),
-            Mirror.reflect(holder["Object1[]"]).coreAnnotatedType
+            Mirror.toCanonical(_t("X[]")),
+            Mirror.reflect(_t("X[]")).coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofGenericNotAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            Mirror.toCanonical(holder["GenericObject1<Object1>[]"]),
-            Mirror.reflect(holder["GenericObject1<Object1>[]"]).coreAnnotatedType
+            Mirror.toCanonical(_t("Generic<X>[]")),
+            Mirror.reflect(_t("Generic<X>[]")).coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofRawAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            Mirror.toCanonical(holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"]),
-            Mirror.reflect(holder["@TypeAnnotation1 Object1 @TypeAnnotation1 []"]).coreAnnotatedType
+            Mirror.toCanonical(_t("@A X @A []")),
+            Mirror.reflect(_t("@A X @A []")).coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofGenericAnnotated_shouldReturnAnnotated() {
         assertEquals(
-            Mirror.toCanonical(holder["GenericObject1<@TypeAnnotation1 Object1>[]"]),
-            Mirror.reflect(holder["GenericObject1<@TypeAnnotation1 Object1>[]"]).coreAnnotatedType
+            Mirror.toCanonical(_t("Generic<@A X>[]")),
+            Mirror.reflect(_t("Generic<@A X>[]")).coreAnnotatedType
         )
     }
 }

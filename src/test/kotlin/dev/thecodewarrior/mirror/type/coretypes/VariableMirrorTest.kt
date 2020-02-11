@@ -2,41 +2,41 @@ package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
+import dev.thecodewarrior.mirror.typeholders.type.coretypes.VariableMirrorTypeHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class VariableMirrorTest: MirrorTestBase(TypeMirror_CoreTypesHolder()) {
+internal class VariableMirrorTest: MirrorTestBase(VariableMirrorTypeHolder()) {
 
     @Test
     fun coreType_ofNotAnnotated_shouldReturnTypeParameter() {
         assertEquals(
-            holder["T"].type,
-            Mirror.reflect(holder["T"]).coreType
+            _t("T").type,
+            Mirror.reflect(_t("T")).coreType
         )
     }
 
     @Test
     fun coreType_ofAnnotated_shouldReturnTypeParameter() {
         assertEquals(
-            holder["@TypeAnnotation1 T; T", 1].type,
-            Mirror.reflect(holder["@TypeAnnotation1 T; T", 0]).coreType
+            _t("T").type,
+            Mirror.reflect(_t("@A T")).coreType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofNotAnnotated_shouldReturnTypeParameter() {
         assertEquals(
-            Mirror.toCanonical(holder["T"]),
-            Mirror.reflect(holder["T"]).coreAnnotatedType
+            Mirror.toCanonical(_t("T")),
+            Mirror.reflect(_t("T")).coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofAnnotated_shouldReturnAnnotatedTypeParameter() {
         assertEquals(
-            Mirror.toCanonical(holder["@TypeAnnotation1 T; T", 0]),
-            Mirror.reflect(holder["@TypeAnnotation1 T; T", 0]).coreAnnotatedType
+            Mirror.toCanonical(_t("T")),
+            Mirror.reflect(_t("T")).coreAnnotatedType
         )
     }
 

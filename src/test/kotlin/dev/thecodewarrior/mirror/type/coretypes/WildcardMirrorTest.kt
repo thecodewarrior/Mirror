@@ -2,72 +2,72 @@ package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
+import dev.thecodewarrior.mirror.typeholders.type.coretypes.WildcardMirrorTypeHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class WildcardMirrorTest: MirrorTestBase(TypeMirror_CoreTypesHolder()) {
+internal class WildcardMirrorTest: MirrorTestBase(WildcardMirrorTypeHolder()) {
 
     @Test
     fun coreType_ofNotAnnotatedRaw_shouldReturnWildcard() {
         assertEquals(
-            holder["? extends Object1"].type,
-            Mirror.reflect(holder["? extends Object1"].type).coreType
+            _t("? extends X").type,
+            Mirror.reflect(_t("? extends X").type).coreType
         )
     }
 
     @Test
     fun coreType_ofNotAnnotated_shouldReturnWildcard() {
         assertEquals(
-            holder["? extends Object1"].type,
-            Mirror.reflect(holder["? extends Object1"]).coreType
+            _t("? extends X").type,
+            Mirror.reflect(_t("? extends X")).coreType
         )
     }
 
     @Test
     fun coreType_ofNotAnnotatedLowerBounded_shouldReturnWildcard() {
         assertEquals(
-            holder["? super Object1"].type,
-            Mirror.reflect(holder["? super Object1"]).coreType
+            _t("? super X").type,
+            Mirror.reflect(_t("? super X")).coreType
         )
     }
 
     @Test
     fun coreType_ofAnnotated_shouldReturnWildcard() {
         assertEquals(
-            holder["@TypeAnnotation1 ? extends Object1"].type,
-            Mirror.reflect(holder["@TypeAnnotation1 ? extends Object1"]).coreType
+            _t("@A ? extends X").type,
+            Mirror.reflect(_t("@A ? extends X")).coreType
         )
     }
 
     @Test
     fun coreType_ofAnnotatedBound_shouldReturnWithBound() {
         assertEquals(
-            holder["? extends @TypeAnnotation1 Object1"].type,
-            Mirror.reflect(holder["? extends @TypeAnnotation1 Object1"]).coreType
+            _t("? extends @A X").type,
+            Mirror.reflect(_t("? extends @A X")).coreType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofNotAnnotated_shouldReturnWildcard() {
         assertEquals(
-            Mirror.toCanonical(holder["? extends Object1"]),
-            Mirror.reflect(holder["? extends Object1"]).coreAnnotatedType
+            Mirror.toCanonical(_t("? extends X")),
+            Mirror.reflect(_t("? extends X")).coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofAnnotated_shouldReturnAnnotatedWildcard() {
         assertEquals(
-            Mirror.toCanonical(holder["@TypeAnnotation1 ? extends Object1"]),
-            Mirror.reflect(holder["@TypeAnnotation1 ? extends Object1"]).coreAnnotatedType
+            Mirror.toCanonical(_t("@A ? extends X")),
+            Mirror.reflect(_t("@A ? extends X")).coreAnnotatedType
         )
     }
 
     @Test
     fun coreAnnotatedType_ofAnnotatedBound_shouldReturnWithBound() {
-        val mirror = Mirror.reflect(holder["? extends @TypeAnnotation1 Object1"])
-        val canon = Mirror.toCanonical(holder["? extends @TypeAnnotation1 Object1"])
+        val mirror = Mirror.reflect(_t("? extends @A X"))
+        val canon = Mirror.toCanonical(_t("? extends @A X"))
         assertEquals(
             canon,
             mirror.coreAnnotatedType

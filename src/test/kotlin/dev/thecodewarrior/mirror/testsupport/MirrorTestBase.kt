@@ -15,6 +15,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod
 
+@Suppress("TestFunctionName")
 internal open class MirrorTestBase(val holder: AnnotatedTypeHolder = EmptyTypeHolder()) {
     @BeforeEach
     fun beforeEachTest() {
@@ -27,17 +28,17 @@ internal open class MirrorTestBase(val holder: AnnotatedTypeHolder = EmptyTypeHo
     }
 
     /** Get a field from the holder */
-    protected fun f(name: String): Field = holder.getField(name)
+    protected fun _f(name: String): Field = holder.getField(name)
     /** Get a method from the holder */
-    protected fun m(name: String): Method = holder.getMethod(name)
+    protected fun _m(name: String): Method = holder.getMethod(name)
     /** Get a parameter from the holder */
-    protected fun p(name: String): Parameter = holder.getParameter(name)
+    protected fun _p(name: String): Parameter = holder.getParameter(name)
     /** Get a class from the holder */
-    protected fun c(name: String): Class<*> = holder.getClass(name)
+    protected fun _c(name: String): Class<*> = holder.getClass(name)
     /** Get a constructor from the holder */
-    protected fun constructor(name: String): Constructor<*> = holder.getConstructor(name)
+    protected fun _constructor(name: String): Constructor<*> = holder.getConstructor(name)
     /** Get a type from the holder */
-    protected fun t(name: String): AnnotatedType = holder.get(name)
+    protected fun _t(name: String): AnnotatedType = holder.get(name)
 
     /**
      * Get the specified method from this class. If no parameters are specified and no zero-parameter method exists, the
