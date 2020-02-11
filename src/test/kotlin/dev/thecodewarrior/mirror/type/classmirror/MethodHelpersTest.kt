@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
-internal class MethodHelpersTest: MirrorTestBase() {
-    val holder = MethodHelpersHolder()
+internal class MethodHelpersTest: MirrorTestBase(MethodHelpersHolder()) {
 
     private inline fun <reified T> testMethodsAgainstJava()
         = assertSetEquals(T::class.java.methods.map { Mirror.reflect(it) }, Mirror.reflectClass<T>().publicMethods)

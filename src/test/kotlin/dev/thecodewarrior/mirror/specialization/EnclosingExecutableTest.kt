@@ -51,7 +51,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
             lateinit var foo: T
         }
         val clazz = Mirror.reflectClass<LocalClass>()
-        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("localClassUsingMethodTypeParameter")[0]
+        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("typeParameters_inLocalClass_shouldReferenceMethodTypeParameters")[0]
         assertSame(thisMethod.typeParameters[0], clazz.findPublicField("foo")?.type)
     }
 
@@ -61,7 +61,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
             lateinit var foo: T
         }
         val clazz = Mirror.reflectClass<LocalClass>()
-        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("localClassUsingSpecializedMethodTypeParameter")[0]
+        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("memberTypes_ofLocalClass_shouldReferenceMethodTypeParameters")[0]
         assertSame(Mirror.reflect<String>(), clazz.withEnclosingExecutable(thisMethod.withTypeParameters(Mirror.reflect<String>())).findPublicField("foo")?.type)
     }
 

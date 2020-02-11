@@ -21,8 +21,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import java.lang.reflect.Method
 
-internal class ExecutableMirrorTest: MirrorTestBase() {
-    private val holder = ExecutableMirrorHolder()
+internal class ExecutableMirrorTest: MirrorTestBase(ExecutableMirrorHolder()) {
 
     @Test
     fun name_ofConstructor_shouldBeBinaryName() {

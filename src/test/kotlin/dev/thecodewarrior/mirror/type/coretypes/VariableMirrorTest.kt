@@ -6,8 +6,7 @@ import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class VariableMirrorTest: MirrorTestBase() {
-    private val holder = TypeMirror_CoreTypesHolder()
+internal class VariableMirrorTest: MirrorTestBase(TypeMirror_CoreTypesHolder()) {
 
     @Test
     fun coreType_ofNotAnnotated_shouldReturnTypeParameter() {

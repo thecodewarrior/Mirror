@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.type
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.Interface1
 import dev.thecodewarrior.mirror.testsupport.Interface2
+import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
@@ -10,8 +11,7 @@ import dev.thecodewarrior.mirror.type.VariableMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class VariableMirrorTest {
-    val holder = TypeMirrorHolder()
+internal class VariableMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun getBounds_onUnboundedType_shouldReturnListOfObject() {

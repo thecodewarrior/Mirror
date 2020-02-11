@@ -1,6 +1,7 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.Mirror
+import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1Sub
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
@@ -8,8 +9,7 @@ import dev.thecodewarrior.mirror.type.WildcardMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class WildcardMirrorTest {
-    val holder = TypeMirrorHolder()
+internal class WildcardMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun getLowerBounds_onLowerBoundedWildcard_shouldReturnLowerBound() {

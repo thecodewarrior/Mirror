@@ -14,13 +14,13 @@ public class AnnotatedTypeHolder {
     /**
      * An exception to use for methods that technically need a return. Just use `throw e;` and call it a day.
      */
-    public static RuntimeException e = new RuntimeException();
-    @NotNull private Map<String, Map<Integer, AnnotatedType>> types = new HashMap<>();
-    @NotNull private Map<String, Method> methodElements = new HashMap<>();
-    @NotNull private Map<String, Field> fieldElements = new HashMap<>();
-    @NotNull private Map<String, Constructor> constructorElements = new HashMap<>();
-    @NotNull private Map<String, Parameter> parameterElements = new HashMap<>();
-    @NotNull private Map<String, Class> classElements = new HashMap<>();
+    public static final RuntimeException e = new RuntimeException();
+    @NotNull private final Map<String, Map<Integer, AnnotatedType>> types = new HashMap<>();
+    @NotNull private final Map<String, Method> methodElements = new HashMap<>();
+    @NotNull private final Map<String, Field> fieldElements = new HashMap<>();
+    @NotNull private final Map<String, Constructor> constructorElements = new HashMap<>();
+    @NotNull private final Map<String, Parameter> parameterElements = new HashMap<>();
+    @NotNull private final Map<String, Class> classElements = new HashMap<>();
 
     protected AnnotatedTypeHolder() {
         populateTypes();

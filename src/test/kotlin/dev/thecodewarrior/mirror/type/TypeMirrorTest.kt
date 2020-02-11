@@ -23,8 +23,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalArgumentException
 
-internal class TypeMirrorTest: MirrorTestBase() {
-    private val holder = TypeMirrorHolder()
+internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun reflect_withClass_shouldReturnClassMirror() {

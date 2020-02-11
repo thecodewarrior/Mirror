@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-internal class SimpleHelpersTest: MirrorTestBase() {
-    private val holder = SimpleHelpersHolder()
+internal class SimpleHelpersTest: MirrorTestBase(SimpleHelpersHolder()) {
+    val _holder = holder as SimpleHelpersHolder
 
     @Test
     fun access_ofJavaClass_shouldBeCorrect() {
@@ -87,10 +87,10 @@ internal class SimpleHelpersTest: MirrorTestBase() {
             // { testFlags("strictfp class", Flag.MEMBER, Flag.STRICT) },
             { testFlags("annotation class", ClassMirror.Flag.MEMBER, ClassMirror.Flag.INTERFACE, ClassMirror.Flag.ABSTRACT, ClassMirror.Flag.ANNOTATION, ClassMirror.Flag.STATIC) },
             { testFlags("interface", ClassMirror.Flag.MEMBER, ClassMirror.Flag.STATIC, ClassMirror.Flag.INTERFACE, ClassMirror.Flag.ABSTRACT) },
-            { Assertions.assertEquals(setOf(ClassMirror.Flag.ANONYMOUS), Mirror.reflectClass(holder.innerAnonymous.javaClass).flags) },
-            { Assertions.assertEquals(setOf(ClassMirror.Flag.ANONYMOUS), Mirror.reflectClass(holder.anonymous.javaClass).flags) },
-            { Assertions.assertEquals(setOf(ClassMirror.Flag.LOCAL), Mirror.reflectClass(holder.local).flags) },
-            { Assertions.assertEquals(setOf(ClassMirror.Flag.FINAL, ClassMirror.Flag.SYNTHETIC), Mirror.reflectClass(holder.lambda.javaClass).flags) },
+            { Assertions.assertEquals(setOf(ClassMirror.Flag.ANONYMOUS), Mirror.reflectClass(_holder.innerAnonymous.javaClass).flags) },
+            { Assertions.assertEquals(setOf(ClassMirror.Flag.ANONYMOUS), Mirror.reflectClass(_holder.anonymous.javaClass).flags) },
+            { Assertions.assertEquals(setOf(ClassMirror.Flag.LOCAL), Mirror.reflectClass(_holder.local).flags) },
+            { Assertions.assertEquals(setOf(ClassMirror.Flag.FINAL, ClassMirror.Flag.SYNTHETIC), Mirror.reflectClass(_holder.lambda.javaClass).flags) },
             { Assertions.assertEquals(setOf(ClassMirror.Flag.ABSTRACT, ClassMirror.Flag.FINAL, ClassMirror.Flag.PRIMITIVE), Mirror.types.int.flags) },
             { testFlags<JObject1>() },
             { testFlags<EnumClass1>(ClassMirror.Flag.ENUM) }

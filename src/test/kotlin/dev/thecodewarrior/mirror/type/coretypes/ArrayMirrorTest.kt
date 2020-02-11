@@ -6,8 +6,7 @@ import dev.thecodewarrior.mirror.typeholders.TypeMirror_CoreTypesHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class ArrayMirrorTest: MirrorTestBase() {
-    private val holder = TypeMirror_CoreTypesHolder()
+internal class ArrayMirrorTest: MirrorTestBase(TypeMirror_CoreTypesHolder()) {
 
     @Test
     fun coreType_ofRawNotAnnotated_shouldReturnRaw() {

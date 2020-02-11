@@ -8,8 +8,7 @@ import dev.thecodewarrior.mirror.type.ArrayMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class ArrayMirrorTest: MirrorTestBase() {
-    val holder = TypeMirrorHolder()
+internal class ArrayMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun getRawClass_onArray_shouldReturnArrayType() {

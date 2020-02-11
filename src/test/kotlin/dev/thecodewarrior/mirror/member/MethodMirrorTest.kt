@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class MethodMirrorTest : MirrorTestBase() {
-    val holder = MethodMirrorHolder()
+internal class MethodMirrorTest : MirrorTestBase(MethodMirrorHolder()) {
 
     @Test
     fun kCallable_withBridgeMethod_shouldReturnNull() {
