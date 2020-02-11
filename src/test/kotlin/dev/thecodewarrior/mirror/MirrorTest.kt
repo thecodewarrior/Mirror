@@ -14,12 +14,10 @@ import java.lang.reflect.AnnotatedArrayType
 internal class MirrorTest: MirrorTestBase() {
 
     @Test
-    @DisplayName("newAnnotation delegates to an external tested library")
-    fun newAnnotation_needsNoTests() {
+    fun newAnnotation_isExternalLibrary() {
     }
 
     @Test
-    @DisplayName("newAnnotation with incorrect data should throw")
     fun newAnnotation_withIncorrectData_shouldThrow() {
         assertThrows<AnnotationFormatException> {
             Mirror.newAnnotation<AnnotationWithParameter>("foo" to "invalid")

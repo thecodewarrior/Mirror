@@ -13,21 +13,18 @@ import org.junit.jupiter.api.assertThrows
 
 internal class EnclosingExecutableTest: MirrorTestBase() {
     @Test
-    @DisplayName("Getting the enclosing method of a root class should return null")
     fun enclosingExecutable_ofRootClass_shouldReturnNull() {
         val clazz = Mirror.reflectClass(OuterClass1::class.java)
         assertNull(clazz.enclosingExecutable)
     }
 
     @Test
-    @DisplayName("Getting the enclosing executable of an inner class should return null")
     fun enclosingExecutable_ofInnerClass_shouldReturnNull() {
         val clazz = Mirror.reflectClass(OuterClass1.InnerClass::class.java)
         assertNull(clazz.enclosingExecutable)
     }
 
     @Test
-    @DisplayName("Getting the enclosing executable of a local class should return the enclosing method")
     fun enclosingExecutable_ofLocalClass_shouldReturnEnclosingMethod() {
         class LocalClass
         val clazz = Mirror.reflectClass(LocalClass::class.java)
@@ -36,7 +33,6 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Getting the enclosing method of a local class in a constructor should return the enclosing constructor")
     fun enclosingExecutable_ofConstructorLocalClass_shouldReturnEnclosingConstructor() {
         class ConstructorHolder {
             init {
@@ -50,8 +46,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("The type of local class members should correctly reference the enclosing method's type parameters by identity")
-    fun <T: Any> localClassUsingMethodTypeParameter() {
+    fun <T: Any> typeParameters_inLocalClass_shouldReferenceMethodTypeParameters() {
         class LocalClass {
             lateinit var foo: T
         }
@@ -61,8 +56,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("The type of local class members should be specialized when specializing a local class in a generic method")
-    fun <T: Any> localClassUsingSpecializedMethodTypeParameter() {
+    fun <T: Any> memberTypes_ofLocalClass_shouldReferenceMethodTypeParameters() {
         class LocalClass {
             lateinit var foo: T
         }
@@ -72,8 +66,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Specializing a class with the wrong enclosing executable should throw")
-    fun specializingWithWrongExecutable() {
+    fun specializeClass_withWrongEnclosingExecutable_shouldThrow() {
         class LocalClass
         val clazz = Mirror.reflectClass<LocalClass>()
         val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("toString")[0]
@@ -83,8 +76,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Specializing a root class for an enclosing executable should throw")
-    fun specializingRootClass() {
+    fun specializeRootClass_withExecutable_shouldThrow() {
         val clazz = Mirror.reflectClass<Object1>()
         val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("toString")[0]
         assertThrows<InvalidSpecializationException> {
@@ -93,8 +85,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Specializing a root class for an enclosing executable should throw")
-    fun specializingRootClassForNull() {
+    fun specializingRootClass_withNullExecutable_shouldReturnSameClass() {
         val clazz = Mirror.reflectClass<Object1>()
         assertSame(clazz, clazz.withEnclosingExecutable(null))
     }

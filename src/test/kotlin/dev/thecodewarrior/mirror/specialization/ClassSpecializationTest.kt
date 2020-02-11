@@ -10,14 +10,12 @@ import dev.thecodewarrior.mirror.testsupport.assertSameList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class ClassSpecializationTest: MirrorTestBase() {
     @Test
-    @DisplayName("Specializing generic type should return mirror with new type parameters and correct value for raw")
-    fun basicSpecialization() {
+    fun specialize_withGenericType_shouldReturnMirrorWithNewParametersAndCorrectRaw() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
         val specialized = genericType.withTypeArguments(specializeWith)
@@ -28,7 +26,6 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Specializing type with zero arguments should return the raw class")
     fun specialize_withZeroArgumentCount_shouldReturnRaw() {
         val genericType = Mirror.reflectClass<GenericObject1<Object1>>()
         assertEquals(Mirror.reflectClass(GenericObject1::class.java), genericType.withTypeArguments())
@@ -36,7 +33,6 @@ internal class ClassSpecializationTest: MirrorTestBase() {
 
 
     @Test
-    @DisplayName("Specializing type with wrong number of arguments should throw InvalidSpecializationException")
     fun specialize_withWrongArgumentCount_shouldThrow() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith = Mirror.reflectClass<Object1>()
@@ -46,21 +42,18 @@ internal class ClassSpecializationTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Specializing a type with its own type parameters should return the raw type")
     fun specialize_withOwnTypeParameters_shouldReturnRawType() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         assertSame(genericType, genericType.withTypeArguments(genericType.typeParameters[0]))
     }
 
     @Test
-    @DisplayName("Specializing a non-generic type with no type arguments should return the raw type")
     fun specialize_nonGenericWithNoArguments_shouldReturnRawType() {
         val nonGenericType = Mirror.reflectClass(Object1::class.java)
         assertSame(nonGenericType, nonGenericType.withTypeArguments())
     }
 
     @Test
-    @DisplayName("Re-specializing a type that has already been specialized shouldn't throw an exception")
     fun specialize_withAlreadySpecializedType_shouldHaveSameRaw() {
         val genericType = Mirror.reflectClass(GenericObject1::class.java)
         val specializeWith1 = Mirror.reflectClass<Object1>()

@@ -10,7 +10,6 @@ import dev.thecodewarrior.mirror.testsupport.assertSetEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class FieldMirrorTest: MirrorTestBase() {
@@ -22,8 +21,7 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("Reflecting a field should return a field mirror with the correct name and type")
-    fun reflectingBasicField() {
+    fun reflect_withField_shouldHaveCorrectNameAndType() {
         class FieldHolder(
             @JvmField
             var field: String
@@ -51,8 +49,7 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("The access levels of fields should be correctly mapped and stored")
-    fun field_visibility() {
+    fun access_ofFields_shouldBeCorrect() {
         val baseType = Mirror.reflectClass<FieldVisibilityTestClass>()
         assertEquals(Modifier.Access.PUBLIC, baseType.getPublicField("publicField").access)
         assertEquals(Modifier.Access.DEFAULT, baseType.getPublicField("defaultField").access)
@@ -61,7 +58,7 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    fun field_flags() {
+    fun modifiers_ofFields_shouldBeCorrect() {
         val baseType = Mirror.reflectClass<FieldFlagTestClass>()
         fun test(name: String, static: Boolean, volatile: Boolean, transient: Boolean) {
             val field = baseType.getPublicField(name)
@@ -73,8 +70,7 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("A field that has no annotations should have an empty annotations list")
-    fun nonAnnotatedField() {
+    fun annotations_withNonAnnotatedField_shouldReturnNoAnnotations() {
         class FieldHolder {
             val field: String? = null
         }
@@ -83,8 +79,7 @@ internal class FieldMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("A field that has annotations should have an annotations list containing those annotations")
-    fun annotatedField() {
+    fun annotations_withAnnotatedField_shouldReturnAnnotations() {
         class FieldHolder {
             @field:Annotation1
             @field:AnnotationArg1(arg = 1)

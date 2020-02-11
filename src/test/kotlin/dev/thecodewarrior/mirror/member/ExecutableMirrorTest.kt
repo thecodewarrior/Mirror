@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import java.lang.reflect.Method
@@ -114,7 +113,6 @@ internal class ExecutableMirrorTest: MirrorTestBase() {
     }
 
     @Test
-    @DisplayName("A void method with unnamed parameters should have corresponding parameter mirrors with null names")
     fun parameters_withNoBytecodeNames_shouldHaveNullNames() {
         val method = Mirror.reflect(NoParamNames::noNames.m)
         assertEquals(listOf(
