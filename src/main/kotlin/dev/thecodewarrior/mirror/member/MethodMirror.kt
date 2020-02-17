@@ -1,12 +1,14 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.coretypes.MethodOverrideTester
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.Method
+import java.util.LinkedList
 import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.functions
@@ -82,9 +84,39 @@ class MethodMirror internal constructor(
         MethodHandleHelper.wrapperForStaticMethod(java)
     }
 
+    /**
+     * Returns the method this method overrides, if any. If this method overrides a method which itself is an override,
+     * this will return the method this directly overrides, not the root method.
+     */
+    @Untested
+    val overrides: MethodMirror? by lazy {
+        generateSequence(declaringClass.superclass) { it.superclass }.forEach { cls ->
+            cls.declaredMethods.find { this.overrides(it) }?.also { return@lazy it }
+        }
+
+        val interfaces = LinkedList<ClassMirror>()
+        generateSequence(declaringClass.superclass) { it.superclass }.forEach { cls ->
+            interfaces.addAll(cls.interfaces)
+            while(interfaces.isNotEmpty()) {
+                val iface = interfaces.pop()
+                iface.declaredMethods.find { this.overrides(it) }?.also { return@lazy it }
+                interfaces.addAll(iface.interfaces)
+            }
+        }
+
+        return@lazy null
+    }
+
+    /**
+     * Returns true if this method overrides the passed method
+     */
+    @Untested
+    fun overrides(other: MethodMirror): Boolean {
+        return MethodOverrideTester.isOverridenBy(other.java, java)
+    }
+
     @Suppress("UNCHECKED_CAST")
     @Throws(Throwable::class)
-    @Untested("tests use `invoke` operator. They should avoid that level of indirection")
     fun <T> call(receiver: Any?, vararg args: Any?): T {
         if(isStatic) {
             if(receiver != null)

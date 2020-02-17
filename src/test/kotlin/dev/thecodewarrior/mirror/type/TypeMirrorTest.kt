@@ -18,7 +18,6 @@ import dev.thecodewarrior.mirror.typeToken
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalArgumentException
@@ -28,6 +27,11 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     fun reflect_withClass_shouldReturnClassMirror() {
         assertInstanceOf<ClassMirror>(Mirror.reflect(Any::class.java))
+    }
+
+    @Test
+    fun reflect_withClassTypeToken_shouldReturnClassMirror() {
+        assertInstanceOf<ClassMirror>(Mirror.reflect(TypeMirrorHolder.classToken))
     }
 
     @Test
@@ -111,14 +115,12 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of an unannotated type should return an empty list")
     fun getAnnotation_ofUnannotatedType_shouldReturnEmptyList() {
         val type = Mirror.reflect(holder["Object1"])
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
-    @DisplayName("Getting the annotations of type with one annotation should return that annotation")
     fun getAnnotation_ofAnnotatedType_shouldReturnAnnotation() {
         val type = Mirror.reflect(holder["@TypeAnnotation1 Object1"])
         assertEquals(listOf(
@@ -127,7 +129,6 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of a type with multiple annotations should return the correct annotations")
     fun getAnnotation_ofMultiAnnotatedType_shouldReturnAnnotations() {
         val type = Mirror.reflect(holder["@TypeAnnotation1 @TypeAnnotationArg1(arg = 1) Object1"])
         assertEquals(listOf(
@@ -137,7 +138,6 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of an annotated type parameter should return the correct annotations")
     fun getAnnotation_ofAnnotatedTypeParameter_shouldReturnAnnotations() {
         val outer = Mirror.reflect(holder["GenericObject1<@TypeAnnotation1 Object1>"]) as ClassMirror
         val type = outer.typeParameters[0]
@@ -147,7 +147,6 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of an annotated array component should return the correct annotations")
     fun getAnnotation_ofAnnotatedArrayComponent_shouldReturnAnnotations() {
         val array = Mirror.reflect(holder["@TypeAnnotation1 Object[]"]) as ArrayMirror
         val type = array.component
@@ -157,14 +156,12 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of an array with an annotated component should return an empty list")
     fun getAnnotation_ofArrayWithAnnotatedComponent_shouldReturnEmptyList() {
         val type = Mirror.reflect(holder["@TypeAnnotation1 Object[]"]) as ArrayMirror
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
-    @DisplayName("Getting the annotations of an annotated array with an unannotated component should return the correct annotations")
     fun getAnnotation_ofAnnotatedArrayWithUnannotatedComponent_shouldReturnAnnotations() {
         val type = Mirror.reflect(holder["Object @TypeAnnotation1[]"]) as ArrayMirror
         assertEquals(listOf(
@@ -210,7 +207,6 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the raw type of an annotated array with an generic component should should return the correct erasure")
     fun raw_ofAnnotatedArrayWithGenericComponent_shouldReturnErasure() {
         val type = Mirror.reflect(holder["@TypeAnnotation1 GenericObject1<Object1>[]"]) as ArrayMirror
         assertEquals(
@@ -219,7 +215,6 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of the unannotated component of an annotated array should return an empty list")
     fun getAnnotation_ofUnannotatedComponentOfAnnotatedArray_shouldReturnEmptyList() {
         val array = Mirror.reflect(holder["Object @TypeAnnotation1[]"]) as ArrayMirror
         val type = array.component
@@ -227,14 +222,12 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Getting the annotations of the unannotated component of an annotated array should return an empty list")
     fun getAnnotation_ofAnnotatedWildcard_shouldReturnAnnotations() {
         val wildcard = Mirror.reflectClass(holder["List<@TypeAnnotation1 ? extends Object1>"]).typeParameters[0]
         assertEquals(listOf(Mirror.newAnnotation<TypeAnnotation1>()), wildcard.typeAnnotations)
     }
 
     @Test
-    @DisplayName("Reflecting a self-referential type should not infinitely recurse")
     fun reflect_onSelfReferentialType_shouldNotRecurse() {
         class TestType<T: TestType<T>>: GenericObject1<TestType<T>>()
 
@@ -242,7 +235,6 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("Reflecting a class with looping generic inheritance should not infinitely recurse")
     fun reflect_withLoopingGenericInheritance_shouldNotRecurse() {
         open class ParentType<T>
         class ChildClass: ParentType<ChildClass>()

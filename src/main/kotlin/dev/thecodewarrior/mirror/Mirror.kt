@@ -24,7 +24,6 @@ import java.lang.reflect.Type
 /**
  * The central class used to retrieve mirrors of Core Reflection objects
  */
-@Untested("there should be tests to ensure all the different `reflect` methods agree")
 object Mirror {
     // these instances are replaced by the unit tests using reflection. `types` isn't a `var` with a private setter
     // because if it was IDEA would mark it as mutable with an underline, which is incorrect and gets irritating
@@ -81,7 +80,6 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
      */
     @JvmStatic
-    @Untested
     fun reflectClass(token: TypeToken<*>): ClassMirror {
         return reflectClass(token.getAnnotated())
     }
@@ -158,7 +156,6 @@ object Mirror {
      * Gets the method or constructor mirror representing the passed method or constructor
      */
     @JvmStatic
-    @Untested
     fun reflect(executable: Executable): ExecutableMirror {
         return cache.executables.reflect(executable)
     }

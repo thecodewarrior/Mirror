@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import java.lang.reflect.Executable
 import java.lang.reflect.Method
 
 internal class ExecutableMirrorTest: MirrorTestBase(ExecutableMirrorHolder()) {
@@ -39,6 +40,18 @@ internal class ExecutableMirrorTest: MirrorTestBase(ExecutableMirrorHolder()) {
     fun name_withName_shouldReturnMethodName() {
         val method = Mirror.reflect(holder.m("void name()"))
         assertEquals("name", method.name)
+    }
+
+    @Test
+    fun reflectExecutable_withConstructor_shouldReturnSameAsReflectConstructor() {
+        val constructor = holder.getConstructor("<init>()")
+        assertSame(Mirror.reflect(constructor), Mirror.reflect(constructor as Executable))
+    }
+
+    @Test
+    fun reflectExecutable_withMethod_shouldReturnSameAsReflectMethod() {
+        val constructor = holder.m("void name()")
+        assertSame(Mirror.reflect(constructor), Mirror.reflect(constructor as Executable))
     }
 
     @Test

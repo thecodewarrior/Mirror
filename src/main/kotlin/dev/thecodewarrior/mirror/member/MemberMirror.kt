@@ -11,7 +11,6 @@ abstract class MemberMirror internal constructor(
 ) {
     abstract val java: Member
 
-    @Untested("only very basic tests during specialization")
     val declaringClass: ClassMirror by lazy {
         _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
     }

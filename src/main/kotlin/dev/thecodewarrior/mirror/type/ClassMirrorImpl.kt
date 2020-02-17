@@ -13,6 +13,7 @@ import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.checkedCast
+import dev.thecodewarrior.mirror.utils.unique
 import dev.thecodewarrior.mirror.utils.uniqueBy
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedType
@@ -238,44 +239,23 @@ internal class ClassMirrorImpl internal constructor(
         }.unmodifiableView()
     }
 
+    override val inheritedMethods: List<MethodMirror> by lazy {
+        return@lazy (superclass?.inheritedMethods.orEmpty() + interfaces.flatMap { it.inheritedMethods })
+            .filter { s ->
+                (s.access == Modifier.Access.PUBLIC
+                    || s.access == Modifier.Access.PROTECTED
+                    || s.access == Modifier.Access.DEFAULT) &&
+                    declaredMethods.none { it.overrides(s) }
+            }
+            .unique().unmodifiableView()
+    }
+
     override val publicMethods: List<MethodMirror> by lazy {
         java.methods.map { this.getMethod(it) }.unmodifiableView()
     }
 
     override val methods: List<MethodMirror> by lazy {
-        val allInterfaces = mutableSetOf<Class<*>>()
-        val allClasses = mutableSetOf<Class<*>>()
-
-        var current: Class<*>? = this.java
-        while(current != null) {
-            allClasses.add(current)
-            allInterfaces.addAll(current.interfaces)
-            current = current.superclass
-        }
-
-        // java.lang.Class.MethodArray#matchesNameAndDescriptor
-        fun matchesNameAndDescriptor(m1: Method, m2: Method) =
-            m1.returnType == m2.returnType &&
-                m1.name == m2.name &&
-                m1.parameterTypes!!.contentEquals(m2.parameterTypes)
-
-        val allMethodsUnfiltered = mutableListOf<Method>()
-
-        allClasses.forEach { clazz ->
-            allMethodsUnfiltered.addAll(clazz.declaredMethods)
-        }
-        allInterfaces.forEach { iface ->
-            allMethodsUnfiltered.addAll(iface.declaredMethods.filter { !JvmModifier.isStatic(it.modifiers) })
-        }
-
-        val allMethods = mutableListOf<Method>()
-
-        allMethodsUnfiltered.forEach { method ->
-            if(allMethods.none { matchesNameAndDescriptor(method, it) })
-                allMethods.add(method)
-        }
-
-        return@lazy allMethods.map { this.getMethod(it) }.unmodifiableView()
+        return@lazy (declaredMethods + inheritedMethods).unmodifiableView()
     }
 
     override fun getMethod(other: MethodMirror): MethodMirror = getMethod(other.java)
@@ -308,7 +288,7 @@ internal class ClassMirrorImpl internal constructor(
             //todo: this shouldn't return private methods. write a test to fail this.
             methods.addAll(declaredMethods.filter { it.name == name })
             //todo: this should return methods from interfaces. write a test to fail this.
-            methods.addAll(superclass?.findPublicMethods(name) ?: emptyList())
+            methods.addAll(superclass?.findPublicMethods(name).orEmpty())
             return@getOrPut methods.unmodifiableView()
         }
     }
@@ -319,7 +299,7 @@ internal class ClassMirrorImpl internal constructor(
             val methods = mutableListOf<MethodMirror>()
             methods.addAll(declaredMethods.filter { it.name == name })
             //todo: this should return methods from interfaces. write a test to fail this.
-            methods.addAll(superclass?.findMethods(name) ?: emptyList())
+            methods.addAll(superclass?.findMethods(name).orEmpty())
             return@getOrPut methods.unmodifiableView()
         }
     }
@@ -358,7 +338,7 @@ internal class ClassMirrorImpl internal constructor(
     }
     override val publicFields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
     override val fields: List<FieldMirror> by lazy {
-        (declaredFields + (superclass?.fields ?: emptyList())).uniqueBy { it.name }.unmodifiableView()
+        (declaredFields + superclass?.fields.orEmpty()).uniqueBy { it.name }.unmodifiableView()
     }
 
     override fun getField(other: FieldMirror): FieldMirror = getField(other.java)
@@ -453,7 +433,7 @@ internal class ClassMirrorImpl internal constructor(
     override val memberClasses: List<ClassMirror> by lazy {
         sequenceOf(
             declaredMemberClasses,
-            superclass?.memberClasses ?: emptyList(),
+            superclass?.memberClasses.orEmpty(),
             *interfaces.map { it.memberClasses }.toTypedArray()
         ).flatten().toList().uniqueBy { it.simpleName }.unmodifiableView()
     }

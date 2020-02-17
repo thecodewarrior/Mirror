@@ -1,5 +1,6 @@
 package dev.thecodewarrior.mirror.typeholders;
 
+import dev.thecodewarrior.mirror.TypeToken;
 import dev.thecodewarrior.mirror.annotations.TypeAnnotation1;
 import dev.thecodewarrior.mirror.annotations.TypeAnnotationArg1;
 import dev.thecodewarrior.mirror.testsupport.*;
@@ -57,4 +58,6 @@ public class TypeMirrorHolder extends AnnotatedTypeHolder {
         @ElementHolder("int field")
         int field = 0;
     }
+
+    public static TypeToken classToken = new TypeToken<Object1>() {};
 }

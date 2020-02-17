@@ -372,6 +372,15 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     abstract val declaredMethods: List<MethodMirror>
 
     /**
+     * The methods [inherited](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8) from the
+     * supertypes of this class.
+     *
+     * **Note: this list is immutable**
+     */
+    @Untested
+    abstract val inheritedMethods: List<MethodMirror>
+
+    /**
      * The public methods declared in this class and inherited from its superclasses.
      *
      * **Note: this list is immutable**
@@ -381,8 +390,8 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     abstract val publicMethods: List<MethodMirror>
 
     /**
-     * The methods declared in this class and inherited from its superclasses. Since private methods can't be overridden,
-     * there may be multiple methods with the same signature in this list.
+     * The methods declared in this class and inherited from its superclasses. Essentially the methods that would be
+     * visible inside this class. This list will include hidden public static methods, since they can't be overridden.
      *
      * **Note: This list is immutable.**
      */

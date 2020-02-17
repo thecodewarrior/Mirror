@@ -116,12 +116,12 @@ abstract class ExecutableMirror internal constructor(
         return cache.executables.specialize(raw, newSpecialization)
     }
 
-    override fun withDeclaringClass(type: ClassMirror?): ExecutableMirror {
-        if(type != null && type.java != java.declaringClass)
-            throw InvalidSpecializationException("Invalid declaring class $type. " +
+    override fun withDeclaringClass(enclosing: ClassMirror?): ExecutableMirror {
+        if(enclosing != null && enclosing.java != java.declaringClass)
+            throw InvalidSpecializationException("Invalid declaring class $enclosing. " +
                 "$this is declared in ${java.declaringClass}")
 //        if(type == raw.declaringClass) return raw
-        val newSpecialization = this.specialization?.copy(enclosing = type) ?: ExecutableSpecialization(type, null)
+        val newSpecialization = this.specialization?.copy(enclosing = enclosing) ?: ExecutableSpecialization(enclosing, null)
         return cache.executables.specialize(raw, newSpecialization)
     }
 
