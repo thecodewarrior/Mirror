@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.testsupport
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.DynamicTest
+import java.lang.reflect.InvocationTargetException
 import java.net.URI
 
 /**
@@ -48,7 +49,11 @@ object FlatTestScanner {
 
                     m.isAccessible = true
                     DynamicTest.dynamicTest(name, URI("method:${clazz.canonicalName}#${m.name}")) {
-                        m.invoke(instance)
+                        try {
+                            m.invoke(instance)
+                        } catch(e: InvocationTargetException) {
+                            e.cause?.also { throw it } // unwrap assertion failures
+                        }
                     }
                 }
             }
@@ -62,7 +67,11 @@ object FlatTestScanner {
                 val method = it.getDeclaredMethod("run")
                 method.isAccessible = true
                 DynamicTest.dynamicTest(name, URI("method:${it.canonicalName}#run")) {
-                    method.invoke(instance)
+                    try {
+                        method.invoke(instance)
+                    } catch(e: InvocationTargetException) {
+                        e.cause?.also { throw it } // unwrap assertion failures
+                    }
                 }
             }
         return (testMethods + testClasses).iterator()

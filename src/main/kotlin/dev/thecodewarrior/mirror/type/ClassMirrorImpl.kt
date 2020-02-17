@@ -240,7 +240,7 @@ internal class ClassMirrorImpl internal constructor(
     }
 
     override val inheritedMethods: List<MethodMirror> by lazy {
-        return@lazy (superclass?.inheritedMethods.orEmpty() + interfaces.flatMap { it.inheritedMethods })
+        return@lazy (superclass?.methods.orEmpty() + interfaces.flatMap { it.methods })
             .filter { s ->
                 (s.access == Modifier.Access.PUBLIC
                     || s.access == Modifier.Access.PROTECTED
