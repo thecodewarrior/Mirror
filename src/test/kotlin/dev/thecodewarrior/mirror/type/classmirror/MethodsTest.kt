@@ -9,7 +9,7 @@ import dev.thecodewarrior.mirror.testsupport.FlatTest
 import dev.thecodewarrior.mirror.testsupport.FlatTestScanner
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.TestCompiler
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
 import dev.thecodewarrior.mirror.typeholders.classmirror.MethodsHolder
 import dev.thecodewarrior.mirror.utils.Untested
@@ -82,25 +82,22 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
     }
 
     @FlatTest
-    class inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate: inheritedMethods_base(
-    ) {
+    class inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate: inheritedMethods_base() {
         fun run() {
-            val classes = TestCompiler()
-                .add("X", """
-                    public class X {
-                        public static class Inner {}
-                        public void publicMethod() {}
-                        protected void protectedMethod() {}
-                        void packagePrivateMethod() {}
-                        private void privateMethod() {}
-                    }
-                """)
-                .add("Y", """
-                    public class Y extends X {}
-                """)
-                .compile()
-            val X = classes["X"]
-            val Y = classes["Y"]
+            val classes = TestSources()
+            val X by classes.add("X", """
+                public class X {
+                    public static class Inner {}
+                    public void publicMethod() {}
+                    protected void protectedMethod() {}
+                    void packagePrivateMethod() {}
+                    private void privateMethod() {}
+                }
+            """)
+            val Y by classes.add("Y", """
+                public class Y extends X {}
+            """)
+            classes.compile()
 
             assertSameSet(_any + listOf(
                 Mirror.reflect(X.m("publicMethod")),
@@ -112,25 +109,22 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
 
     @FlatTest
-    class inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage: inheritedMethods_base(
-    ) {
+    class inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage: inheritedMethods_base() {
         fun run() {
-            val classes = TestCompiler()
-                .add("X", """
-                    public class X {
-                        public static class Inner {}
-                        public void publicMethod() {}
-                        protected void protectedMethod() {}
-                        void packagePrivateMethod() {}
-                        private void privateMethod() {}
-                    }
-                """)
-                .add("y.Y", """
-                    public class Y extends X {}
-                """)
-                .compile()
-            val X = classes["X"]
-            val Y = classes["y.Y"]
+            val classes = TestSources()
+            val X by classes.add("X", """
+                public class X {
+                    public static class Inner {}
+                    public void publicMethod() {}
+                    protected void protectedMethod() {}
+                    void packagePrivateMethod() {}
+                    private void privateMethod() {}
+                }
+            """)
+            val Y by classes.add("y.Y", """
+                public class Y extends X {}
+            """)
+            classes.compile()
 
             assertSameSet(_any + listOf(
                 Mirror.reflect(X.m("publicMethod")),
