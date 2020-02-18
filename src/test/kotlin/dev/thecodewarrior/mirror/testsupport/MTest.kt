@@ -2,28 +2,21 @@ package dev.thecodewarrior.mirror.testsupport
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
-import dev.thecodewarrior.mirror.joor.Compile
-import dev.thecodewarrior.mirror.joor.CompileOptions
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.lang.IllegalArgumentException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
-import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod
 
 @Suppress("TestFunctionName")
 abstract class MTest {
+
     /** Get a Class instance */
     protected inline fun <reified T> _c(): Class<*> = T::class.java
-    /** Get a Method from this class */
-    protected fun _m(name: String, vararg parameters: Class<*>): Method = this.javaClass.m(name, *parameters)
-    /** Get a Field from this class */
-    protected fun _f(name: String): Field = this.javaClass.f(name)
 
     /**
      * Get the specified method from this class. If no parameters are specified and no zero-parameter method exists, the
@@ -66,39 +59,6 @@ abstract class MTest {
 
     /** Get the specified field from this class. */
     protected fun KClass<*>.f(name: String): Field = this.java.getDeclaredField(name)
-
-    /**
-     * The root package for test classes. Every test class compiled using [compile] will be placed relative to this
-     * package.
-     */
-    val testClassRoot: String = "testgen." + javaClass.canonicalName
-
-    /**
-     * Compiles and returns a class at runtime. This will return the existing class, if it exists.
-     *
-     * Compiled classes are placed relative to [testClassRoot], and the contents of this test are imported using a
-     * wildcard import. Any occurrences of `%root%` in the code will be replaced with the [testClassRoot].
-     *
-     * @param targetPackage The relative package for this class, or an empty string if this class should be at the root.
-     * @param name The name of the class to extract
-     * @param code The code to compile. This should not include the package declaration.
-     */
-    protected fun compile(targetPackage: String, name: String, code: String): Compilation {
-        val fullPackage = if(targetPackage.isEmpty()) testClassRoot else "$testClassRoot.$targetPackage"
-        val reflect = Compile.compile("$fullPackage.$name",
-            "package $fullPackage;\nimport ${javaClass.canonicalName}.*;\n" + code.replace("%root%", testClassRoot),
-            CompileOptions()
-        )
-        return Compilation(reflect)
-    }
-
-    protected fun compile(name: String, code: String): Compilation = compile("", name, code)
-
-    protected inner class Compilation(val value: Class<*>) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Class<*> {
-            return value
-        }
-    }
 
     @BeforeEach
     fun beforeEachTest() {

@@ -8,8 +8,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -19,8 +17,7 @@ import java.util.Map.Entry;
 // Licensed under Apache-2.0
 // Source: https://github.com/jOOQ/jOOR
 // Modifications:
-// - Added `CACHED_LOOKUP_CONSTRUCTOR` from org.joor.Reflect
-// - Added support for multiple files
+// - Added support for multiple files by creating a classloader for each call
 
 /**
  * A utility that simplifies in-memory compilation of new classes.
@@ -28,71 +25,57 @@ import java.util.Map.Entry;
  * @author Lukas Eder
  */
 public class Compile {
-    public static Class<?> compile(String className, String content, CompileOptions compileOptions) {
+    public static RuntimeClassLoader compile(Map<String, String> code, CompileOptions compileOptions) {
         Lookup lookup = MethodHandles.lookup();
         ClassLoader cl = lookup.lookupClass().getClassLoader();
 
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
         try {
-            return cl.loadClass(className);
-        }
-        catch (ClassNotFoundException ignore) {
-            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
 
-            try {
-                ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
+            List<CharSequenceJavaFileObject> files = new ArrayList<>();
+            for(Entry<String, String> entry : code.entrySet()) {
+                files.add(new CharSequenceJavaFileObject(entry.getKey(), entry.getValue()));
+            }
+            StringWriter out = new StringWriter();
 
-                List<CharSequenceJavaFileObject> files = new ArrayList<>();
-                files.add(new CharSequenceJavaFileObject(className, content));
-                StringWriter out = new StringWriter();
+            List<String> options = new ArrayList<>(compileOptions.options);
+            if (!options.contains("-classpath")) {
+                StringBuilder classpath = new StringBuilder();
+                String separator = System.getProperty("path.separator");
+                String prop = System.getProperty("java.class.path");
 
-                List<String> options = new ArrayList<>(compileOptions.options);
-                if (!options.contains("-classpath")) {
-                    StringBuilder classpath = new StringBuilder();
-                    String separator = System.getProperty("path.separator");
-                    String prop = System.getProperty("java.class.path");
+                if (prop != null && !"".equals(prop))
+                    classpath.append(prop);
 
-                    if (prop != null && !"".equals(prop))
-                        classpath.append(prop);
+                if (cl instanceof URLClassLoader) {
+                    for (URL url : ((URLClassLoader) cl).getURLs()) {
+                        if (classpath.length() > 0)
+                            classpath.append(separator);
 
-                    if (cl instanceof URLClassLoader) {
-                        for (URL url : ((URLClassLoader) cl).getURLs()) {
-                            if (classpath.length() > 0)
-                                classpath.append(separator);
-
-                            if ("file".equals(url.getProtocol()))
-                                classpath.append(new File(url.toURI()));
-                        }
+                        if ("file".equals(url.getProtocol()))
+                            classpath.append(new File(url.toURI()));
                     }
-
-                    options.addAll(Arrays.asList("-classpath", classpath.toString()));
                 }
 
-                CompilationTask task = compiler.getTask(out, fileManager, null, options, null, files);
-
-                if (!compileOptions.processors.isEmpty())
-                    task.setProcessors(compileOptions.processors);
-
-                task.call();
-
-                if (fileManager.isEmpty())
-                    throw new ReflectException("Compilation error: " + out);
-
-                Class<?> result = null;
-
-                // This works if we have private-access to the interfaces in the class hierarchy
-                if (CACHED_LOOKUP_CONSTRUCTOR != null && CACHED_DEFINECLASS_METHOD != null) {
-                    result = fileManager.loadAndReturnMainClass(className,
-                        (name, bytes) -> (Class<?>) CACHED_DEFINECLASS_METHOD.invoke(cl, name, bytes, 0, bytes.length));
-                }
-
-                return result;
+                options.addAll(Arrays.asList("-classpath", classpath.toString()));
             }
-            catch (ReflectException e) {
-                throw e;
-            }
-            catch (Exception e) {
-                throw new ReflectException("Error while compiling " + className, e);
-            }
+
+            CompilationTask task = compiler.getTask(out, fileManager, null, options, null, files);
+
+            if (!compileOptions.processors.isEmpty())
+                task.setProcessors(compileOptions.processors);
+
+            task.call();
+
+            if (fileManager.isEmpty())
+                throw new ReflectException("Compilation error: " + out);
+
+            return fileManager.createClassLoader(cl);
+        }
+        catch (Exception e) {
+            throw new ReflectException("Error while compiling classes", e);
         }
     }
 
@@ -150,33 +133,37 @@ public class Compile {
             return classes;
         }
 
-        Class<?> loadAndReturnMainClass(String mainClassName, ThrowingBiFunction<String, byte[], Class<?>> definer) throws Exception {
-            Class<?> result = null;
-
-            for (Entry<String, byte[]> entry : classes().entrySet()) {
-                Class<?> c = definer.apply(entry.getKey(), entry.getValue());
-                if (mainClassName.equals(entry.getKey()))
-                    result = c;
-            }
-
-            return result;
-        }
-
-        Map<String, Class<?>> loadAndReturnClasses(ThrowingBiFunction<String, byte[], Class<?>> definer) throws Exception {
-            Map<String, Class<?>> result = new HashMap<>();
-
-            for (Entry<String, byte[]> entry : classes().entrySet()) {
-                Class<?> c = definer.apply(entry.getKey(), entry.getValue());
-                result.put(entry.getKey(), c);
-            }
-
-            return result;
+        RuntimeClassLoader createClassLoader(ClassLoader parent) {
+            return new RuntimeClassLoader(parent, classes());
         }
     }
 
-    @FunctionalInterface
-    interface ThrowingBiFunction<T, U, R> {
-        R apply(T t, U u) throws Exception;
+    public static final class RuntimeClassLoader extends ClassLoader {
+        private final Map<String, byte[]> classes;
+        public final Set<String> classNames;
+
+        public RuntimeClassLoader(ClassLoader parent, Map<String, byte[]> classes) {
+            super(parent);
+            this.classes = classes;
+            this.classNames = Collections.unmodifiableSet(classes.keySet());
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            byte[] data = classes.get(name);
+            if(data != null) {
+                int i = name.lastIndexOf('.');
+                if (i != -1) {
+                    String pkgname = name.substring(0, i);
+                    // Check if package already loaded.
+                    if(getPackage(pkgname) == null) {
+                        definePackage(pkgname, null, null, null, null, null, null, null);
+                    }
+                }
+                return defineClass(name, data, 0, data.length);
+            }
+            throw new ClassNotFoundException(name);
+        }
     }
 
     static final class CharSequenceJavaFileObject extends SimpleJavaFileObject {
@@ -191,43 +178,6 @@ public class Compile {
         public CharSequence getCharContent(boolean ignoreEncodingErrors) {
             return content;
         }
-    }
-
-    // from org.joor.Reflect
-    static final Constructor<Lookup> CACHED_LOOKUP_CONSTRUCTOR;
-    static final Method CACHED_DEFINECLASS_METHOD;
-
-    static {
-        Constructor<MethodHandles.Lookup> result;
-
-        try {
-            result = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
-
-            if (!result.isAccessible())
-                result.setAccessible(true);
-        }
-        // Can no longer access the above in JDK 9
-        catch (Throwable ignore) {
-            result = null;
-        }
-
-        CACHED_LOOKUP_CONSTRUCTOR = result;
-    }
-
-    static {
-        Method result;
-
-        try {
-            result = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class);
-
-            if (!result.isAccessible())
-                result.setAccessible(true);
-        }
-        catch (Throwable ignore) {
-            result = null;
-        }
-
-        CACHED_DEFINECLASS_METHOD = result;
     }
 }
 

@@ -9,18 +9,14 @@ import dev.thecodewarrior.mirror.testsupport.FlatTest
 import dev.thecodewarrior.mirror.testsupport.FlatTestScanner
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.assertSameList
+import dev.thecodewarrior.mirror.testsupport.TestCompiler
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
 import dev.thecodewarrior.mirror.typeholders.classmirror.MethodsHolder
 import dev.thecodewarrior.mirror.utils.Untested
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import java.net.URI
 
+@Suppress("LocalVariableName")
 internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
     @TestFactory
     fun flat() = FlatTestScanner.scan(this)
@@ -38,7 +34,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
     fun publicMethods_shouldEqualCoreMethods() {}
 
 // abstract val inheritedMethods: List<MethodMirror> ============================================================================
-
 
     abstract class inheritedMethods_base: MTest() {
         /**
@@ -87,28 +82,59 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
     }
 
     @FlatTest
-    class inheritedMethods_withSuperclassMethods_shouldInheritCorrectMethods: inheritedMethods_base() {
-        val X by compile("X", """
-            public class X {
-                public static class Inner {}
-                public void publicMethod() {}
-                protected void protectedMethod() {}
-                void packagePrivateMethod() {}
-                private void privateMethod() {}
-            }
-        """.trimIndent())
-        val Y by compile("Y", """
-            public class Y {}
-        """.trimIndent())
-        val Y2 by compile("Y", """
-            public class Y {}
-        """.trimIndent())
-
+    class inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate: inheritedMethods_base(
+    ) {
         fun run() {
+            val classes = TestCompiler()
+                .add("X", """
+                    public class X {
+                        public static class Inner {}
+                        public void publicMethod() {}
+                        protected void protectedMethod() {}
+                        void packagePrivateMethod() {}
+                        private void privateMethod() {}
+                    }
+                """)
+                .add("Y", """
+                    public class Y extends X {}
+                """)
+                .compile()
+            val X = classes["X"]
+            val Y = classes["Y"]
+
             assertSameSet(_any + listOf(
-                X.m("publicMethod"),
-                X.m("protectedMethod"),
-                X.m("packagePrivateMethod")
+                Mirror.reflect(X.m("publicMethod")),
+                Mirror.reflect(X.m("protectedMethod")),
+                Mirror.reflect(X.m("packagePrivateMethod"))
+            ), Mirror.reflectClass(Y).inheritedMethods)
+        }
+    }
+
+
+    @FlatTest
+    class inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage: inheritedMethods_base(
+    ) {
+        fun run() {
+            val classes = TestCompiler()
+                .add("X", """
+                    public class X {
+                        public static class Inner {}
+                        public void publicMethod() {}
+                        protected void protectedMethod() {}
+                        void packagePrivateMethod() {}
+                        private void privateMethod() {}
+                    }
+                """)
+                .add("y.Y", """
+                    public class Y extends X {}
+                """)
+                .compile()
+            val X = classes["X"]
+            val Y = classes["y.Y"]
+
+            assertSameSet(_any + listOf(
+                Mirror.reflect(X.m("publicMethod")),
+                Mirror.reflect(X.m("protectedMethod"))
             ), Mirror.reflectClass(Y).inheritedMethods)
         }
     }
