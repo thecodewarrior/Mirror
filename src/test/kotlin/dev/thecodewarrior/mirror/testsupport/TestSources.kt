@@ -45,10 +45,3 @@ class TestSources {
         }
     }
 }
-
-/**
- * The result of a [TestSources]
- */
-class TestClasses() {
-
-}

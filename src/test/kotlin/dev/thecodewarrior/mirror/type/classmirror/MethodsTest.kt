@@ -13,13 +13,12 @@ import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
 import dev.thecodewarrior.mirror.typeholders.classmirror.MethodsHolder
 import dev.thecodewarrior.mirror.utils.Untested
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 
 @Suppress("LocalVariableName")
 internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
-    @TestFactory
-    fun flat() = FlatTestScanner.scan(this)
 
     @Untested // just so it shows up in searches
     @Test
@@ -35,55 +34,48 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
 // abstract val inheritedMethods: List<MethodMirror> ============================================================================
 
-    abstract class inheritedMethods_base: MTest() {
+    @Nested
+    inner class InheritedMethods {
         /**
          * Easy access to the list of methods inherited from [Any].
          */
-        val _any: List<MethodMirror> get() = Mirror.reflectClass<Any>().declaredMethods.filter {
-            it.access == Modifier.Access.PROTECTED || it.access == Modifier.Access.PUBLIC
+        val _any: List<MethodMirror>
+            get() = Mirror.reflectClass<Any>().declaredMethods.filter {
+                it.access == Modifier.Access.PROTECTED || it.access == Modifier.Access.PUBLIC
+            }
+
+        @Test
+        fun inheritedMethods_ofObject_shouldBeEmpty() {
+            assertSameSet(emptyList<MethodMirror>(), Mirror.reflectClass<Any>().inheritedMethods)
         }
 
-        inline fun <reified T> inherited() = Mirror.reflectClass<T>().inheritedMethods
-    }
-
-    @FlatTest
-    class inheritedMethods_ofObject_shouldBeEmpty: inheritedMethods_base() {
-        fun run() {
-            assertSameSet(emptyList<MethodMirror>(), inherited<Any>())
+        @Test
+        fun inheritedMethods_ofInterface_shouldBeEmpty() {
+            val classes = TestSources()
+            val I by classes.add("I", "interface I {}")
+            classes.compile()
+            assertSameSet(emptyList<MethodMirror>(), Mirror.reflectClass(I).inheritedMethods)
         }
-    }
 
-    @FlatTest
-    class inheritedMethods_ofInterface_shouldBeEmpty: inheritedMethods_base() {
-        interface I
-
-        fun run() {
-            assertSameSet(emptyList<MethodMirror>(), inherited<I>())
+        @Test
+        fun inheritedMethods_ofClass_shouldBeObjectMethods() {
+            val classes = TestSources()
+            val X by classes.add("X", "class X {}")
+            classes.compile()
+            assertSameSet(_any, Mirror.reflectClass(X).inheritedMethods)
         }
-    }
 
-    @FlatTest
-    class inheritedMethods_ofClass_shouldBeObjectMethods: inheritedMethods_base() {
-        class X
-
-        fun run() {
-            assertSameSet(_any, Mirror.reflectClass<X>().inheritedMethods)
+        @Test
+        fun inheritedMethods_withEmptySuperclass_shouldBeObjectMethods() {
+            val classes = TestSources()
+            val X by classes.add("X", "class X {}")
+            val Y by classes.add("Y", "class Y {}")
+            classes.compile()
+            assertSameSet(_any, Mirror.reflectClass(Y).inheritedMethods)
         }
-    }
 
-    @FlatTest
-    class inheritedMethods_withEmptySuperclass_shouldBeObjectMethods: inheritedMethods_base() {
-        open class X
-        class Y: X()
-
-        fun run() {
-            assertSameSet(_any, Mirror.reflectClass<Y>().inheritedMethods)
-        }
-    }
-
-    @FlatTest
-    class inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate: inheritedMethods_base() {
-        fun run() {
+        @Test
+        fun inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate() {
             val classes = TestSources()
             val X by classes.add("X", """
                 public class X {
@@ -93,10 +85,10 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
                     void packagePrivateMethod() {}
                     private void privateMethod() {}
                 }
-            """)
+            """.trimIndent())
             val Y by classes.add("Y", """
                 public class Y extends X {}
-            """)
+            """.trimIndent())
             classes.compile()
 
             assertSameSet(_any + listOf(
@@ -105,12 +97,9 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
                 Mirror.reflect(X.m("packagePrivateMethod"))
             ), Mirror.reflectClass(Y).inheritedMethods)
         }
-    }
 
-
-    @FlatTest
-    class inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage: inheritedMethods_base() {
-        fun run() {
+        @Test
+        fun inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage() {
             val classes = TestSources()
             val X by classes.add("X", """
                 public class X {
