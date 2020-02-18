@@ -1,4 +1,4 @@
-@file:Suppress("ClassName")
+@file:Suppress("ClassName", "PropertyName")
 
 package dev.thecodewarrior.mirror.type.classmirror
 
@@ -83,6 +83,33 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         fun run() {
             assertSameSet(_any, Mirror.reflectClass<Y>().inheritedMethods)
+        }
+    }
+
+    @FlatTest
+    class inheritedMethods_withSuperclassMethods_shouldInheritCorrectMethods: inheritedMethods_base() {
+        val X by compile("X", """
+            public class X {
+                public static class Inner {}
+                public void publicMethod() {}
+                protected void protectedMethod() {}
+                void packagePrivateMethod() {}
+                private void privateMethod() {}
+            }
+        """.trimIndent())
+        val Y by compile("Y", """
+            public class Y {}
+        """.trimIndent())
+        val Y2 by compile("Y", """
+            public class Y {}
+        """.trimIndent())
+
+        fun run() {
+            assertSameSet(_any + listOf(
+                X.m("publicMethod"),
+                X.m("protectedMethod"),
+                X.m("packagePrivateMethod")
+            ), Mirror.reflectClass(Y).inheritedMethods)
         }
     }
 
