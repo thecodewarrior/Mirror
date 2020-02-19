@@ -57,7 +57,7 @@ class TestSources {
         requireNotCompiled()
         val builder = TypeSetDefinition()
         builder.block()
-        val set = TypeSet(packageName?.let { "gen.$it" } ?: "gen", "__Types${typeSets.size}", builder)
+        val set = TypeSet(packageName?.let { "gen.$it" } ?: "gen", "__Types_${typeSets.size}", builder)
         typeSets.add(set)
         return set
     }
@@ -84,13 +84,14 @@ class TestSources {
             typeCache[name]?.also { return it }
 
             val typeDef = definition.find(name)
-            val methodName = "block_${typeDef.blockIndex}"
-            val method = holder.declaredMethods.find { it.name == methodName }
-                ?: throw IllegalStateException("Unable to find method `$methodName` in type holder class")
-            val parameter = method.parameters.getOrNull(typeDef.index)
-                ?: throw IllegalStateException("Unable to find parameter index ${typeDef.index} in type holder method")
+            val blockName = "block_${typeDef.blockIndex}"
+            val block = holder.declaredClasses.find { it.simpleName == blockName }
+                ?: throw IllegalStateException("Unable to find block `$blockName` in type holder class")
+            val defName = "type_${typeDef.index}"
+            val field = block.getDeclaredField(defName)
+                ?: throw IllegalStateException("Unable to find type ${typeDef.index} in type block")
 
-            val type = (parameter.annotatedType as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
+            val type = (field.annotatedType as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
             typeCache[name] = type
             return type
         }
@@ -116,24 +117,18 @@ class TestSources {
             classText += "class $className {\n"
 
             classText += definition.blocks.joinToString("") { block ->
-                var blockText = ""
+                var blockText = "    class block_${block.index}"
                 if(block.variables.isNotEmpty())
-                    blockText += "<${block.variables.joinToString(", ")}> "
-                blockText += "void block_${block.index}(\n"
-                val lastDefinition = block.definitions.lastOrNull()
+                    blockText += "<${block.variables.joinToString(", ")}>"
+                blockText += " {\n"
                 blockText += block.definitions.joinToString("") { def ->
-                    "    __<%s> type_%d%s // %s\n"
-                        .format(
-                            def.type,
-                            def.index, if(def == lastDefinition) "" else ",",
-                            def.name.replace("\n", " ")
-                        )
+                    "        __<${def.type}> type_${def.index}; // ${def.name.replace("\n", " ")}\n"
                 }
-                blockText += ") {}\n\n"
+                blockText += "    }\n"
                 blockText
             }
 
-            classText += "final class __<T> {}\n"
+            classText += "    final class __<T> {}\n"
             classText += "}"
 
             return classText
