@@ -7,7 +7,7 @@ import dev.thecodewarrior.mirror.testsupport.GenericPairInterface1
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.assertSameList
-import dev.thecodewarrior.mirror.testsupport.nothing
+import dev.thecodewarrior.mirror.testsupport.nop
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -61,7 +61,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @Test
     fun enclose_withSpecializedType_shouldReturnSpecializedMethod() {
         class MethodHolder<T> {
-            fun method(): T { nothing() }
+            fun method(): T { nop }
         }
 
         val baseType = Mirror.reflectClass(MethodHolder::class.java)
@@ -76,7 +76,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @Test
     fun enclose_withRawType_shouldReturnUnspecializedMethod() {
         class MethodHolder<T> {
-            fun method(): T { nothing() }
+            fun method(): T { nop }
         }
 
         val baseType = Mirror.reflectClass(MethodHolder::class.java)
@@ -137,7 +137,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @Test
     fun specialized_withRawTypes_shouldReturnUnspecializedMethod() {
         class MethodHolder {
-            fun <T> method(): T { nothing() }
+            fun <T> method(): T { nop }
         }
 
         val method = Mirror.reflectClass<MethodHolder>().declaredMethods.find { it.name == "method" }!!
@@ -150,7 +150,7 @@ internal class ExecutableSpecializationTest: MirrorTestBase() {
     @Test
     fun specialized_withZeroTypes_shouldReturnUnspecializedMethod() {
         class MethodHolder {
-            fun <T> method(): T { nothing() }
+            fun <T> method(): T { nop }
         }
 
         val method = Mirror.reflectClass<MethodHolder>().declaredMethods.find { it.name == "method" }!!

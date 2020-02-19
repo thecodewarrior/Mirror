@@ -70,12 +70,12 @@ public class Compile {
             task.call();
 
             if (!out.toString().equals(""))
-                throw new ReflectException("Compilation error: " + out);
+                throw new CompileException("Compilation error:\n" + out);
 
             return fileManager.createClassLoader(cl);
         }
         catch (Exception e) {
-            throw new ReflectException("Error while compiling classes", e);
+            throw new CompileException("Error while compiling classes", e);
         }
     }
 

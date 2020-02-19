@@ -19,26 +19,26 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Lukas Eder
  */
-public class ReflectException extends RuntimeException {
+public class CompileException extends RuntimeException {
 
     /**
      * Generated UID
      */
     private static final long serialVersionUID = -6213149635297151442L;
 
-    public ReflectException(String message) {
+    public CompileException(String message) {
         super(message);
     }
 
-    public ReflectException(String message, Throwable cause) {
+    public CompileException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ReflectException() {
+    public CompileException() {
         super();
     }
 
-    public ReflectException(Throwable cause) {
+    public CompileException(Throwable cause) {
         super(cause);
     }
 }

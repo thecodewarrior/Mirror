@@ -4,6 +4,7 @@ import dev.thecodewarrior.mirror.joor.Compile
 import dev.thecodewarrior.mirror.joor.CompileOptions
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
+import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 
 /**
@@ -13,8 +14,12 @@ class TestSources {
 
     private val sources = mutableMapOf<String, String>()
     private val typeSets = mutableListOf<TypeSet>()
-    var options: CompileOptions = CompileOptions()
+    var options: MutableList<String> = mutableListOf()
     var classLoader: Compile.RuntimeClassLoader? = null
+
+    init {
+        options.add("-parameters")
+    }
 
     /**
      * Imports to be added to all files. Set these _before_ adding the files using [add]. Defaults to a set of generally
@@ -23,7 +28,9 @@ class TestSources {
     var globalImports: MutableList<String> = mutableListOf(
         "java.util.*",
         "java.lang.annotation.ElementType",
-        "java.lang.annotation.Target"
+        "java.lang.annotation.Target",
+        "java.lang.annotation.Retention",
+        "java.lang.annotation.RetentionPolicy"
     )
 
     /**
@@ -34,23 +41,24 @@ class TestSources {
      * @param code The code to compile into that class
      * @return A property delegate to access the test class once [compile] has been called
      */
-    fun add(name: String, code: String): TestClass {
+    fun add(name: String, code: String): TestClass<*> {
         requireNotCompiled()
         if("gen.$name" in sources)
             throw IllegalArgumentException("Class name $name already exists")
 
         var fullSource = ""
         if(name.contains('.'))
-            fullSource += "package gen.${name.substringBeforeLast('.')};import gen.*;\n"
+            fullSource += "package gen.${name.substringBeforeLast('.')};import gen.*;"
         else
-            fullSource += "package gen;\n"
+            fullSource += "package gen;"
 
-        fullSource += globalImports.joinToString("") { "import $it;\n" }
+        fullSource += globalImports.joinToString("") { "import $it;" }
+        fullSource += "\n"
         fullSource += code
 
         sources["gen.$name"] = fullSource
 
-        return TestClass("gen.$name")
+        return TestClass<Any>("gen.$name")
     }
 
     fun types(packageName: String? = null, block: TypeSetDefinition.() -> Unit): TypeSet {
@@ -66,7 +74,13 @@ class TestSources {
         requireNotCompiled()
         this.classLoader = Compile.compile(sources + typeSets.associate { set ->
             set.fullClassName to set.classText
-        }, options)
+        }, CompileOptions().options(options))
+    }
+
+    fun getClass(name: String): Class<*> {
+        if(classLoader == null)
+            throw IllegalStateException("Sources not compiled yet")
+        return Class.forName(name, true, classLoader)
     }
 
     private fun requireNotCompiled() {
@@ -109,12 +123,13 @@ class TestSources {
             var classText = ""
             classText += "package $packageName;\n"
             if(packageName != "gen") {
-                classText += "import gen.*;" + globalImports.joinToString("") { "import $it;" }
+                classText += "import gen.*;"
             }
+            classText += globalImports.joinToString("") { "import $it;" }
             definition.imports.forEach {
                 classText += "import $it;"
             }
-            classText += "class $className {\n"
+            classText += "\nclass $className {\n"
 
             classText += definition.blocks.joinToString("") { block ->
                 var blockText = "    class block_${block.index}"
@@ -135,15 +150,20 @@ class TestSources {
         }
     }
 
-    inner class TestClass(val name: String) {
-        private var cache: Class<*>? = null
+    inner class TestClass<T>(val name: String) {
+        private var cache: Class<T>? = null
 
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Class<*> {
+        @Suppress("UNCHECKED_CAST")
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Class<T> {
             cache?.also { return it }
-            if(classLoader == null)
-                throw ClassNotFoundException("Sources not compiled yet")
-            return Class.forName(name, true, classLoader).also { cache = it }
+            return (getClass(name) as Class<T>).also { cache = it }
         }
+
+        /**
+         * Gets a version of this class with the specified class type.
+         */
+        @Suppress("UNCHECKED_CAST")
+        fun <T> typed(): TestClass<T> = this as TestClass<T>
     }
 }
 
@@ -184,7 +204,7 @@ class TypeSetDefinition {
 
     fun find(name: String): TypeDefinition {
         return blocks.asSequence().flatMap { it.definitions.asSequence() }.find { it.name == name }
-            ?: throw IllegalArgumentException("No such type found")
+            ?: throw IllegalArgumentException("No such type found: `$name`")
     }
 
     @TypeSetDSL

@@ -74,4 +74,14 @@ internal class SelfReferentialTest : MirrorTestBase() {
             Mirror.reflect<SelfReferential>()
         }
     }
+
+
+    @Test
+    fun reflect_withSelfReferentialSuperClassGeneric_shouldNotDeadlock() {
+        open class Generic<T>
+        open class SelfReferential: Generic<SelfReferential>()
+        assertTimeoutPreemptively(Duration.ofSeconds(1)) {
+            Mirror.reflect<SelfReferential>()
+        }
+    }
 }

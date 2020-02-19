@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 internal class VariableMirrorTest: MTest() {
     val sources = TestSources()
 
-    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @interface A {}")
+    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}")
     val I1 by sources.add("I1", "interface I1 {}")
     val I2 by sources.add("I2", "interface I2 {}")
     val X by sources.add("X", "class X {}")

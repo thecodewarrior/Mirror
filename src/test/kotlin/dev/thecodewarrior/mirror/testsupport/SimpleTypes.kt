@@ -110,7 +110,7 @@ open class OuterGenericClass1<T: Any> {
     class InnerStaticClass
     inner class InnerClass {
         lateinit var innerField: T
-        fun innerMethod(): T { nothing() }
+        fun innerMethod(): T { nop }
         inner class InnerClass
     }
     inner class InnerGenericClass<I>

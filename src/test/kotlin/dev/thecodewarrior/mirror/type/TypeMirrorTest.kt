@@ -1,28 +1,59 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.Mirror
+import dev.thecodewarrior.mirror.TypeToken
 import dev.thecodewarrior.mirror.annotations.TypeAnnotation1
-import dev.thecodewarrior.mirror.annotations.TypeAnnotation2
-import dev.thecodewarrior.mirror.annotations.TypeAnnotationArg1
-import dev.thecodewarrior.mirror.testsupport.AnnotatedTypeHolder
 import dev.thecodewarrior.mirror.testsupport.GenericObject1
 import dev.thecodewarrior.mirror.testsupport.GenericObject1Sub
 import dev.thecodewarrior.mirror.testsupport.KotlinTypeAnnotation1
-import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
+import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.Object1Sub
 import dev.thecodewarrior.mirror.testsupport.Object1Sub2
 import dev.thecodewarrior.mirror.testsupport.Object2
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertInstanceOf
 import dev.thecodewarrior.mirror.typeToken
-import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalArgumentException
 
-internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
+@Suppress("UNCHECKED_CAST")
+internal class TypeMirrorTest: MTest() {
+    val sources = TestSources()
+
+    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
+    val AArg by sources.add("AArg", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface AArg { int v(); }").typed<Annotation>()
+    val X by sources.add("X", """
+        import dev.thecodewarrior.mirror.TypeToken;
+        public class X {
+            public static TypeToken token = new TypeToken<X>() {};
+        }
+    """.trimIndent())
+    val Generic by sources.add("Generic", "class Generic<T> {}")
+
+    val types = sources.types {
+        typeVariables("T") {
+            +"T"
+            +"T[]"
+        }
+        +"? extends X"
+        +"X"
+        +"@A X"
+        +"@A @AArg(v=1) X"
+        +"Generic<@A X>"
+        +"@A X[]"
+        +"X @A[]"
+        +"@A Generic<X>"
+        +"@A Generic<X>[]"
+        +"Generic<@A ? extends X>"
+    }
+
+    init {
+        sources.compile()
+    }
 
     @Test
     fun reflect_withClass_shouldReturnClassMirror() {
@@ -31,7 +62,7 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun reflect_withClassTypeToken_shouldReturnClassMirror() {
-        assertInstanceOf<ClassMirror>(Mirror.reflect(TypeMirrorHolder.classToken))
+        assertInstanceOf<ClassMirror>(Mirror.reflect(X.getField("token").get(null) as TypeToken<*>))
     }
 
     @Test
@@ -41,17 +72,17 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun reflect_withGenericArray_shouldReturnArrayMirror() {
-        assertInstanceOf<ArrayMirror>(Mirror.reflect(holder["T[]; T"]))
+        assertInstanceOf<ArrayMirror>(Mirror.reflect(types["T[]"]))
     }
 
     @Test
     fun reflect_withVariable_shouldReturnVariableMirror() {
-        assertInstanceOf<VariableMirror>(Mirror.reflect(holder["T"]))
+        assertInstanceOf<VariableMirror>(Mirror.reflect(types["T"]))
     }
 
     @Test
     fun reflect_withWildcard_shouldReturnWildcardMirror() {
-        assertInstanceOf<WildcardMirror>(Mirror.reflect(holder["? extends Object1Sub"]))
+        assertInstanceOf<WildcardMirror>(Mirror.reflect(types["? extends X"]))
     }
 
     @Test
@@ -74,21 +105,21 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     fun reflectClass_withGenericArray_shouldThrow() {
         assertThrows<IllegalArgumentException> {
-            Mirror.reflectClass(holder["T[]; T"])
+            Mirror.reflectClass(types["T[]"])
         }
     }
 
     @Test
     fun reflectClass_withVariable_shouldThrow() {
         assertThrows<IllegalArgumentException> {
-            Mirror.reflectClass(holder["T"])
+            Mirror.reflectClass(types["T"])
         }
     }
 
     @Test
     fun reflectClass_withWildcard_shouldThrow() {
         assertThrows<IllegalArgumentException> {
-            Mirror.reflectClass(holder["? extends Object1Sub"])
+            Mirror.reflectClass(types["? extends X"])
         }
     }
 
@@ -101,86 +132,103 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun reflect_withCoreMethod_shouldReturnSameObjectAsClassMirror() {
-        val method = holder.m("void method()")
-        val fromClassMirror = Mirror.reflectClass(holder.c("ReflectAndClassMirrorGetSame"))
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val C by sources.add("C", """
+            class C {
+                void method() {}
+            }
+        """.trimIndent())
+        sources.compile()
+
+        val method = C._m("method")
+        val fromClassMirror = Mirror.reflectClass(C)
             .declaredMethods.first { it.name == "method" }
         assertSame(fromClassMirror, Mirror.reflect(method))
     }
 
     @Test
     fun reflect_withCoreField_shouldReturnSameObjectAsClassMirror() {
-        val field = holder.f("int field")
-        val fromClassMirror = Mirror.reflectClass(holder.c("ReflectAndClassMirrorGetSame")).getDeclaredField("field")
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val C by sources.add("C", """
+            class C {
+                int field;
+            }
+        """.trimIndent())
+        sources.compile()
+        val field = C._f("field")
+        val fromClassMirror = Mirror.reflectClass(C).declaredFields.first { it.name == "field" }
         assertSame(fromClassMirror, Mirror.reflect(field))
     }
 
     @Test
     fun getAnnotation_ofUnannotatedType_shouldReturnEmptyList() {
-        val type = Mirror.reflect(holder["Object1"])
+        val type = Mirror.reflect(types["X"])
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofAnnotatedType_shouldReturnAnnotation() {
-        val type = Mirror.reflect(holder["@TypeAnnotation1 Object1"])
+        val type = Mirror.reflect(types["@A X"])
         assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>()
+            Mirror.newAnnotation(A)
         ), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofMultiAnnotatedType_shouldReturnAnnotations() {
-        val type = Mirror.reflect(holder["@TypeAnnotation1 @TypeAnnotationArg1(arg = 1) Object1"])
+        val type = Mirror.reflect(types["@A @AArg(v=1) X"])
         assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>(),
-            Mirror.newAnnotation<TypeAnnotationArg1>(mapOf("arg" to 1))
+            Mirror.newAnnotation(A),
+            Mirror.newAnnotation(AArg, mapOf("v" to 1))
         ), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofAnnotatedTypeParameter_shouldReturnAnnotations() {
-        val outer = Mirror.reflect(holder["GenericObject1<@TypeAnnotation1 Object1>"]) as ClassMirror
+        val outer = Mirror.reflectClass(types["Generic<@A X>"])
         val type = outer.typeParameters[0]
         assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>()
+            Mirror.newAnnotation(A)
         ), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofAnnotatedArrayComponent_shouldReturnAnnotations() {
-        val array = Mirror.reflect(holder["@TypeAnnotation1 Object[]"]) as ArrayMirror
+        val array = Mirror.reflect(types["@A X[]"]) as ArrayMirror
         val type = array.component
         assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>()
+            Mirror.newAnnotation(A)
         ), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofArrayWithAnnotatedComponent_shouldReturnEmptyList() {
-        val type = Mirror.reflect(holder["@TypeAnnotation1 Object[]"]) as ArrayMirror
+        val type = Mirror.reflect(types["@A X[]"]) as ArrayMirror
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofAnnotatedArrayWithUnannotatedComponent_shouldReturnAnnotations() {
-        val type = Mirror.reflect(holder["Object @TypeAnnotation1[]"]) as ArrayMirror
+        val type = Mirror.reflect(types["X @A[]"]) as ArrayMirror
         assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>()
+            Mirror.newAnnotation(A)
         ), type.typeAnnotations)
     }
 
     @Test
     fun typeAnnotations_ofJavaTypeWithJavaAnnotation_shouldReturnAnnotation() {
-        val type = Mirror.reflectClass(holder["@TypeAnnotation1 Object1"])
+        val type = Mirror.reflectClass(types["@A X"])
         assertEquals(listOf(
-            Mirror.newAnnotation<TypeAnnotation1>()
+            Mirror.newAnnotation(A)
         ), type.typeAnnotations)
     }
 
     @Test
     fun typeAnnotations_ofJavaTypeWithKotlinAnnotation_shouldReturnAnnotation() {
 //        Kotlin type annotations don't work in Java
-//        val type = Mirror.reflectClass(holder["@KotlinTypeAnnotation1 Object"])
+//        val type = Mirror.reflectClass(types["@KotlinTypeAnnotation1 Object"])
 //        assertEquals(listOf(
 //            Mirror.newAnnotation<KotlinTypeAnnotation1>()
 //        ), type.typeAnnotations)
@@ -188,119 +236,40 @@ internal class TypeMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun typeAnnotations_ofKotlinTypeWithJavaAnnotation_shouldReturnNone() {
-        val localHolder = object: AnnotatedTypeHolder() {
-            @TypeHolder("@TypeAnnotation1 Object1")
-            fun someFun(arg: @TypeAnnotation1 Object1) {}
+        val localHolder = object {
+            fun method(): @TypeAnnotation1 Object1 { null!! }
         }
-        val type = Mirror.reflectClass(localHolder["@TypeAnnotation1 Object1"])
+        val type = Mirror.reflectClass(localHolder::class.java._m("method").annotatedReturnType)
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
     fun typeAnnotations_ofKotlinTypeWithKotlinAnnotation_shouldReturnNone() {
-        val localHolder = object: AnnotatedTypeHolder() {
-            @TypeHolder("@KotlinTypeAnnotation1 Object1")
-            fun someFun(arg: @KotlinTypeAnnotation1 Object1) {}
+        val localHolder = object {
+            fun method(): @KotlinTypeAnnotation1 Object1 { null!! }
         }
-        val type = Mirror.reflectClass(localHolder["@KotlinTypeAnnotation1 Object1"])
+        val type = Mirror.reflectClass(localHolder::class.java._m("method").annotatedReturnType)
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
     fun raw_ofAnnotatedArrayWithGenericComponent_shouldReturnErasure() {
-        val type = Mirror.reflect(holder["@TypeAnnotation1 GenericObject1<Object1>[]"]) as ArrayMirror
+        val type = Mirror.reflect(types["@A Generic<X>[]"]) as ArrayMirror
         assertEquals(
-            Mirror.reflect(GenericObject1::class.java)
+            Mirror.reflect(Generic)
         , type.raw.component)
     }
 
     @Test
     fun getAnnotation_ofUnannotatedComponentOfAnnotatedArray_shouldReturnEmptyList() {
-        val array = Mirror.reflect(holder["Object @TypeAnnotation1[]"]) as ArrayMirror
+        val array = Mirror.reflect(types["X @A[]"]) as ArrayMirror
         val type = array.component
         assertEquals(emptyList<Annotation>(), type.typeAnnotations)
     }
 
     @Test
     fun getAnnotation_ofAnnotatedWildcard_shouldReturnAnnotations() {
-        val wildcard = Mirror.reflectClass(holder["List<@TypeAnnotation1 ? extends Object1>"]).typeParameters[0]
-        assertEquals(listOf(Mirror.newAnnotation<TypeAnnotation1>()), wildcard.typeAnnotations)
-    }
-
-    @Test
-    fun reflect_onSelfReferentialType_shouldNotRecurse() {
-        class TestType<T: TestType<T>>: GenericObject1<TestType<T>>()
-
-        Mirror.reflect(typeToken<TestType<*>>())
-    }
-
-    @Test
-    fun reflect_withLoopingGenericInheritance_shouldNotRecurse() {
-        open class ParentType<T>
-        class ChildClass: ParentType<ChildClass>()
-
-        Mirror.reflect(typeToken<ChildClass>())
-    }
-
-    @Test
-    fun specificity_ofMutuallyAssignable_shouldBeEqual() {
-        val type = Mirror.reflect<Object1>()
-        val type1 = type.withTypeAnnotations(listOf(Mirror.newAnnotation<TypeAnnotation1>()))
-        val type2 = type.withTypeAnnotations(listOf(Mirror.newAnnotation<TypeAnnotation2>()))
-        assertEquals(0, type1.specificity.compareTo(type2.specificity))
-    }
-
-    @Test
-    fun specificity_ofSelf_shouldBeEqual() {
-        val type = Mirror.reflect<Object1>().specificity
-        assertEquals(0, type.compareTo(type))
-    }
-
-    @Test
-    fun specificity_ofSeparateTypes_shouldBeEqual() {
-        val type1 = Mirror.reflect<Object1>().specificity
-        val type2 = Mirror.reflect<Object2>().specificity
-        assertEquals(0, type1.compareTo(type2))
-        assertEquals(0, type2.compareTo(type1))
-    }
-
-    @Test
-    fun specificity_ofSeparateSubTypes_shouldBeEqual() {
-        val type1 = Mirror.reflect<Object1Sub>().specificity
-        val type2 = Mirror.reflect<Object1Sub2>().specificity
-        assertEquals(0, type1.compareTo(type2))
-        assertEquals(0, type2.compareTo(type1))
-    }
-
-    @Test
-    fun specificity_ofSubclass_shouldBeGreater() {
-        val superClass = Mirror.reflect<Object1>().specificity
-        val subClass = Mirror.reflect<Object1Sub>().specificity
-        assertEquals(-1, superClass.compareTo(subClass))
-        assertEquals(1, subClass.compareTo(superClass))
-    }
-
-    @Test
-    fun specificity_ofSpecifiedGeneric_shouldBeGreater() {
-        val unspecified = Mirror.reflect(GenericObject1::class.java).specificity
-        val specified = Mirror.reflect<GenericObject1<String>>().specificity
-        assertEquals(-1, unspecified.compareTo(specified))
-        assertEquals(1, specified.compareTo(unspecified))
-    }
-
-    @Test
-    fun specificity_ofSubclass_shouldBeEqualTo_specifiedGeneric() {
-        val subclass = Mirror.reflect(GenericObject1Sub::class.java).specificity
-        val specified = Mirror.reflect<GenericObject1<String>>().specificity
-        assertEquals(0, specified.compareTo(subclass))
-        assertEquals(0, subclass.compareTo(specified))
-    }
-
-    @Test
-    fun specificity_ofIncompatibleGenerics_shouldBeEqual() {
-        val list1 = Mirror.reflect<List<Object1>>().specificity
-        val list2 = Mirror.reflect<ArrayList<Object2>>().specificity
-        assertEquals(0, list1.compareTo(list2))
-        assertEquals(0, list2.compareTo(list1))
+        val wildcard = Mirror.reflectClass(types["Generic<@A ? extends X>"]).typeParameters[0]
+        assertEquals(listOf(Mirror.newAnnotation(A)), wildcard.typeAnnotations)
     }
 }

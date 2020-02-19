@@ -5,8 +5,6 @@
 
 package dev.thecodewarrior.mirror.coretypes;
 
-import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -136,7 +134,9 @@ class AnnotationInvocationHandler implements Annotation, InvocationHandler, Seri
             Object value = element.getValue();
             Object otherValue;
             try {
-                otherValue = that.annotationType().getMethod(element.getKey()).invoke(that);
+                Method method = that.annotationType().getMethod(element.getKey());
+                method.setAccessible(true);
+                otherValue = method.invoke(that);
             } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }
