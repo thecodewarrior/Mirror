@@ -69,7 +69,7 @@ public class Compile {
 
             task.call();
 
-            if (fileManager.isEmpty())
+            if (!out.toString().equals(""))
                 throw new ReflectException("Compilation error: " + out);
 
             return fileManager.createClassLoader(cl);

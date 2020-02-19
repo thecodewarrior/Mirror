@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.type
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.Interface1
 import dev.thecodewarrior.mirror.testsupport.Interface2
+import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.TestSources
@@ -12,19 +13,27 @@ import dev.thecodewarrior.mirror.type.VariableMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class VariableMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
+internal class VariableMirrorTest: MTest() {
     val sources = TestSources()
 
     val A by sources.add("A", "@Target(ElementType.TYPE_USE) @interface A {}")
-    val I1 by sources.add("I1", "class I1 {}")
-    val I2 by sources.add("I2", "class I2 {}")
+    val I1 by sources.add("I1", "interface I1 {}")
+    val I2 by sources.add("I2", "interface I2 {}")
     val X by sources.add("X", "class X {}")
     val types = sources.types {
-//        parameter("T")
-//        parameter("T extends X")
-//        parameter("T extends I1 & I2")
-//        parameter("T extends @A X")
-//        parameter("@A X")
+        typeVariables("T") {
+            add("T", "T")
+        }
+        typeVariables("T extends X") {
+            add("T extends X", "T")
+        }
+        typeVariables("T extends I1 & I2") {
+            add("T extends I1 & I2", "T")
+        }
+        typeVariables("T extends @A X") {
+            add("T extends @A X", "T")
+        }
+        +"@A X"
     }
 
     init {
@@ -33,26 +42,25 @@ internal class VariableMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun getBounds_onUnboundedType_shouldReturnListOfObject() {
-        val type = Mirror.reflect(holder["T"]) as VariableMirror
+        val type = Mirror.reflect(types["T"]) as VariableMirror
         assertEquals(listOf(Mirror.reflect<Any>()), type.bounds)
     }
 
     @Test
     fun getBounds_onTypeWithSingleBound_shouldReturnListOfBound() {
-        val type = Mirror.reflect(holder["T extends Object1"]) as VariableMirror
-        assertEquals(listOf(Mirror.reflect<Object1>()), type.bounds)
+        val type = Mirror.reflect(types["T extends X"]) as VariableMirror
+        assertEquals(listOf(Mirror.reflect(X)), type.bounds)
     }
 
     @Test
     fun getBounds_onTypeWithMultipleBounds_shouldReturnListOfBoundsInSourceOrder() {
-        // Interface2 before Interface1 to thwart any sort-by-name bugs
-        val type = Mirror.reflect(holder["T extends Interface2 & Interface1"]) as VariableMirror
-        assertSameList(listOf(Mirror.reflect<Interface2>(), Mirror.reflect<Interface1>()), type.bounds)
+        val type = Mirror.reflect(types["T extends I1 & I2"]) as VariableMirror
+        assertSameList(listOf(Mirror.reflect(I1), Mirror.reflect(I2)), type.bounds)
     }
 
     @Test
     fun getBounds_onTypeWithAnnotatedBound_shouldReturnListOfAnnotatedBound() {
-        val type = Mirror.reflect(holder["T extends @TypeAnnotation1 Object1"]) as VariableMirror
-        assertEquals(listOf(Mirror.reflect(holder["@TypeAnnotation1 Object1"])), type.bounds)
+        val type = Mirror.reflect(types["T extends @A X"]) as VariableMirror
+        assertEquals(listOf(Mirror.reflect(types["@A X"])), type.bounds)
     }
 }
