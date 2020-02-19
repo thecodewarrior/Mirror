@@ -5,6 +5,7 @@ import dev.thecodewarrior.mirror.testsupport.Interface1
 import dev.thecodewarrior.mirror.testsupport.Interface2
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
 import dev.thecodewarrior.mirror.type.VariableMirror
@@ -12,6 +13,23 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class VariableMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
+    val sources = TestSources()
+
+    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @interface A {}")
+    val I1 by sources.add("I1", "class I1 {}")
+    val I2 by sources.add("I2", "class I2 {}")
+    val X by sources.add("X", "class X {}")
+    val types = sources.types {
+//        parameter("T")
+//        parameter("T extends X")
+//        parameter("T extends I1 & I2")
+//        parameter("T extends @A X")
+//        parameter("@A X")
+    }
+
+    init {
+        sources.compile()
+    }
 
     @Test
     fun getBounds_onUnboundedType_shouldReturnListOfObject() {

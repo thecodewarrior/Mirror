@@ -1,14 +1,16 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.Mirror
+import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.typeToken
 import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
 import dev.thecodewarrior.mirror.type.ArrayMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class ArrayMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
+internal class ArrayMirrorTest: MTest() {
 
     @Test
     fun getRawClass_onArray_shouldReturnArrayType() {
@@ -31,8 +33,16 @@ internal class ArrayMirrorTest: MirrorTestBase(TypeMirrorHolder()) {
 
     @Test
     fun getComponent_onGenericArray_shouldReturnVariable() {
-        val type = Mirror.reflect(holder["T[]; T", 0]) as ArrayMirror
-        assertEquals(Mirror.reflect(holder["T[]; T", 1]), type.component)
+        val sources = TestSources()
+        val types = sources.types {
+            typeVariables("T") {
+                +"T"
+                +"T[]"
+            }
+        }
+        sources.compile()
+        val type = Mirror.reflect(types["T[]"]) as ArrayMirror
+        assertEquals(Mirror.reflect(types["T"]), type.component)
     }
 
     @Test

@@ -7,19 +7,16 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ArrayMirrorTest: MTest() {
-    val classes = TestSources()
+    val sources = TestSources()
 
-    val A by classes.add("A", """
-        import java.lang.annotation.ElementType;
-        import java.lang.annotation.Target;
-        
+    val A by sources.add("A", """
         @Target(ElementType.TYPE_USE)
         @interface A {}
     """.trimIndent())
-    val X by classes.add("X", "class X {}")
-    val Generic by classes.add("Generic", "class Generic<T> {}")
+    val X by sources.add("X", "class X {}")
+    val Generic by sources.add("Generic", "class Generic<T> {}")
 
-    val types = classes.types {
+    val types = sources.types {
         +"X[]"
         +"Generic<X>[]"
         +"@A X @A []"
@@ -31,7 +28,7 @@ internal class ArrayMirrorTest: MTest() {
     }
 
     init {
-        classes.compile()
+        sources.compile()
     }
 
     @Test

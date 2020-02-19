@@ -10,11 +10,21 @@ import kotlin.reflect.KProperty
  *
  */
 class TestSources {
+
     private val sources = mutableMapOf<String, String>()
     private val typeSets = mutableListOf<TypeSet>()
     var options: CompileOptions = CompileOptions()
     var classLoader: Compile.RuntimeClassLoader? = null
-    var globalImports: MutableList<String> = mutableListOf("java.util.*")
+
+    /**
+     * Imports to be added to all files. Set these _before_ adding the files using [add]. Defaults to a set of generally
+     * useful or commonly used types.
+     */
+    var globalImports: MutableList<String> = mutableListOf(
+        "java.util.*",
+        "java.lang.annotation.ElementType",
+        "java.lang.annotation.Target"
+    )
 
     /**
      * Adds the passed class to this compiler. This method automatically prepends the necessary `package` declaration
@@ -29,10 +39,16 @@ class TestSources {
         if("gen.$name" in sources)
             throw IllegalArgumentException("Class name $name already exists")
 
-        sources["gen.$name"] = if(name.contains('.'))
-            "package gen.${name.substringBeforeLast('.')};import gen.*;${globalImports.joinToString("") { "import $it;" }}\n$code"
+        var fullSource = ""
+        if(name.contains('.'))
+            fullSource += "package gen.${name.substringBeforeLast('.')};import gen.*;\n"
         else
-            "package gen;\n$code"
+            fullSource += "package gen;\n"
+
+        fullSource += globalImports.joinToString("") { "import $it;\n" }
+        fullSource += code
+
+        sources["gen.$name"] = fullSource
 
         return TestClass("gen.$name")
     }

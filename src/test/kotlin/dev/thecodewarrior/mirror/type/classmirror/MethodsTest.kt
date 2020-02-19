@@ -51,33 +51,33 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_ofInterface_shouldBeEmpty() {
-            val classes = TestSources()
-            val I by classes.add("I", "interface I {}")
-            classes.compile()
+            val sources = TestSources()
+            val I by sources.add("I", "interface I {}")
+            sources.compile()
             assertSameSet(emptyList<MethodMirror>(), Mirror.reflectClass(I).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_ofClass_shouldBeObjectMethods() {
-            val classes = TestSources()
-            val X by classes.add("X", "class X {}")
-            classes.compile()
+            val sources = TestSources()
+            val X by sources.add("X", "class X {}")
+            sources.compile()
             assertSameSet(_any, Mirror.reflectClass(X).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withEmptySuperclass_shouldBeObjectMethods() {
-            val classes = TestSources()
-            val X by classes.add("X", "class X {}")
-            val Y by classes.add("Y", "class Y {}")
-            classes.compile()
+            val sources = TestSources()
+            val X by sources.add("X", "class X {}")
+            val Y by sources.add("Y", "class Y {}")
+            sources.compile()
             assertSameSet(_any, Mirror.reflectClass(Y).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate() {
-            val classes = TestSources()
-            val X by classes.add("X", """
+            val sources = TestSources()
+            val X by sources.add("X", """
                 public class X {
                     public static class Inner {}
                     public void publicMethod() {}
@@ -86,10 +86,10 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
                     private void privateMethod() {}
                 }
             """.trimIndent())
-            val Y by classes.add("Y", """
+            val Y by sources.add("Y", """
                 public class Y extends X {}
             """.trimIndent())
-            classes.compile()
+            sources.compile()
 
             assertSameSet(_any + listOf(
                 Mirror.reflect(X.m("publicMethod")),
@@ -100,8 +100,8 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage() {
-            val classes = TestSources()
-            val X by classes.add("X", """
+            val sources = TestSources()
+            val X by sources.add("X", """
                 public class X {
                     public static class Inner {}
                     public void publicMethod() {}
@@ -110,10 +110,10 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
                     private void privateMethod() {}
                 }
             """)
-            val Y by classes.add("y.Y", """
+            val Y by sources.add("y.Y", """
                 public class Y extends X {}
             """)
-            classes.compile()
+            sources.compile()
 
             assertSameSet(_any + listOf(
                 Mirror.reflect(X.m("publicMethod")),
