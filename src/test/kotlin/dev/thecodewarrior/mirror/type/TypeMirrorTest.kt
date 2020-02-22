@@ -22,8 +22,6 @@ import java.lang.IllegalArgumentException
 
 @Suppress("UNCHECKED_CAST")
 internal class TypeMirrorTest: MTest() {
-    val sources = TestSources()
-
     val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
     val AArg by sources.add("AArg", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface AArg { int v(); }").typed<Annotation>()
     val X by sources.add("X", """
@@ -49,10 +47,6 @@ internal class TypeMirrorTest: MTest() {
         +"@A Generic<X>"
         +"@A Generic<X>[]"
         +"Generic<@A ? extends X>"
-    }
-
-    init {
-        sources.compile()
     }
 
     @Test

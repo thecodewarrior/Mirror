@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ClassMirrorTest: MTest() {
-    val sources = TestSources()
-
     val A by sources.add("A", """
         @Target(ElementType.TYPE_USE)
         @interface A {}
@@ -32,10 +30,6 @@ internal class ClassMirrorTest: MTest() {
         +"@A Generic.InnerGeneric"
         +"Generic<@A X>.@A Inner"
         +"Generic<@A X>.@A InnerGeneric<Y>"
-    }
-
-    init {
-        sources.compile()
     }
 
     @Test

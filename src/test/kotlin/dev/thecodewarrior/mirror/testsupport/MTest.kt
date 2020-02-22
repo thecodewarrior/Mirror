@@ -2,7 +2,9 @@ package dev.thecodewarrior.mirror.testsupport
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
 import java.lang.IllegalArgumentException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -13,7 +15,9 @@ import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod
 
 @Suppress("TestFunctionName")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MTest {
+    val sources: TestSources = TestSources()
 
     /** Get a Class instance */
     protected inline fun <reified T> _c(): Class<*> = T::class.java
@@ -41,6 +45,11 @@ abstract class MTest {
     protected val KFunction<*>.m: Method get() = this.javaMethod!!
     /** Shorthand to easily get the backing constructor for a KFunction that represents a constructor */
     protected val KFunction<*>.c: Constructor<*> get() = this.javaConstructor!!
+
+    @BeforeAll
+    fun compileSources() {
+        sources.compile()
+    }
 
     @BeforeEach
     fun beforeEachTest() {

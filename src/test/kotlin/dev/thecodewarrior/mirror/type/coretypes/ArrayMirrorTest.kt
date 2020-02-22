@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ArrayMirrorTest: MTest() {
-    val sources = TestSources()
-
     val A by sources.add("A", """
         @Target(ElementType.TYPE_USE)
         @interface A {}
@@ -25,10 +23,6 @@ internal class ArrayMirrorTest: MTest() {
             +"K[]"
             +"@A Generic<V>"
         }
-    }
-
-    init {
-        sources.compile()
     }
 
     @Test

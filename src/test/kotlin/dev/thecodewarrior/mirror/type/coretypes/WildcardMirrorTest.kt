@@ -7,9 +7,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class WildcardMirrorTest: MTest() {
-
-    val sources = TestSources()
-
     val A by sources.add("A", """
         @Target(ElementType.TYPE_USE)
         @interface A {}
@@ -21,10 +18,6 @@ internal class WildcardMirrorTest: MTest() {
         +"? super X"
         +"@A ? extends X"
         +"? extends @A X"
-    }
-
-    init {
-        sources.compile()
     }
 
     @Test

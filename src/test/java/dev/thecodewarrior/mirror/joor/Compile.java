@@ -29,6 +29,10 @@ public class Compile {
         Lookup lookup = MethodHandles.lookup();
         ClassLoader cl = lookup.lookupClass().getClassLoader();
 
+        if(code.isEmpty()) {
+            return new RuntimeClassLoader(cl, new HashMap<>());
+        }
+
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
         try {
