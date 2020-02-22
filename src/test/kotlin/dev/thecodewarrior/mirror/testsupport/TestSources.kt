@@ -115,7 +115,7 @@ class TestSources {
             get() {
                 holderCache?.also { return it }
                 if(classLoader == null)
-                    throw ClassNotFoundException("Sources not compiled yet")
+                    throw IllegalStateException("Sources not compiled yet")
                 return Class.forName(fullClassName, true, classLoader).also { holderCache = it }
             }
 

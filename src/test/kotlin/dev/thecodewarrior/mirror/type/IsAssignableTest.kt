@@ -1,58 +1,35 @@
 package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.testsupport.GenericObject1
-import dev.thecodewarrior.mirror.testsupport.GenericObject2
-import dev.thecodewarrior.mirror.testsupport.Interface1
-import dev.thecodewarrior.mirror.testsupport.Interface12
-import dev.thecodewarrior.mirror.testsupport.Interface12Sub1
-import dev.thecodewarrior.mirror.testsupport.Interface1Sub1
-import dev.thecodewarrior.mirror.testsupport.Interface1Sub2
-import dev.thecodewarrior.mirror.testsupport.Interface2
-import dev.thecodewarrior.mirror.testsupport.Interface2Sub1
-import dev.thecodewarrior.mirror.testsupport.Interface2Sub2
-import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.Object1
-import dev.thecodewarrior.mirror.testsupport.Object1Sub
-import dev.thecodewarrior.mirror.testsupport.Object1SubSub
-import dev.thecodewarrior.mirror.typeholders.TypeMirrorHolder
+import dev.thecodewarrior.mirror.testsupport.MTest
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
+@Suppress("LocalVariableName")
+internal class IsAssignableTest: MTest() {
 
     @Test
-    @DisplayName("A class should be assignable from itself")
-    fun classMirrorAssignableFromSelf() {
-        val type = Mirror.reflect<Object1>()
-        assertTrue(type.isAssignableFrom(type))
-    }
-
-    @Test
-    @DisplayName("An array mirror should be assignable from itself")
-    fun arrayMirrorAssignableFromSelf() {
+    fun arrayMirror_shouldBeAssignable_fromItself() {
         val type = Mirror.reflect<Array<Any>>()
         assertTrue(type.isAssignableFrom(type))
     }
 
     @Test
-    @DisplayName("A primitive array mirror should be assignable from itself")
-    fun primitiveArrayMirrorAssignableFromSelf() {
+    fun primitiveArrayMirror_shouldBeAssignable_fromItself() {
         val type = Mirror.reflect<IntArray>()
         assertTrue(type.isAssignableFrom(type))
     }
 
     @Test
-    @DisplayName("A primitive int array mirror should not be assignable from an Integer[] array")
-    fun primitiveIntArrayMirrorNotAssignableFromIntegerArray() {
+    fun primitiveArrayMirror_shouldBeAssignable_fromBoxedArrayMirror() {
         assertFalse(Mirror.reflect<IntArray>().isAssignableFrom(Mirror.reflect<Array<Int>>()))
     }
 
     @Test
-    @DisplayName("The Object mirror should be assignable from itself")
-    fun objectAssignableFromSelf() {
+    fun object_shouldBeAssignable_fromItself() {
         assertTrue(
             Mirror.reflect<Any>().isAssignableFrom(
                 Mirror.reflect<Any>()
@@ -61,41 +38,56 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     }
 
     @Test
-    @DisplayName("The Object mirror should be assignable from another class")
-    fun objectAssignableFromClass() {
+    fun object_shouldBeAssignable_fromClass() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        sources.compile()
+
         assertTrue(
             Mirror.reflect<Any>().isAssignableFrom(
-                Mirror.reflect<Object1>()
+                Mirror.reflect(X)
             )
         )
     }
 
     @Test
-    @DisplayName("The Object mirror should be assignable from a generic class")
-    fun objectAssignableFromGenericClass() {
+    fun object_shouldBeAssignable_fromGeneric() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"Generic<X>"
+        }
+        sources.compile()
+
         assertTrue(
             Mirror.reflect<Any>().isAssignableFrom(
-                Mirror.reflect<GenericObject1<Object1>>()
+                Mirror.reflect(types["Generic<X>"])
             )
         )
     }
 
     @Test
-    @DisplayName("The Object mirror should be assignable from an array")
-    fun objectAssignableFromArray() {
+    fun object_shouldBeAssignable_fromArray() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val types = sources.types {
+            +"X[]"
+        }
+        sources.compile()
+
         assertTrue(
             Mirror.reflect<Any>().isAssignableFrom(
-                Mirror.reflect<GenericObject1<Object1>>()
+                Mirror.reflect(types["X[]"])
             )
         )
     }
 
     @Test
-    @DisplayName("The Object mirror should not be assignable from a primitive")
-    fun objectNotAssignableFromPrimitive() {
+    fun object_shouldNotBeAssignable_fromPrimitive() {
         assertFalse(
             Mirror.reflect<Any>().isAssignableFrom(
-                Mirror.reflect(Int::class.javaPrimitiveType!!)
+                Mirror.types.int
             )
         )
     }
@@ -110,9 +102,12 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A class mirror should be assignable from itself")
     fun classAssignableFromSelf() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        sources.compile()
         assertTrue(
-            Mirror.reflect<ClassA>().isAssignableFrom(
-                Mirror.reflect<ClassA>()
+            Mirror.reflect(X).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -120,9 +115,13 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A class mirror should be assignable from a subclass")
     fun classAssignableFromSubclass() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        sources.compile()
         assertTrue(
-            Mirror.reflect<ClassA>().isAssignableFrom(
-                Mirror.reflect<ClassASub>()
+            Mirror.reflect(X).isAssignableFrom(
+                Mirror.reflect(Y)
             )
         )
     }
@@ -130,9 +129,13 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A class mirror should not be assignable from a superclass")
     fun classNotAssignableFromSuperclass() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        sources.compile()
         assertFalse(
-            Mirror.reflect<ClassA>().isAssignableFrom(
-                Mirror.reflect<ClassASuper>()
+            Mirror.reflect(Y).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -140,9 +143,13 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A class mirror should not be assignable from an unrelated class")
     fun classNotAssignableFromUnrelatedClass() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y {}")
+        sources.compile()
         assertFalse(
-            Mirror.reflect<ClassA>().isAssignableFrom(
-                Mirror.reflect<Object1>()
+            Mirror.reflect(X).isAssignableFrom(
+                Mirror.reflect(Y)
             )
         )
     }
@@ -150,9 +157,13 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("An interface mirror should be assignable from an implementing class")
     fun interfaceAssignableFromImplementingClass() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val X by sources.add("X", "class X implements I {}")
+        sources.compile()
         assertTrue(
-            Mirror.reflect<ClassAInterface>().isAssignableFrom(
-                Mirror.reflect<ClassA>()
+            Mirror.reflect(I).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -160,9 +171,14 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("An interface should be assignable from the subclass of an implementing class")
     fun interfaceAssignableFromSubClassOfImplementingClass() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val X by sources.add("X", "class X implements I {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        sources.compile()
         assertTrue(
-            Mirror.reflect<ClassASuperInterface>().isAssignableFrom(
-                Mirror.reflect<ClassA>()
+            Mirror.reflect(I).isAssignableFrom(
+                Mirror.reflect(Y)
             )
         )
     }
@@ -170,9 +186,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should be assignable from itself")
     fun genericClassAssignableFromSelf() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"Generic<X>"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect<GenericObject1<ClassA>>().isAssignableFrom(
-                Mirror.reflect<GenericObject1<ClassA>>()
+            Mirror.reflect(types["Generic<X>"]).isAssignableFrom(
+                Mirror.reflect(types["Generic<X>"])
             )
         )
     }
@@ -180,9 +203,18 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should be assignable from itself with subclassed type parameters")
     fun genericClassAssignableFromSubclassedParameters() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"Generic<X>"
+            +"Generic<Y>"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect<GenericObject1<ClassA>>().isAssignableFrom(
-                Mirror.reflect<GenericObject1<ClassASub>>()
+            Mirror.reflect(types["Generic<X>"]).isAssignableFrom(
+                Mirror.reflect(types["Generic<Y>"])
             )
         )
     }
@@ -190,9 +222,18 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should not be assignable from itself with superclassed type parameters")
     fun genericClassNotAssignableFromSuperclassedParameters() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"Generic<X>"
+            +"Generic<Y>"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect<GenericObject1<ClassA>>().isAssignableFrom(
-                Mirror.reflect<GenericObject1<ClassASuper>>()
+            Mirror.reflect(types["Generic<Y>"]).isAssignableFrom(
+                Mirror.reflect(types["Generic<X>"])
             )
         )
     }
@@ -200,10 +241,17 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should be assignable from a subclass that specifies type parameters explicitly")
     fun genericClassAssignableFromSubclassWithExplicitParameters() {
-        class GenericObjectSub: GenericObject1<ClassA>()
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val GenericX by sources.add("GenericX", "class GenericX extends Generic<X> {}")
+        val types = sources.types {
+            +"Generic<X>"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect<GenericObject1<ClassA>>().isAssignableFrom(
-                Mirror.reflect<GenericObjectSub>()
+            Mirror.reflect(types["Generic<X>"]).isAssignableFrom(
+                Mirror.reflect(GenericX)
             )
         )
     }
@@ -211,10 +259,18 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should be assignable from a subclass that specifies type parameters dynamically")
     fun genericClassAssignableFromSubclassWithDynamicParameters() {
-        class GenericObjectSub<T>: GenericObject1<GenericObject2<T>>()
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val GenericSub by sources.add("GenericSub", "class GenericSub<T> extends Generic<Generic<T>> {}")
+        val types = sources.types {
+            +"Generic<Generic<X>>"
+            +"GenericSub<X>"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect<GenericObject1<GenericObject2<Object1>>>().isAssignableFrom(
-                Mirror.reflect<GenericObjectSub<Object1>>()
+            Mirror.reflect(types["Generic<Generic<X>>"]).isAssignableFrom(
+                Mirror.reflect(types["GenericSub<X>"])
             )
         )
     }
@@ -222,10 +278,19 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should be assignable from a subclass that specifies incorrect type parameters dynamically")
     fun genericClassNotAssignableFromSubclassWithIncorrectDynamicParameters() {
-        class GenericObjectSub<T>: GenericObject1<GenericObject2<T>>()
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val GenericSub by sources.add("GenericSub", "class GenericSub<T> extends Generic<Generic<T>> {}")
+        val types = sources.types {
+            +"Generic<Generic<X>>"
+            +"GenericSub<Y>"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect<GenericObject1<GenericObject2<Object1>>>().isAssignableFrom(
-                Mirror.reflect<GenericObjectSub<ClassA>>()
+            Mirror.reflect(types["Generic<Generic<X>>"]).isAssignableFrom(
+                Mirror.reflect(types["GenericSub<Y>"])
             )
         )
     }
@@ -233,9 +298,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A generic class should be assignable from a raw version of itself")
     fun genericClassNotAssignableFromRawSelf() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"Generic<X>"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect<GenericObject1<Object1>>().isAssignableFrom(
-                Mirror.reflect<GenericObject1<*>>().raw
+            Mirror.reflect(types["Generic<X>"]).isAssignableFrom(
+                Mirror.reflect(Generic)
             )
         )
     }
@@ -243,9 +315,12 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A raw generic class should be assignable from a raw version of itself")
     fun rawGenericClassAssignableFromRawSelf() {
+        val sources = TestSources()
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        sources.compile()
         assertTrue(
-            Mirror.reflect<GenericObject1<Object1>>().raw.isAssignableFrom(
-                Mirror.reflect<GenericObject1<*>>().raw
+            Mirror.reflect(Generic).raw.isAssignableFrom(
+                Mirror.reflect(Generic)
             )
         )
     }
@@ -253,9 +328,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A raw generic class should be assignable from a specialized version of itself")
     fun rawGenericClassAssignableFromSpecializedSelf() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"Generic<X>"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect<GenericObject1<*>>().raw.isAssignableFrom(
-                Mirror.reflect<GenericObject1<Object1>>()
+            Mirror.reflect(Generic).isAssignableFrom(
+                Mirror.reflect(types["Generic<X>"])
             )
         )
     }
@@ -263,9 +345,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A class should be assignable from a wildcard with an equal upper bound")
     fun classAssignableFromEqualUpperBoundedWildcard() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val types = sources.types {
+            +"? extends Y"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect<Object1Sub>().isAssignableFrom(
-                Mirror.reflect(holder["? extends Object1Sub"])
+            Mirror.reflect(Y).isAssignableFrom(
+                Mirror.reflect(types["? extends Y"])
             )
         )
     }
@@ -273,9 +362,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("A class should be assignable from a wildcard with a more subclass as a upper bound")
     fun classAssignableFromSubclassUpperBoundedWildcard() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val types = sources.types {
+            +"? extends Y"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect<Object1>().isAssignableFrom(
-                Mirror.reflect(holder["? extends Object1Sub"])
+            Mirror.reflect(X).isAssignableFrom(
+                Mirror.reflect(types["? extends Y"])
             )
         )
     }
@@ -293,6 +389,17 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("The void mirror should not be assignable from other types")
     fun voidNotAssignableFromOthers() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"int[]"
+            +"Generic<X>"
+            +"? super Y"
+            +"? extends X"
+        }
+        sources.compile()
         assertFalse(
             Mirror.types.void.isAssignableFrom(
                 Mirror.types.any
@@ -300,60 +407,45 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
         )
         assertFalse(
             Mirror.types.void.isAssignableFrom(
-                Mirror.reflect<IntArray>()
+                Mirror.reflect(types["int[]"])
             )
         )
         assertFalse(
             Mirror.types.void.isAssignableFrom(
-                Mirror.reflect<GenericObject1<String>>()
+                Mirror.reflect(types["Generic<X>"])
             )
         )
         assertFalse(
             Mirror.types.void.isAssignableFrom(
-                Mirror.reflect(holder["? super Object1Sub"])
+                Mirror.reflect(types["? super Y"])
+            )
+        )
+        assertFalse(
+            Mirror.types.void.isAssignableFrom(
+                Mirror.reflect(types["? extends X"])
             )
         )
     }
 
-    class TypeVariableHolder<
-        RawT,
-        Interface1T: Interface1,
-        Interface1Sub1T: Interface1Sub1,
-        Interface1Sub2T: Interface1Sub2,
-        Interface12T,
-        Interface12Sub1T,
-        Interface12Sub2T,
-        Interface12DirectT: Interface12,
-        Object1T: Object1
-        >
-        where Interface12T: Interface1,
-              Interface12T: Interface2,
-              Interface12Sub1T: Interface1Sub1,
-              Interface12Sub1T: Interface2Sub1,
-              Interface12Sub2T: Interface1Sub2,
-              Interface12Sub2T: Interface2Sub2
-
-    val RawT               = TypeVariableHolder::class.java.typeParameters[0]
-    val Interface1T        = TypeVariableHolder::class.java.typeParameters[1]
-    val Interface1Sub1T    = TypeVariableHolder::class.java.typeParameters[2]
-    val Interface1Sub2T    = TypeVariableHolder::class.java.typeParameters[3]
-    val Interface12T       = TypeVariableHolder::class.java.typeParameters[4]
-    val Interface12Sub1T   = TypeVariableHolder::class.java.typeParameters[5]
-    val Interface12Sub2T   = TypeVariableHolder::class.java.typeParameters[6]
-    val Interface12DirectT = TypeVariableHolder::class.java.typeParameters[7]
-    val Object1T           = TypeVariableHolder::class.java.typeParameters[8]
-
     @Test
     @DisplayName("The Object mirror should be assignable from wildcard mirrors")
     fun objectAssignableFromWildcard() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val types = sources.types {
+            +"? super Y"
+            +"? extends X"
+        }
+        sources.compile()
         assertTrue(
             Mirror.reflect<Any>().isAssignableFrom(
-                Mirror.reflect(holder["? super Object1Sub"])
+                Mirror.reflect(types["? super Y"])
             )
         )
         assertTrue(
             Mirror.reflect<Any>().isAssignableFrom(
-                Mirror.reflect(holder["? extends Object1Sub"])
+                Mirror.reflect(types["? extends X"])
             )
         )
     }
@@ -361,9 +453,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Lower-bounded wildcard mirrors should be assignable from mirrors of their supertype")
     fun lowerWildcardAssignableFromSupertype() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val types = sources.types {
+            +"? super Y"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(holder["? super Object1Sub"]).isAssignableFrom(
-                Mirror.reflect<Object1>()
+            Mirror.reflect(types["? super Y"]).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -371,9 +470,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Lower-bounded wildcard mirrors should be assignable from mirrors of their bound")
     fun lowerWildcardAssignableFromBound() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val types = sources.types {
+            +"? super Y"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(holder["? super Object1Sub"]).isAssignableFrom(
-                Mirror.reflect<Object1Sub>()
+            Mirror.reflect(types["? super Y"]).isAssignableFrom(
+                Mirror.reflect(Y)
             )
         )
     }
@@ -381,9 +487,17 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Lower-bounded wildcard mirrors should not be assignable from mirrors of their subtypes")
     fun lowerWildcardNotAssignableFromSubtype() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"? super X"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect(holder["? super Object1Sub"]).isAssignableFrom(
-                Mirror.reflect<Object1SubSub>()
+            Mirror.reflect(types["? super X"]).isAssignableFrom(
+                Mirror.reflect(Y)
             )
         )
     }
@@ -391,9 +505,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Upper-bounded wildcard mirrors should not be assignable from mirrors of their supertype")
     fun upperWildcardNotAssignableFromSupertype() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val types = sources.types {
+            +"? extends Y"
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect(holder["? extends Object1Sub"]).isAssignableFrom(
-                Mirror.reflect<Object1>()
+            Mirror.reflect(types["? extends Y"]).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -401,9 +522,15 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Upper-bounded wildcard mirrors should be assignable from mirrors of their bound")
     fun upperWildcardAssignableFromBound() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val types = sources.types {
+            +"? extends X"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(holder["? extends Object1Sub"]).isAssignableFrom(
-                Mirror.reflect<Object1Sub>()
+            Mirror.reflect(types["? extends X"]).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -411,9 +538,17 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Upper-bounded wildcard mirrors should be assignable from mirrors of their subtypes")
     fun upperWildcardAssignableFromSubtype() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X {}")
+        val Y by sources.add("Y", "class Y extends X {}")
+        val Generic by sources.add("Generic", "class Generic<T> {}")
+        val types = sources.types {
+            +"? extends X"
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(holder["? extends Object1Sub"]).isAssignableFrom(
-                Mirror.reflect<Object1SubSub>()
+            Mirror.reflect(types["? extends X"]).isAssignableFrom(
+                Mirror.reflect(Y)
             )
         )
     }
@@ -421,9 +556,17 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from mirrors of their bounds")
     fun variableAssignableFromSameType() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val types = sources.types {
+            typeVariables("T extends I") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface1T).isAssignableFrom(
-                Mirror.reflect<Interface1>()
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(I)
             )
         )
     }
@@ -431,9 +574,18 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from subtypes of their bounds")
     fun variableAssignableFromSubtype() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val X by sources.add("X", "class X implements I {}")
+        val types = sources.types {
+            typeVariables("T extends I") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface1T).isAssignableFrom(
-                Mirror.reflect<Interface1Sub1>()
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -441,9 +593,19 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from mirrors that implement all of their bounds")
     fun variableAssignableFromDoubleImplement() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val I2 by sources.add("I2", "interface I2 {}")
+        val I3 by sources.add("I3", "interface I3 extends I, I2 {}")
+        val types = sources.types {
+            typeVariables("T extends I & I2") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface12T).isAssignableFrom(
-                Mirror.reflect<Interface12>()
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(I3)
             )
         )
     }
@@ -451,9 +613,19 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from mirrors that subclass all of their bounds")
     fun variableAssignableFromDoubleSubtype() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val I2 by sources.add("I2", "interface I2 {}")
+        val X by sources.add("X", "class X implements I, I2{}")
+        val types = sources.types {
+            typeVariables("T extends I & I2") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface12T).isAssignableFrom(
-                Mirror.reflect<Interface12Sub1>()
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -461,9 +633,18 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should not be assignable from mirrors that superclass their bounds")
     fun variableNotAssignableFromSupertype() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val I2 by sources.add("I2", "interface I2 extends I {}")
+        val types = sources.types {
+            typeVariables("T extends I2") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect(Interface1Sub1T).isAssignableFrom(
-                Mirror.reflect<Interface1>()
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(I)
             )
         )
     }
@@ -471,9 +652,18 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should not be assignable from mirrors unrelated to their bounds")
     fun variableNotAssignableFromUnrelated() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val X by sources.add("X", "class X {}")
+        val types = sources.types {
+            typeVariables("T extends I") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertFalse(
-            Mirror.reflect(Interface1T).isAssignableFrom(
-                Mirror.reflect<Object1>()
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(X)
             )
         )
     }
@@ -481,9 +671,16 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from themselves")
     fun variableAssignableFromSelf() {
+        val sources = TestSources()
+        val types = sources.types {
+            typeVariables("T") {
+                +"T"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface1T).isAssignableFrom(
-                Mirror.reflect(Interface1T)
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(types["T"])
             )
         )
     }
@@ -491,9 +688,19 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from variables with subclassed bounds")
     fun variableAssignableFromSubtypeBounds() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val I2 by sources.add("I2", "interface I2 extends I {}")
+        val types = sources.types {
+            typeVariables("T extends I", "T2 extends I2") {
+                +"T"
+                +"T2"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface1T).isAssignableFrom(
-                Mirror.reflect(Interface1Sub1T)
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(types["T2"])
             )
         )
     }
@@ -501,9 +708,21 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from variables with multiple subclassed bounds")
     fun variableAssignableFromMultipleSubtypeBounds() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val J by sources.add("J", "interface J {}")
+        val I2 by sources.add("I2", "interface I2 extends I {}")
+        val J2 by sources.add("J2", "interface J2 extends J {}")
+        val types = sources.types {
+            typeVariables("T extends I & J", "T2 extends I2 & J2") {
+                +"T"
+                +"T2"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface12T).isAssignableFrom(
-                Mirror.reflect(Interface12T)
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(types["T2"])
             )
         )
     }
@@ -511,9 +730,20 @@ internal class IsAssignableTest: MirrorTestBase(TypeMirrorHolder()) {
     @Test
     @DisplayName("Variable mirrors should be assignable from variables with double subclassed bounds")
     fun variableAssignableFromDoubleSubtypeBounds() {
+        val sources = TestSources()
+        val I by sources.add("I", "interface I {}")
+        val J by sources.add("J", "interface J {}")
+        val IJ by sources.add("IJ", "interface IJ extends I, J {}")
+        val types = sources.types {
+            typeVariables("T extends I & J", "T2 extends IJ") {
+                +"T"
+                +"T2"
+            }
+        }
+        sources.compile()
         assertTrue(
-            Mirror.reflect(Interface12T).isAssignableFrom(
-                Mirror.reflect(Interface12DirectT)
+            Mirror.reflect(types["T"]).isAssignableFrom(
+                Mirror.reflect(types["T2"])
             )
         )
     }
