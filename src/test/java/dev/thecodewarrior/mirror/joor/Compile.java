@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -25,12 +24,12 @@ import java.util.Map.Entry;
  * @author Lukas Eder
  */
 public class Compile {
-    public static RuntimeClassLoader compile(Map<String, String> code, CompileOptions compileOptions) {
-        Lookup lookup = MethodHandles.lookup();
-        ClassLoader cl = lookup.lookupClass().getClassLoader();
+    private static final ClassLoader rootClassLoader = MethodHandles.lookup().lookupClass().getClassLoader();
+    private static final RuntimeClassLoader nullClassLoader = new RuntimeClassLoader(rootClassLoader, new HashMap<>());
 
+    public static RuntimeClassLoader compile(Map<String, String> code, CompileOptions compileOptions) {
         if(code.isEmpty()) {
-            return new RuntimeClassLoader(cl, new HashMap<>());
+            return nullClassLoader;
         }
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -53,8 +52,8 @@ public class Compile {
                 if (prop != null && !"".equals(prop))
                     classpath.append(prop);
 
-                if (cl instanceof URLClassLoader) {
-                    for (URL url : ((URLClassLoader) cl).getURLs()) {
+                if (rootClassLoader instanceof URLClassLoader) {
+                    for (URL url : ((URLClassLoader) rootClassLoader).getURLs()) {
                         if (classpath.length() > 0)
                             classpath.append(separator);
 
@@ -76,7 +75,7 @@ public class Compile {
             if (!out.toString().equals(""))
                 throw new CompileException("Compilation error:\n" + out);
 
-            return fileManager.createClassLoader(cl);
+            return fileManager.createClassLoader(rootClassLoader);
         }
         catch (Exception e) {
             throw new CompileException("Error while compiling classes", e);
