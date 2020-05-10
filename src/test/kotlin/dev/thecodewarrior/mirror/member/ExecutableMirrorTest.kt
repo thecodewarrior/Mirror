@@ -1,13 +1,13 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.NoParamNames
 import dev.thecodewarrior.mirror.annotations.Annotation1
 import dev.thecodewarrior.mirror.annotations.AnnotationArg1
 import dev.thecodewarrior.mirror.testsupport.Exception1
 import dev.thecodewarrior.mirror.testsupport.Exception2
 import dev.thecodewarrior.mirror.testsupport.KotlinInternalConstructor
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
 import dev.thecodewarrior.mirror.type.ClassMirror
@@ -126,9 +126,24 @@ internal class ExecutableMirrorTest: MirrorTestBase(ExecutableMirrorHolder()) {
 
     @Test
     fun parameters_withNoBytecodeNames_shouldHaveNullNames() {
-        val method = Mirror.reflect(NoParamNames::noNames.m)
+        val sources = TestSources()
+        sources.options.remove("-parameters")
+        val X by sources.add("X", "class X { public void noNames(String param) {} }")
+        sources.compile()
+        val method = Mirror.reflect(X.getMethod("noNames", _c<String>()))
         assertEquals(listOf(
             null
+        ), method.parameters.map { it.name })
+    }
+
+    @Test
+    fun parameters_withBytecodeNames_shouldHaveNames() {
+        val sources = TestSources()
+        val X by sources.add("X", "class X { public void hasNames(String param) {} }")
+        sources.compile()
+        val method = Mirror.reflect(X.getMethod("hasNames", _c<String>()))
+        assertEquals(listOf(
+            "param"
         ), method.parameters.map { it.name })
     }
 
