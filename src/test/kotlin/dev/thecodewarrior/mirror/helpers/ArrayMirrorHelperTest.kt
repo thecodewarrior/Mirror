@@ -1,15 +1,17 @@
 package dev.thecodewarrior.mirror.helpers
 
 import dev.thecodewarrior.mirror.Mirror
+import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
+import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.type.ArrayMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.lang.reflect.AnnotatedArrayType
 
 
-internal class ArrayMirrorHelperTest: MirrorTestBase() {
+internal class ArrayMirrorHelperTest: MTest() {
 
     private inline fun <reified T> reflectArray() = Mirror.reflect<T>() as ArrayMirror
 
@@ -31,16 +33,16 @@ internal class ArrayMirrorHelperTest: MirrorTestBase() {
         assertEquals(Array<Object1>::class.java, reflectArray<Array<Object1>>().newInstance(0).javaClass)
     }
 
-    val list: Array<*>? = null
-
     @Test
     fun newInstance_onGenericArray_shouldReturnObjectArray() {
-        class FieldHolder<T>(
-            @JvmField
-            val field: Array<T>
-        )
-        val genericArray = FieldHolder::class.java.getField("field").annotatedType as AnnotatedArrayType
-        val type = Mirror.reflect(genericArray) as ArrayMirror
+        val sources = TestSources()
+        val types = sources.types {
+            typeVariables("T") {
+                +"T[]"
+            }
+        }
+        sources.compile()
+        val type = Mirror.reflect(types["T[]"]) as ArrayMirror
         assertEquals(Array<Any>::class.java, type.newInstance(0).javaClass)
     }
 }

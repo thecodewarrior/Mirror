@@ -41,6 +41,31 @@ abstract class MTest {
     /** Get the specified field from this class. */
     protected fun Class<*>._f(name: String): Field = this.getDeclaredField(name)
 
+    /**
+     * Call the specified method from this object. If no parameters are specified and no zero-parameter method exists,
+     * the only one with the passed name is returned. Throws if no matching methods exist or multiple matching methods
+     * exist.
+     */
+    protected fun Any._call(name: String, vararg parameters: Class<*>, params: Array<Any?> = arrayOf()): Any? {
+        if(parameters.isEmpty()) {
+            val methods = this.javaClass.declaredMethods.filter { it.name == name }
+            methods.find { it.parameterCount == 0 }?.let { return it }
+            if(methods.size != 1) {
+                throw IllegalArgumentException("Found ${methods.size} candidates for method named `$name`")
+            }
+            return methods.first().invoke(this, *params)
+        } else {
+            return this.javaClass.getDeclaredMethod(name, *parameters).invoke(this, *params)
+        }
+    }
+    /** Get the value of the specified field from this object. */
+    @Suppress("UNCHECKED_CAST")
+    protected fun<T> Any._get(name: String): T
+        = this.javaClass._f(name).also { it.isAccessible = true }.get(this) as T
+    /** Get the value of the specified field from this object. */
+    protected fun Any._set(name: String, value: Any?): Unit
+        = this.javaClass._f(name).also { it.isAccessible = true }.set(this, value)
+
     /** Shorthand to easily get the backing method for a KFunction that represents a method */
     protected val KFunction<*>.m: Method get() = this.javaMethod!!
     /** Shorthand to easily get the backing constructor for a KFunction that represents a constructor */

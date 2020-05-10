@@ -2,42 +2,48 @@ package dev.thecodewarrior.mirror.helpers
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.GenericInterface1
+import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import dev.thecodewarrior.mirror.testsupport.Object1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
-internal class ClassMirrorHelperTest: MirrorTestBase() {
+internal class ClassMirrorHelperTest: MTest() {
+    val X by sources.add("X", "class X {}")
+    val Generic by sources.add("Generic", "class Generic<T> {}")
+    val IGeneric by sources.add("IGeneric", "interface IGeneric<T> {}")
+    val GenericSub by sources.add("GenericSub", "class GenericSub<T> extends Generic<X> implements IGeneric<T> {}")
+    val types = sources.types {
+        +"Generic<X>"
+        +"IGeneric<X>"
+        +"GenericSub<X>"
+    }
+
     @Test
     fun findSuperclass_onSameType_shouldReturnItself() {
-        class GenericObject<T>: GenericInterface1<T>
-        val mirror = Mirror.reflectClass<GenericObject<Object1>>()
-        assertEquals(mirror, mirror.findSuperclass(GenericObject::class.java))
+        val mirror = Mirror.reflectClass(types["Generic<X>"])
+        assertEquals(mirror, mirror.findSuperclass(Generic))
     }
 
     @Test
     fun findSuperclass_onSubclass_shouldReturnSpecializedSuperclass() {
-        open class GenericSuper<T>
-        class GenericSub<T>: GenericSuper<T>()
         assertEquals(
-            Mirror.reflectClass<GenericSuper<Object1>>(),
-            Mirror.reflectClass<GenericSub<Object1>>().findSuperclass(GenericSuper::class.java)
+            Mirror.reflectClass(types["Generic<X>"]),
+            Mirror.reflectClass(types["GenericSub<X>"]).findSuperclass(Generic)
         )
     }
 
     @Test
     fun findSuperclass_onSubclass_shouldReturnSpecializedInterface() {
-        class GenericObject<T>: GenericInterface1<T>
         assertEquals(
-            Mirror.reflectClass<GenericInterface1<Object1>>(),
-            Mirror.reflectClass<GenericObject<Object1>>().findSuperclass(GenericInterface1::class.java)
+            Mirror.reflectClass(types["IGeneric<X>"]),
+            Mirror.reflectClass(types["GenericSub<X>"]).findSuperclass(IGeneric)
         )
     }
 
     @Test
     fun findSuperclass_withUnrelatedType_shouldThrow() {
-        class GenericObject<T>: GenericInterface1<T>
-        assertNull(Mirror.reflectClass<GenericObject<Object1>>().findSuperclass(List::class.java))
+        assertNull(Mirror.reflectClass(types["Generic<X>"]).findSuperclass(List::class.java))
     }
 }
