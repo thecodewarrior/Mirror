@@ -7,6 +7,7 @@ import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
+import dev.thecodewarrior.mirror.type.classmirror.MethodList
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.UntestedFailure
 import java.lang.reflect.Constructor
@@ -369,7 +370,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * @see Class.getDeclaredMethods
      */
-    abstract val declaredMethods: List<MethodMirror>
+    abstract val declaredMethods: MethodList
 
     /**
      * The methods [inherited](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8) from the
@@ -378,7 +379,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * **Note: this list is immutable**
      */
     @Untested
-    abstract val inheritedMethods: List<MethodMirror>
+    abstract val inheritedMethods: MethodList
 
     /**
      * The public methods declared in this class and inherited from its superclasses.
@@ -387,16 +388,30 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * @see Class.getMethods
      */
-    abstract val publicMethods: List<MethodMirror>
+    abstract val publicMethods: MethodList
 
     /**
-     * The methods declared in this class and inherited from its superclasses. Essentially the methods that would be
-     * visible inside this class. This list will include hidden public static methods, since they can't be overridden.
+     * The methods that would be visible inside of this class. This includes public and private methods from this class,
+     * as well as any methods inherited from the supertypes of this class. This list will include hidden public static
+     * methods, since they can't be overridden, only hidden.
+     *
+     * **Note: This list is immutable.**
+     *
+     * @see inheritedMethods
+     */
+    @Untested
+    abstract val visibleMethods: MethodList
+
+    /**
+     * All the methods declared in this class and its supertypes, excluding overridden methods. This includes public and
+     * private methods from this class and its superclasses/interfaces, as well as any methods from the supertypes of
+     * this class. This list will include hidden private and static methods, since they can't be overridden, only
+     * hidden.
      *
      * **Note: This list is immutable.**
      */
     @Untested
-    abstract val methods: List<MethodMirror>
+    abstract val methods: MethodList
 
     /**
      * Returns the specialized mirror that represents the same method as [other].
@@ -413,88 +428,56 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     abstract fun getMethod(other: Method): MethodMirror
 
     /**
-     * Returns the methods declared directly in this class that have the specified name.
+     * Returns the public and private methods declared in this class or its superclasses that have the specified name,
+     * excluding overridden methods. Since private methods can't be overridden, there may still be multiple methods with
+     * the same signature in the returned list.
      *
      * **Note: The returned list is immutable.**
-     */
-    @Untested
-    abstract fun findDeclaredMethods(name: String): List<MethodMirror>
-
-    /**
-     * Returns the public methods declared in this class and inherited from its superclasses that have the specified
-     * name.
      *
-     * **Note: The returned list is immutable.**
-     */
-    @Untested
-    abstract fun findPublicMethods(name: String): List<MethodMirror>
-
-    /**
-     * Returns the methods declared in this class and inherited from its superclasses that have the specified name.
-     * Since private methods can't be overridden, there may be multiple methods with the same signature in the returned
-     * list.
-     *
-     * **Note: The returned list is immutable.**
+     * @see methods
      */
     @Untested
     abstract fun findMethods(name: String): List<MethodMirror>
 
     /**
-     * Returns the method declared directly in this class that has the specified signature, or null if no such method
-     * exists.
+     * Returns the public or private method declared in this class or its superclasses that has the specified signature,
+     * excluding overridden methods, or null if no such method exists.
      *
-     * @see getDeclaredMethod
-     */
-    @Untested
-    abstract fun findDeclaredMethod(name: String, vararg params: TypeMirror): MethodMirror?
-
-    /**
-     * Returns the public method declared in this class or inherited from its superclasses that has the specified
-     * signature, or null if no such method exists.
-     *
-     * @see getPublicMethod
-     */
-    @Untested
-    abstract fun findPublicMethod(name: String, vararg params: TypeMirror): MethodMirror?
-
-    /**
-     * Returns the method declared in this class or inherited from its superclasses that has the specified signature,
-     * or null if no such method exists.
-     *
-     * @see getMethod
+     * @see methods
      */
     @Untested
     abstract fun findMethod(name: String, vararg params: TypeMirror): MethodMirror?
 
     /**
-     * Returns the method declared directly in this class that has the specified signature, or throws if no such method
-     * exists.
+     * Returns the public or private method declared in this class or its superclasses that has the specified raw
+     * signature, excluding overridden methods, or null if no such method exists.
      *
-     * @see findDeclaredMethod
-     * @throws NoSuchMirrorException if no method with the specified signature exists
+     * @see methods
      */
     @Untested
-    abstract fun getDeclaredMethod(name: String, vararg params: TypeMirror): MethodMirror?
+    abstract fun findMethodRaw(name: String, vararg params: Class<*>): MethodMirror?
 
     /**
-     * Returns the public method declared in this class or inherited from its superclasses that has the specified
-     * signature, or throws if no such method exists.
+     * Returns the public or private method declared in this class or its superclasses that has the specified signature,
+     * excluding overridden methods, or throws if no such method exists.
      *
-     * @see findPublicMethod
-     * @throws NoSuchMirrorException if no method with the specified signature exists
-     */
-    @Untested
-    abstract fun getPublicMethod(name: String, vararg params: TypeMirror): MethodMirror?
-
-    /**
-     * Returns the method declared in this class or inherited from its superclasses that has the specified signature, or
-     * throws if no such method exists.
-     *
+     * @see methods
      * @see findMethod
      * @throws NoSuchMirrorException if no method with the specified signature exists
      */
     @Untested
-    abstract fun getMethod(name: String, vararg params: TypeMirror): MethodMirror?
+    abstract fun getMethod(name: String, vararg params: TypeMirror): MethodMirror
+
+    /**
+     * Returns the public or private method declared in this class or its superclasses that has the specified raw
+     * signature, excluding overridden methods, or throws if no such method exists.
+     *
+     * @see methods
+     * @see findMethod
+     * @throws NoSuchMirrorException if no method with the specified signature exists
+     */
+    @Untested
+    abstract fun getMethodRaw(name: String, vararg params: Class<*>): MethodMirror
 //endregion =====================================================================================================================
 
 //region Fields =================================================================================================================
@@ -517,6 +500,8 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     @Untested
     abstract val publicFields: List<FieldMirror>
 
+    // TODO - this is inconsistent with `methods`, and may be renamed to `visibleFields` or something more descriptive
+    //   does this even include superclass private fields? It seems to indicate so.
     /**
      * The fields declared in this class and inherited from its superclasses. Since fields can be shadowed but not
      * overridden, there may be multiple fields with the same name in this list.
@@ -525,6 +510,8 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      */
     @Untested
     abstract val fields: List<FieldMirror>
+
+    // TODO - add allFields, which contains all the methods, barring any that have been overridden
 
     /**
      * Returns the specialized mirror that represents the same field as [other].

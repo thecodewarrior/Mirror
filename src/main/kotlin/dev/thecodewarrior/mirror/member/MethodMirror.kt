@@ -71,8 +71,8 @@ class MethodMirror internal constructor(
         return super.withTypeParameters(*parameters) as MethodMirror
     }
 
-    override fun withDeclaringClass(type: ClassMirror?): MethodMirror {
-        return super.withDeclaringClass(type) as MethodMirror
+    override fun withDeclaringClass(enclosing: ClassMirror?): MethodMirror {
+        return super.withDeclaringClass(enclosing) as MethodMirror
     }
 
     private val instanceWrapper by lazy {
@@ -85,8 +85,8 @@ class MethodMirror internal constructor(
     }
 
     /**
-     * Returns the method this method overrides, if any. If this method overrides a method which itself is an override,
-     * this will return the method this directly overrides, not the root method.
+     * Returns the method this method overrides, if any. This will return the method this directly overrides, not the
+     * root method.
      */
     @Untested
     val overrides: MethodMirror? by lazy {

@@ -11,7 +11,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticVoid() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("incrementCounter")[0]
+        val method = thisType.getMethod("incrementCounter")
         method<Unit>(null)
         assertEquals(1, counterValue)
     }
@@ -19,7 +19,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticPrivate() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("privateIncrementCounter")[0]
+        val method = thisType.getMethod("privateIncrementCounter")
         method<Unit>(null)
         assertEquals(1, counterValue)
     }
@@ -27,7 +27,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticWithParam() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("addCounter")[0]
+        val method = thisType.getMethod("addCounter", Mirror.types.int)
         method<Unit>(null, 5)
         assertEquals(5, counterValue)
     }
@@ -35,7 +35,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticWithReturn() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("getCounter")[0]
+        val method = thisType.getMethod("getCounter")
         counterValue = 3
         assertEquals(3, method(null))
     }
@@ -43,7 +43,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticVoid_passingReceiver() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("incrementCounter")[0]
+        val method = thisType.getMethod("incrementCounter")
         assertThrows<IllegalArgumentException> {
             method<Unit>("whoops!")
         }
@@ -52,7 +52,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticVoid_passingParam() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("incrementCounter")[0]
+        val method = thisType.getMethod("incrementCounter")
         assertThrows<IllegalArgumentException> {
             method<Unit>(null, "whoops!")
         }
@@ -61,7 +61,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticWithParam_withoutParam() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("addCounter")[0]
+        val method = thisType.getMethod("addCounter", Mirror.types.int)
         assertThrows<IllegalArgumentException> {
             method<Unit>(null)
         }
@@ -70,7 +70,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticWithParam_withIncorrectParamType() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("addCounter")[0]
+        val method = thisType.getMethod("addCounter", Mirror.types.int)
         assertThrows<ClassCastException> {
             method<Unit>(null, "whoops!")
         }
@@ -79,7 +79,7 @@ internal class StaticMethods: MirrorTestBase() {
     @Test
     fun call_staticWithParam_withExtraParam() {
         val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.findDeclaredMethods("addCounter")[0]
+        val method = thisType.getMethod("addCounter", Mirror.types.int)
         assertThrows<IllegalArgumentException> {
             method<Unit>(null, 5, "whoops!")
         }

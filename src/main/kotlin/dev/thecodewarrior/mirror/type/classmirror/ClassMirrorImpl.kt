@@ -1,4 +1,4 @@
-package dev.thecodewarrior.mirror.type
+package dev.thecodewarrior.mirror.type.classmirror
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.MirrorCache
@@ -8,9 +8,13 @@ import dev.thecodewarrior.mirror.coretypes.TypeImplAccess
 import dev.thecodewarrior.mirror.member.ConstructorMirror
 import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.FieldMirror
-import dev.thecodewarrior.mirror.member.JvmModifier
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
+import dev.thecodewarrior.mirror.type.ClassMirror
+import dev.thecodewarrior.mirror.type.TypeMapping
+import dev.thecodewarrior.mirror.type.TypeMirror
+import dev.thecodewarrior.mirror.type.TypeSpecialization
+import dev.thecodewarrior.mirror.type.VoidMirror
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.checkedCast
 import dev.thecodewarrior.mirror.utils.unique
@@ -233,14 +237,15 @@ internal class ClassMirrorImpl internal constructor(
 //endregion
 
 //region Methods ================================================================================================================
-    override val declaredMethods: List<MethodMirror> by lazy {
-        java.declaredMethods.map {
+    override val declaredMethods: MethodList by lazy {
+        MethodList(this, "declared", java.declaredMethods.map {
             cache.executables.reflect(it).withDeclaringClass(this) as MethodMirror
-        }.unmodifiableView()
+        })
     }
 
-    override val inheritedMethods: List<MethodMirror> by lazy {
-        return@lazy (superclass?.methods.orEmpty() + interfaces.flatMap { it.methods })
+    override val inheritedMethods: MethodList by lazy {
+        val supertypeMethods = superclass?.visibleMethods.orEmpty() + interfaces.flatMap { it.visibleMethods }
+        val list = supertypeMethods
             .filter { s ->
                 if(s.access == Modifier.Access.PRIVATE)
                     return@filter false
@@ -248,88 +253,43 @@ internal class ClassMirrorImpl internal constructor(
                     return@filter false
                 return@filter declaredMethods.none { it.overrides(s) }
             }
-            .unique().unmodifiableView()
+            .unique()
+        return@lazy MethodList(this, "inherited", list)
     }
 
-    override val publicMethods: List<MethodMirror> by lazy {
-        java.methods.map { this.getMethod(it) }.unmodifiableView()
+    override val publicMethods: MethodList by lazy {
+        MethodList(this, "public", java.methods.map { this.getMethod(it) })
     }
 
-    override val methods: List<MethodMirror> by lazy {
-        return@lazy (declaredMethods + inheritedMethods).unmodifiableView()
+    override val visibleMethods: MethodList by lazy {
+        MethodList(this, "visible", declaredMethods + inheritedMethods)
     }
 
-    override fun getMethod(other: MethodMirror): MethodMirror = getMethod(other.java)
-
-    override fun getMethod(other: Method): MethodMirror {
-        if(other.declaringClass == this.java) {
-            return declaredMethods.find { it.java == other }
-                ?: throw NoSuchMirrorException("Could not find method ${other.name}(${other.parameterTypes.joinToString(", ")}) " +
-                    "in $this")
-        }
-        val superclass = findSuperclass(other.declaringClass)
-            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for method " +
-                "${other.name}(${other.parameterTypes.joinToString(", ")}) in $this")
-        return try {
-            superclass.getMethod(other)
-        } catch (e: NoSuchMirrorException) {
-            throw NoSuchMirrorException("Could not find method ${other.declaringClass.simpleName}.${other.name}" +
-                "(${other.parameterTypes.joinToString(", ")}) in $this", e)
-        }
+    override val methods: MethodList by lazy {
+        val supertypeMethods = superclass?.methods.orEmpty() + interfaces.flatMap { it.methods }
+        val list = declaredMethods + supertypeMethods
+            .filter { s ->
+                declaredMethods.none { it.overrides(s) }
+            }
+            .toList().unique()
+        return@lazy MethodList(this, "inherited", list)
     }
 
-    override fun findDeclaredMethods(name: String): List<MethodMirror> {
-        return declaredMethods.filter { it.name == name }.unmodifiableView()
-    }
+    override fun getMethod(other: MethodMirror): MethodMirror = methods.get(other.java)
 
-    private val publicMethodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
-    override fun findPublicMethods(name: String): List<MethodMirror> {
-        return publicMethodNameCache.getOrPut(name) {
-            val methods = mutableListOf<MethodMirror>()
-            //todo: this shouldn't return private methods. write a test to fail this.
-            methods.addAll(declaredMethods.filter { it.name == name })
-            //todo: this should return methods from interfaces. write a test to fail this.
-            methods.addAll(superclass?.findPublicMethods(name).orEmpty())
-            return@getOrPut methods.unmodifiableView()
-        }
-    }
+    override fun getMethod(other: Method): MethodMirror = methods.get(other)
 
-    private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
-    override fun findMethods(name: String): List<MethodMirror> {
-        return methodNameCache.getOrPut(name) {
-            val methods = mutableListOf<MethodMirror>()
-            methods.addAll(declaredMethods.filter { it.name == name })
-            //todo: this should return methods from interfaces. write a test to fail this.
-            methods.addAll(superclass?.findMethods(name).orEmpty())
-            return@getOrPut methods.unmodifiableView()
-        }
-    }
+    override fun findMethods(name: String): List<MethodMirror> = methods.find(name)
 
-    override fun findDeclaredMethod(name: String, vararg params: TypeMirror): MethodMirror? {
-        TODO("it")
-    }
+    override fun findMethod(name: String, vararg params: TypeMirror): MethodMirror? = methods.find(name, *params)
 
-    override fun findPublicMethod(name: String, vararg params: TypeMirror): MethodMirror? {
-        TODO("it")
-    }
+    override fun findMethodRaw(name: String, vararg params: Class<*>): MethodMirror? = methods.findRaw(name, *params)
 
-    override fun findMethod(name: String, vararg params: TypeMirror): MethodMirror? {
-        TODO("it")
-    }
+    override fun getMethod(name: String, vararg params: TypeMirror): MethodMirror = methods.get(name, *params)
 
-    override fun getDeclaredMethod(name: String, vararg params: TypeMirror): MethodMirror? {
-        TODO("it")
-    }
+    override fun getMethodRaw(name: String, vararg params: Class<*>): MethodMirror = methods.getRaw(name, *params)
 
-    override fun getPublicMethod(name: String, vararg params: TypeMirror): MethodMirror? {
-        TODO("it")
-    }
-
-    override fun getMethod(name: String, vararg params: TypeMirror): MethodMirror? {
-        TODO("it")
-    }
-
-//endregion =====================================================================================================================
+    //endregion =====================================================================================================================
 
 //region Fields =================================================================================================================
     override val declaredFields: List<FieldMirror> by lazy {

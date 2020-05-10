@@ -97,7 +97,7 @@ internal class EnclosingClassTest: MirrorTestBase() {
     fun returnType_ofMethodInInnerClassWithSpecializedOuterClass_shouldReturnSpecializedReturnType() {
         val outer = Mirror.reflectClass<OuterGenericClass1<String>>()
         val inner = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val specialized = inner.withEnclosingClass(outer).findPublicMethods("innerMethod")[0].returnType
+        val specialized = inner.withEnclosingClass(outer).getMethod("innerMethod").returnType
         assertSame(outer.typeParameters[0], specialized)
     }
 

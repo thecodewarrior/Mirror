@@ -51,7 +51,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
             lateinit var foo: T
         }
         val clazz = Mirror.reflectClass<LocalClass>()
-        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("typeParameters_inLocalClass_shouldReferenceMethodTypeParameters")[0]
+        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().getMethod("typeParameters_inLocalClass_shouldReferenceMethodTypeParameters")
         assertSame(thisMethod.typeParameters[0], clazz.findPublicField("foo")?.type)
     }
 
@@ -61,7 +61,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
             lateinit var foo: T
         }
         val clazz = Mirror.reflectClass<LocalClass>()
-        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("memberTypes_ofLocalClass_shouldReferenceMethodTypeParameters")[0]
+        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().getMethod("memberTypes_ofLocalClass_shouldReferenceMethodTypeParameters")
         assertSame(Mirror.reflect<String>(), clazz.withEnclosingExecutable(thisMethod.withTypeParameters(Mirror.reflect<String>())).findPublicField("foo")?.type)
     }
 
@@ -69,7 +69,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     fun specializeClass_withWrongEnclosingExecutable_shouldThrow() {
         class LocalClass
         val clazz = Mirror.reflectClass<LocalClass>()
-        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("toString")[0]
+        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().getMethod("toString")
         assertThrows<InvalidSpecializationException> {
             clazz.withEnclosingExecutable(thisMethod)
         }
@@ -78,7 +78,7 @@ internal class EnclosingExecutableTest: MirrorTestBase() {
     @Test
     fun specializeRootClass_withExecutable_shouldThrow() {
         val clazz = Mirror.reflectClass<Object1>()
-        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().findPublicMethods("toString")[0]
+        val thisMethod = Mirror.reflectClass<EnclosingExecutableTest>().getMethod("toString")
         assertThrows<InvalidSpecializationException> {
             clazz.withEnclosingExecutable(thisMethod)
         }

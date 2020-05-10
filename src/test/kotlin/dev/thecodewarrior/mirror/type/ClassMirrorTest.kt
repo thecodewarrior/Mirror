@@ -123,7 +123,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
     @DisplayName("Method types of inner classes that use outer generics should have outer generic types")
     fun returnType_ofMethodInNestedClassWithOuterGenericType_shouldReturnOuterGenericType() {
         val innerClass = Mirror.reflectClass(OuterGenericClass1.InnerClass::class.java)
-        val methodType = innerClass.findPublicMethods("innerMethod")[0].returnType
+        val methodType = innerClass.getMethod("innerMethod").returnType
         assertSame(Mirror.reflectClass(OuterGenericClass1::class.java).typeParameters[0], methodType)
     }
 

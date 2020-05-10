@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.type.classmirror.ClassMirrorImpl
 import java.lang.reflect.AnnotatedArrayType
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
