@@ -8,7 +8,24 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 
 /**
+ * Runtime compilation of test cases.
  *
+ * ## Basic usage
+ * ```kotlin
+ * val sources = TestSources()
+ * val X: Class<*> by sources.add("X", "class X {}")
+ * val A: Class<Annotation> by sources.add("A", "@interface A {}")
+ * val types = sources.types {
+ *     +"? extends X"
+ *     typeVariables("T") {
+ *         +"T"
+ *     }
+ * }
+ * sources.compile()
+ *
+ * types["? extends X"]
+ * types["T"]
+ * ```
  */
 class TestSources {
 
@@ -150,6 +167,9 @@ class TestSources {
         }
     }
 
+    /**
+     * A delegate for a class declaration
+     */
     inner class TestClass<T>(val name: String) {
         private var cache: Class<T>? = null
 
