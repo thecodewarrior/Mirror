@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.coretypes
 
 import dev.thecodewarrior.mirror.testsupport.MTest
-import dev.thecodewarrior.mirror.testsupport.TestSources
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -30,10 +29,9 @@ internal class MethodOverrideTesterTest: MTest() {
      *
      */
     @Nested
-    inner class FromSuperclass {
+    inner class FromSuperclass: MTest() {
         @Test
         fun isOverriddenBy_withBasicOverride_shouldReturnTrue() {
-            val sources = TestSources()
             val A by sources.add("A", "class A { void method() {} }")
             val C by sources.add("C", "class C extends A { void method() {} }")
             sources.compile()
@@ -42,7 +40,6 @@ internal class MethodOverrideTesterTest: MTest() {
 
         @Test
         fun isOverriddenBy_withUnrelatedClass_shouldReturnFalse() {
-            val sources = TestSources()
             val A by sources.add("A", "class A { void method() {} }")
             val C by sources.add("C", "class C { void method() {} }")
             sources.compile()
@@ -51,7 +48,6 @@ internal class MethodOverrideTesterTest: MTest() {
 
         @Test
         fun isOverriddenBy_withUnrelatedSignature_shouldReturnFalse() {
-            val sources = TestSources()
             val A by sources.add("A", "class A { void method() {} }")
             val C by sources.add("C", "class C extends A { void method(String string) {} }")
             sources.compile()

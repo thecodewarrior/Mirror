@@ -2,7 +2,6 @@ package dev.thecodewarrior.mirror.type
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MTest
-import dev.thecodewarrior.mirror.testsupport.TestSources
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
@@ -39,7 +38,6 @@ internal class IsAssignableTest: MTest() {
 
     @Test
     fun object_shouldBeAssignable_fromClass() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         sources.compile()
 
@@ -52,7 +50,6 @@ internal class IsAssignableTest: MTest() {
 
     @Test
     fun object_shouldBeAssignable_fromGeneric() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
         val types = sources.types {
@@ -69,7 +66,6 @@ internal class IsAssignableTest: MTest() {
 
     @Test
     fun object_shouldBeAssignable_fromArray() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val types = sources.types {
             +"X[]"
@@ -102,7 +98,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A class mirror should be assignable from itself")
     fun classAssignableFromSelf() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         sources.compile()
         assertTrue(
@@ -115,7 +110,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A class mirror should be assignable from a subclass")
     fun classAssignableFromSubclass() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         sources.compile()
@@ -129,7 +123,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A class mirror should not be assignable from a superclass")
     fun classNotAssignableFromSuperclass() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         sources.compile()
@@ -143,7 +136,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A class mirror should not be assignable from an unrelated class")
     fun classNotAssignableFromUnrelatedClass() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y {}")
         sources.compile()
@@ -157,7 +149,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("An interface mirror should be assignable from an implementing class")
     fun interfaceAssignableFromImplementingClass() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val X by sources.add("X", "class X implements I {}")
         sources.compile()
@@ -171,7 +162,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("An interface should be assignable from the subclass of an implementing class")
     fun interfaceAssignableFromSubClassOfImplementingClass() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val X by sources.add("X", "class X implements I {}")
         val Y by sources.add("Y", "class Y extends X {}")
@@ -186,7 +176,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should be assignable from itself")
     fun genericClassAssignableFromSelf() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
         val types = sources.types {
@@ -203,7 +192,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should be assignable from itself with subclassed type parameters")
     fun genericClassAssignableFromSubclassedParameters() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
@@ -222,7 +210,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should not be assignable from itself with superclassed type parameters")
     fun genericClassNotAssignableFromSuperclassedParameters() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
@@ -241,7 +228,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should be assignable from a subclass that specifies type parameters explicitly")
     fun genericClassAssignableFromSubclassWithExplicitParameters() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
         val GenericX by sources.add("GenericX", "class GenericX extends Generic<X> {}")
@@ -259,7 +245,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should be assignable from a subclass that specifies type parameters dynamically")
     fun genericClassAssignableFromSubclassWithDynamicParameters() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
         val GenericSub by sources.add("GenericSub", "class GenericSub<T> extends Generic<Generic<T>> {}")
@@ -278,7 +263,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should be assignable from a subclass that specifies incorrect type parameters dynamically")
     fun genericClassNotAssignableFromSubclassWithIncorrectDynamicParameters() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
@@ -298,7 +282,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A generic class should be assignable from a raw version of itself")
     fun genericClassNotAssignableFromRawSelf() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
         val types = sources.types {
@@ -315,7 +298,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A raw generic class should be assignable from a raw version of itself")
     fun rawGenericClassAssignableFromRawSelf() {
-        val sources = TestSources()
         val Generic by sources.add("Generic", "class Generic<T> {}")
         sources.compile()
         assertTrue(
@@ -328,7 +310,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A raw generic class should be assignable from a specialized version of itself")
     fun rawGenericClassAssignableFromSpecializedSelf() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
         val types = sources.types {
@@ -345,7 +326,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A class should be assignable from a wildcard with an equal upper bound")
     fun classAssignableFromEqualUpperBoundedWildcard() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val types = sources.types {
@@ -362,7 +342,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("A class should be assignable from a wildcard with a more subclass as a upper bound")
     fun classAssignableFromSubclassUpperBoundedWildcard() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val types = sources.types {
@@ -389,7 +368,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("The void mirror should not be assignable from other types")
     fun voidNotAssignableFromOthers() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
@@ -430,7 +408,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("The Object mirror should be assignable from wildcard mirrors")
     fun objectAssignableFromWildcard() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val types = sources.types {
@@ -453,7 +430,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Lower-bounded wildcard mirrors should be assignable from mirrors of their supertype")
     fun lowerWildcardAssignableFromSupertype() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val types = sources.types {
@@ -470,7 +446,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Lower-bounded wildcard mirrors should be assignable from mirrors of their bound")
     fun lowerWildcardAssignableFromBound() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val types = sources.types {
@@ -487,7 +462,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Lower-bounded wildcard mirrors should not be assignable from mirrors of their subtypes")
     fun lowerWildcardNotAssignableFromSubtype() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
@@ -505,7 +479,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Upper-bounded wildcard mirrors should not be assignable from mirrors of their supertype")
     fun upperWildcardNotAssignableFromSupertype() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val types = sources.types {
@@ -522,7 +495,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Upper-bounded wildcard mirrors should be assignable from mirrors of their bound")
     fun upperWildcardAssignableFromBound() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val types = sources.types {
             +"? extends X"
@@ -538,7 +510,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Upper-bounded wildcard mirrors should be assignable from mirrors of their subtypes")
     fun upperWildcardAssignableFromSubtype() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val Y by sources.add("Y", "class Y extends X {}")
         val Generic by sources.add("Generic", "class Generic<T> {}")
@@ -556,7 +527,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from mirrors of their bounds")
     fun variableAssignableFromSameType() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val types = sources.types {
             typeVariables("T extends I") {
@@ -574,7 +544,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from subtypes of their bounds")
     fun variableAssignableFromSubtype() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val X by sources.add("X", "class X implements I {}")
         val types = sources.types {
@@ -593,7 +562,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from mirrors that implement all of their bounds")
     fun variableAssignableFromDoubleImplement() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val I2 by sources.add("I2", "interface I2 {}")
         val I3 by sources.add("I3", "interface I3 extends I, I2 {}")
@@ -613,7 +581,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from mirrors that subclass all of their bounds")
     fun variableAssignableFromDoubleSubtype() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val I2 by sources.add("I2", "interface I2 {}")
         val X by sources.add("X", "class X implements I, I2{}")
@@ -633,7 +600,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should not be assignable from mirrors that superclass their bounds")
     fun variableNotAssignableFromSupertype() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val I2 by sources.add("I2", "interface I2 extends I {}")
         val types = sources.types {
@@ -652,7 +618,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should not be assignable from mirrors unrelated to their bounds")
     fun variableNotAssignableFromUnrelated() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val X by sources.add("X", "class X {}")
         val types = sources.types {
@@ -671,7 +636,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from themselves")
     fun variableAssignableFromSelf() {
-        val sources = TestSources()
         val types = sources.types {
             typeVariables("T") {
                 +"T"
@@ -688,7 +652,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from variables with subclassed bounds")
     fun variableAssignableFromSubtypeBounds() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val I2 by sources.add("I2", "interface I2 extends I {}")
         val types = sources.types {
@@ -708,7 +671,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from variables with multiple subclassed bounds")
     fun variableAssignableFromMultipleSubtypeBounds() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val J by sources.add("J", "interface J {}")
         val I2 by sources.add("I2", "interface I2 extends I {}")
@@ -730,7 +692,6 @@ internal class IsAssignableTest: MTest() {
     @Test
     @DisplayName("Variable mirrors should be assignable from variables with double subclassed bounds")
     fun variableAssignableFromDoubleSubtypeBounds() {
-        val sources = TestSources()
         val I by sources.add("I", "interface I {}")
         val J by sources.add("J", "interface J {}")
         val IJ by sources.add("IJ", "interface IJ extends I, J {}")

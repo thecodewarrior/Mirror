@@ -11,7 +11,6 @@ import dev.thecodewarrior.mirror.testsupport.Object1
 import dev.thecodewarrior.mirror.testsupport.Object1Sub
 import dev.thecodewarrior.mirror.testsupport.Object1Sub2
 import dev.thecodewarrior.mirror.testsupport.Object2
-import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertInstanceOf
 import dev.thecodewarrior.mirror.typeToken
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -126,7 +125,6 @@ internal class TypeMirrorTest: MTest() {
 
     @Test
     fun reflect_withCoreMethod_shouldReturnSameObjectAsClassMirror() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val C by sources.add("C", """
             class C {
@@ -143,7 +141,6 @@ internal class TypeMirrorTest: MTest() {
 
     @Test
     fun reflect_withCoreField_shouldReturnSameObjectAsClassMirror() {
-        val sources = TestSources()
         val X by sources.add("X", "class X {}")
         val C by sources.add("C", """
             class C {

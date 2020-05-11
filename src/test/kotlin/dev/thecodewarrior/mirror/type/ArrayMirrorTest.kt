@@ -30,7 +30,6 @@ internal class ArrayMirrorTest: MTest() {
 
     @Test
     fun getComponent_onGenericArray_shouldReturnVariable() {
-        val sources = TestSources()
         val types = sources.types {
             typeVariables("T") {
                 +"T"
