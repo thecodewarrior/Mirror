@@ -17,7 +17,13 @@ import kotlin.reflect.jvm.javaMethod
 @Suppress("TestFunctionName")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MTest {
-    val sources: TestSources = TestSources()
+    /**
+     * The value configured in the constructor is compiled, then each test individually gets its own instance.
+     */
+    val sources: TestSources get() = _sources
+    // storage is in a separate property to get rid of IntelliJ's irritating underline on something that's effectively
+    // constant in each context it's used.
+    private var _sources: TestSources = TestSources()
 
     /** Get a Class instance */
     protected inline fun <reified T> _c(): Class<*> = T::class.java
@@ -78,6 +84,7 @@ abstract class MTest {
 
     @BeforeEach
     fun beforeEachTest() {
+        _sources = TestSources()
         this.initializeForTest()
     }
 

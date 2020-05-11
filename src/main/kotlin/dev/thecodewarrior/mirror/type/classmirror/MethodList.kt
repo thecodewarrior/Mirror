@@ -1,5 +1,6 @@
 package dev.thecodewarrior.mirror.type.classmirror
 
+import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.NoSuchMirrorException
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.type.ClassMirror
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
  * A searchable list of MethodMirrors
  */
 @Untested
-class MethodList(
+class MethodList internal constructor(
     private val type: ClassMirror, private val listName: String, private val methods: List<MethodMirror>
 ): List<MethodMirror> by methods.unmodifiableView() {
     private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
@@ -24,20 +25,10 @@ class MethodList(
      */
     @Untested
     fun get(other: Method): MethodMirror {
-        if(other.declaringClass == type.java) {
-            return methods.find { it.java == other }
-                ?: throw NoSuchMirrorException("Could not find $listName method ${other.name}(${other.parameterTypes.joinToString(", ")}) " +
-                    "in $type")
-        }
-        val superclass = type.findSuperclass(other.declaringClass)
-            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for method " +
-                "${other.name}(${other.parameterTypes.joinToString(", ")}) in $type")
-        return try {
-            superclass.getMethod(other)
-        } catch (e: NoSuchMirrorException) {
-            throw NoSuchMirrorException("Could not find $listName method ${other.declaringClass.simpleName}.${other.name}" +
-                "(${other.parameterTypes.joinToString(", ")}) in $type", e)
-        }
+        val otherMirror = Mirror.reflect(other)
+        return methods.find { it.java == other || it.overrides(otherMirror) }
+            ?: throw NoSuchMirrorException("Could not find $listName method " +
+                "${other.declaringClass.simpleName}.${other.name}(${other.parameterTypes.joinToString(", ")}) in $type")
     }
 
     /**
@@ -94,5 +85,18 @@ class MethodList(
     fun getRaw(name: String, vararg params: Class<*>): MethodMirror {
         return findRaw(name, *params)
             ?: throw NoSuchMirrorException("Could not find $listName method $name(${params.joinToString(", ")}) in $type")
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is List<*>) return false
+
+        if (methods != other) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return methods.hashCode()
     }
 }

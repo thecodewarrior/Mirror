@@ -5,36 +5,58 @@ package dev.thecodewarrior.mirror.type.classmirror
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
-import dev.thecodewarrior.mirror.testsupport.FlatTest
-import dev.thecodewarrior.mirror.testsupport.FlatTestScanner
 import dev.thecodewarrior.mirror.testsupport.MTest
-import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.TestSources
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
-import dev.thecodewarrior.mirror.typeholders.classmirror.MethodsHolder
+import dev.thecodewarrior.mirror.testsupport.assertSetEquals
 import dev.thecodewarrior.mirror.utils.Untested
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
 
 @Suppress("LocalVariableName")
-internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
+internal class MethodsTest: MTest() {
 
     @Untested // just so it shows up in searches
     @Test
     fun everything_onMutationAttempt_shouldThrow() {}
 
 // abstract val declaredMethods: List<MethodMirror> ====================================================================
+
     @Test
-    fun declaredMethods_shouldEqualCoreDeclaredMethods() {}
+    fun `declaredMethods of an empty interface should be empty`() {
+    }
+
+    @Test
+    fun `declaredMethods of Object should be `() {
+    }
 
 // abstract val publicMethods: List<MethodMirror> ======================================================================
+
+    @Test
+    fun `getMethods() on a Core Reflection class shouldn't include overridden methods`() {
+        val X by sources.add("X", "class X { public void xMethod() {} public void overrideMethod() {} }")
+        val Y by sources.add("Y", "class Y extends X { public void yMethod() {} public void overrideMethod() {} }")
+        sources.compile()
+        assertSetEquals(listOf(
+            X._m("xMethod"), Y._m("yMethod"), Y._m("overrideMethod")
+        ) + Any::class.java.methods, Y.methods.toList())
+    }
+
+    @Test
+    fun `getMethods() with interface overriding interface shouldn't include overridden methods`() {
+        val I by sources.add("I", "interface I { public void iMethod(); public void overrideMethod(); }")
+        val J by sources.add("J", "interface J extends I { public void jMethod(); public void overrideMethod(); }")
+        val X by sources.add("X", "abstract class X implements J { public void xMethod() {} }")
+        sources.compile()
+        assertSetEquals(listOf(
+            I._m("iMethod"), J._m("jMethod"), X._m("xMethod"), J._m("overrideMethod")
+        ) + Any::class.java.methods, X.methods.toList())
+    }
+
     @Test
     fun publicMethods_shouldEqualCoreMethods() {}
 
 // abstract val inheritedMethods: List<MethodMirror> ============================================================================
 
-    @Nested
     /**
      * # Java Language Specification [§8.4.8](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8)
      *
@@ -63,7 +85,8 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
      *
      * A class does not inherit private or static methods from its superinterfaces.
      */
-    inner class InheritedMethods {
+    @Nested
+    inner class InheritedMethods: MTest() {
         /**
          * Easy access to the list of methods inherited from [Any].
          */
@@ -79,7 +102,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_ofInterface_shouldBeEmpty() {
-            val sources = TestSources()
             val I by sources.add("I", "interface I {}")
             sources.compile()
             assertSameSet(emptyList<MethodMirror>(), Mirror.reflectClass(I).inheritedMethods)
@@ -87,7 +109,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_ofClass_shouldBeObjectMethods() {
-            val sources = TestSources()
             val X by sources.add("X", "class X {}")
             sources.compile()
             assertSameSet(_any, Mirror.reflectClass(X).inheritedMethods)
@@ -95,7 +116,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_withEmptySuperclass_shouldBeObjectMethods() {
-            val sources = TestSources()
             val X by sources.add("X", "class X {}")
             val Y by sources.add("Y", "class Y {}")
             sources.compile()
@@ -104,7 +124,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate() {
-            val sources = TestSources()
             val X by sources.add("X", """
                 public class X {
                     public void publicMethod() {}
@@ -119,15 +138,14 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflect(X.m("publicMethod")),
-                Mirror.reflect(X.m("protectedMethod")),
-                Mirror.reflect(X.m("packagePrivateMethod"))
+                Mirror.reflect(X._m("publicMethod")),
+                Mirror.reflect(X._m("protectedMethod")),
+                Mirror.reflect(X._m("packagePrivateMethod"))
             ), Mirror.reflectClass(Y).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withSuperclassMethodsDifferentPackage_shouldInheritNonPrivateNonPackage() {
-            val sources = TestSources()
             val X by sources.add("X", """
                 public class X {
                     public void publicMethod() {}
@@ -142,14 +160,13 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflect(X.m("publicMethod")),
-                Mirror.reflect(X.m("protectedMethod"))
+                Mirror.reflect(X._m("publicMethod")),
+                Mirror.reflect(X._m("protectedMethod"))
             ), Mirror.reflectClass(Y).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_viaClassInSamePackage_shouldInheritNonPrivateNonPackage() {
-            val sources = TestSources()
             val X by sources.add("X", """
                 public class X {
                     public void publicMethod() {}
@@ -167,15 +184,14 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflect(X.m("publicMethod")),
-                Mirror.reflect(X.m("protectedMethod")),
-                Mirror.reflect(X.m("packagePrivateMethod"))
+                Mirror.reflect(X._m("publicMethod")),
+                Mirror.reflect(X._m("protectedMethod")),
+                Mirror.reflect(X._m("packagePrivateMethod"))
             ), Mirror.reflectClass(Z).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_viaClassInDifferentPackage_shouldInheritNonPrivateNonPackage() {
-            val sources = TestSources()
             val X by sources.add("X", """
                 public class X {
                     public void publicMethod() {}
@@ -193,14 +209,13 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflect(X.m("publicMethod")),
-                Mirror.reflect(X.m("protectedMethod"))
+                Mirror.reflect(X._m("publicMethod")),
+                Mirror.reflect(X._m("protectedMethod"))
             ), Mirror.reflectClass(Z).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withUnimplementedInterfaceMethods_shouldInheritInterfaceMethods() {
-            val sources = TestSources()
             val I by sources.add("I", """
                 public interface I {
                     void interfaceMethod();
@@ -213,13 +228,12 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflect(I.m("interfaceMethod"))
+                Mirror.reflect(I._m("interfaceMethod"))
             ), Mirror.reflectClass(X).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withImplementedInterfaceMethods_shouldNotInheritInterfaceMethods() {
-            val sources = TestSources()
             val I by sources.add("I", """
                 public interface I {
                     void interfaceMethod();
@@ -238,7 +252,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_withUnimplementedInterfaceExtendsMethods_shouldInheritInterfaceExtendsMethods() {
-            val sources = TestSources()
             val I by sources.add("I", """
                 public interface I {
                     void interfaceMethod();
@@ -252,13 +265,12 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflect(I.m("interfaceMethod"))
+                Mirror.reflect(I._m("interfaceMethod"))
             ), Mirror.reflectClass(X).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withGenericMethods_withDifferentConcreteSignature_shouldInheritGenericMethods() {
-            val sources = TestSources()
             val Generic by sources.add("Generic", """
                 class Generic<T> {
                     void generic(T arg) {}
@@ -272,13 +284,12 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
             sources.compile()
 
             assertSameSet(_any + listOf(
-                Mirror.reflectClass(X).getMethod(Generic.m("generic")) // getMethod because it will be specialized for V
+                Mirror.reflectClass(X).getMethod(Generic._m("generic")) // getMethod because it will be specialized for V
             ), Mirror.reflectClass(X).inheritedMethods)
         }
 
         @Test
         fun inheritedMethods_withGenericMethods_withGenericOverrideSignature_shouldNotInheritGenericMethods() {
-            val sources = TestSources()
             val Generic by sources.add("Generic", """
                 class Generic<T> {
                     void generic(T arg) {}
@@ -297,7 +308,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_withGenericMethods_withConcreteOverrideSignature_shouldNotInheritGenericMethods() {
-            val sources = TestSources()
             val Generic by sources.add("Generic", """
                 class Generic<T> {
                     void generic(T arg) {}
@@ -316,7 +326,6 @@ internal class MethodsTest: MirrorTestBase(MethodsHolder()) {
 
         @Test
         fun inheritedMethods_withGenericMethods_withConcreteBoundedOverrideSignature_shouldNotInheritGenericMethods() {
-            val sources = TestSources()
             val Generic by sources.add("Generic", """
                 class Generic<T> {
                     void generic(T arg) {}
