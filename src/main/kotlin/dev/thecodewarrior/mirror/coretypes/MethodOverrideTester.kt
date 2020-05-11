@@ -29,7 +29,7 @@ internal object MethodOverrideTester {
         if (isBridge) return null
         return declaringClass.declaredMethods.find {
             it != this &&
-                isBridge &&
+                isBridge && //todo should this be `it.isBridge`?
                 it.name == name &&
                 it.returnType.isAssignableFrom(returnType) &&
                 it.parameterCount == parameterCount &&
@@ -40,6 +40,7 @@ internal object MethodOverrideTester {
     @Suppress("PlatformExtensionReceiverOfInline")
     @JvmName("isOverriddenByExt")
     private fun Method.isOverridenBy(other: Method): Boolean {
+        if(this == other) return false
         val bridge = findBridgeMethod()
 
         if (bridge != null) return bridge.isOverridenBy(other)

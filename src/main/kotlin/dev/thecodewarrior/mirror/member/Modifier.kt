@@ -15,32 +15,37 @@ enum class Modifier(
     /**
      * The Core Reflection modifier int bitmask
      */
-    val mask: Int
+    val mask: Int,
+    /**
+     * The customary sorting order of modifiers, according to JLS §8.1.1, §8.3.1, and §8.4.3
+     * `public|protected|private abstract static final transient volatile synchronized native strictfp`
+     */
+    val customaryOrder: Int
 ) {
     /** The Java `abstract` modifier */
-    ABSTRACT(JvmModifier.ABSTRACT),
+    ABSTRACT(JvmModifier.ABSTRACT, 1),
     /** The Java `final` modifier */
-    FINAL(JvmModifier.FINAL),
+    FINAL(JvmModifier.FINAL, 3),
     /** The Java `interface` class modifier */
-    INTERFACE(JvmModifier.INTERFACE),
+    INTERFACE(JvmModifier.INTERFACE, -1),
     /** The Java `native` modifier */
-    NATIVE(JvmModifier.NATIVE),
+    NATIVE(JvmModifier.NATIVE, 7),
     /** The Java `private` access modifier */
-    PRIVATE(JvmModifier.PRIVATE),
+    PRIVATE(JvmModifier.PRIVATE, 0),
     /** The Java `protected` access modifier */
-    PROTECTED(JvmModifier.PROTECTED),
+    PROTECTED(JvmModifier.PROTECTED, 0),
     /** The Java `public` access modifier */
-    PUBLIC(JvmModifier.PUBLIC),
+    PUBLIC(JvmModifier.PUBLIC, 0),
     /** The Java `static` modifier */
-    STATIC(JvmModifier.STATIC),
+    STATIC(JvmModifier.STATIC, 2),
     /** The Java `strictfp` modifier */
-    STRICT(JvmModifier.STRICT),
+    STRICT(JvmModifier.STRICT, 8),
     /** The Java `synchronized` modifier */
-    SYNCHRONIZED(JvmModifier.SYNCHRONIZED),
+    SYNCHRONIZED(JvmModifier.SYNCHRONIZED, 6),
     /** The Java `transient` modifier */
-    TRANSIENT(JvmModifier.TRANSIENT),
+    TRANSIENT(JvmModifier.TRANSIENT, 4),
     /** The Java `volatile` modifier */
-    VOLATILE(JvmModifier.VOLATILE);
+    VOLATILE(JvmModifier.VOLATILE, 5);
 
     /**
      * Returns true if this modifier is present in the passed mods
@@ -50,37 +55,37 @@ enum class Modifier(
 
     companion object {
         /**
-         * The valid modifiers for class declarations
+         * The valid modifiers for class declarations. This set is in customary order, as defined in §8.1.1
          *
          * **Note: this value is immutable**
          */
         @JvmStatic val CLASS: Set<Modifier> = unmodifiableSetOf(PUBLIC, PROTECTED, PRIVATE, ABSTRACT, STATIC, FINAL, STRICT)
         /**
-         * The valid modifiers for interface declarations
+         * The valid modifiers for interface declarations. This set is in customary order, as defined in §8.1.1
          *
          * **Note: this value is immutable**
          */
         @JvmStatic val INTERFACE: Set<Modifier> = unmodifiableSetOf(PUBLIC, PROTECTED, PRIVATE, ABSTRACT, STATIC, STRICT)
         /**
-         * The valid modifiers for constructor declarations
+         * The valid modifiers for constructor declarations. This set is in customary order, as defined in §8.8.3
          *
          * **Note: this value is immutable**
          */
         @JvmStatic val CONSTRUCTOR: Set<Modifier> = unmodifiableSetOf(PUBLIC, PROTECTED, PRIVATE)
         /**
-         * The valid modifiers for method declarations
+         * The valid modifiers for method declarations. This set is in customary order, as defined in §8.4.3
          *
          * **Note: this value is immutable**
          */
         @JvmStatic val METHOD: Set<Modifier> = unmodifiableSetOf(PUBLIC, PROTECTED, PRIVATE, ABSTRACT, STATIC, FINAL, SYNCHRONIZED, NATIVE, STRICT)
         /**
-         * The valid modifiers for field declarations
+         * The valid modifiers for field declarations. This set is in customary order, as defined in §8.3.1
          *
          * **Note: this value is immutable**
          */
         @JvmStatic val FIELD: Set<Modifier> = unmodifiableSetOf(PUBLIC, PROTECTED, PRIVATE, STATIC, FINAL, TRANSIENT, VOLATILE)
         /**
-         * The valid modifiers for parameter declarations
+         * The valid modifiers for parameter declarations. This set is in customary order, as defined in §8.4.1
          *
          * **Note: this value is immutable**
          */

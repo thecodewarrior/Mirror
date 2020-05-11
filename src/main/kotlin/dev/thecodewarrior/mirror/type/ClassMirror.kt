@@ -365,6 +365,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
 //region Methods ================================================================================================================
     /**
      * The methods declared directly in this class.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      *
@@ -375,6 +376,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     /**
      * The methods [inherited](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8) from the
      * supertypes of this class.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      */
@@ -383,6 +385,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
 
     /**
      * The public methods declared in this class and inherited from its superclasses.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      *
@@ -394,6 +397,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * The methods that would be visible inside of this class. This includes public and private methods from this class,
      * as well as any methods inherited from the supertypes of this class. This list will include hidden public static
      * methods, since they can't be overridden, only hidden.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: This list is immutable.**
      *
@@ -407,6 +411,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      * private methods from this class and its superclasses/interfaces, as well as any methods from the supertypes of
      * this class. This list will include hidden private and static methods, since they can't be overridden, only
      * hidden.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: This list is immutable.**
      */

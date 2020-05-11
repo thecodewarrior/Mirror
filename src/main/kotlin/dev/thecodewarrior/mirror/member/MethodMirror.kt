@@ -142,10 +142,12 @@ class MethodMirror internal constructor(
 
     @Untested
     override fun toString(): String {
-        var str = "$returnType $name"
+        var str = ""
+        str += modifiers.joinToString("") { "$it ".toLowerCase() }
         if(typeParameters.isNotEmpty()) {
             str += "<${typeParameters.joinToString(", ")}>"
         }
+        str += "$returnType ${declaringClass.canonicalName}.$name"
         str += "(${parameters.joinToString(", ")})"
         return str
     }

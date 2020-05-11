@@ -17,6 +17,7 @@ import dev.thecodewarrior.mirror.type.TypeSpecialization
 import dev.thecodewarrior.mirror.type.VoidMirror
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.checkedCast
+import dev.thecodewarrior.mirror.utils.stableSort
 import dev.thecodewarrior.mirror.utils.unique
 import dev.thecodewarrior.mirror.utils.uniqueBy
 import dev.thecodewarrior.mirror.utils.unmodifiableView
@@ -238,27 +239,63 @@ internal class ClassMirrorImpl internal constructor(
 
 //region Methods ================================================================================================================
     override val declaredMethods: MethodList by lazy {
-        MethodList(this, "declared", java.declaredMethods.map {
+        MethodList(this, "declared", stableSort(java.declaredMethods).map {
             cache.executables.reflect(it).withDeclaringClass(this) as MethodMirror
         })
     }
 
+    /**
+     * # Java Language Specification [§8.4.8](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8)
+     *
+     * A class C inherits from its direct superclass all concrete methods m (both static and instance) of the superclass
+     * for which all of the following are true:
+     *
+     * - m is a member of the direct superclass of C.
+     * - m is public, protected, or declared with package access in the same package as C.
+     * - No method declared in C has a signature that is a subsignature
+     * ([§8.4.2](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.2)) of the signature of m.
+     *
+     * A class C inherits from its direct superclass and direct superinterfaces all abstract and default (§9.4) methods
+     * m for which all of the following are true:
+     *
+     * - m is a member of the direct superclass or a direct superinterface, D, of C.
+     * - m is public, protected, or declared with package access in the same package as C.
+     * - No method declared in C has a signature that is a subsignature
+     * ([§8.4.2](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.2)) of the signature of m.
+     * - No concrete method inherited by C from its direct superclass has a signature that is a subsignature of the
+     * signature of m.
+     * - There exists no method m' that is a member of the direct superclass or a direct superinterface, D', of C
+     * (m distinct from m', D distinct from D'), such that m' overrides from D'
+     * ([§8.4.8.1](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8.1),
+     * [§9.4.1.1](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-9.4.1.1)) the declaration of the
+     * method m.
+     *
+     * A class does not inherit private or static methods from its superinterfaces.
+     */
     override val inheritedMethods: MethodList by lazy {
         val supertypeMethods = superclass?.visibleMethods.orEmpty() + interfaces.flatMap { it.visibleMethods }
-        val list = supertypeMethods
-            .filter { s ->
-                if(s.access == Modifier.Access.PRIVATE)
+        val interfaceStatics = interfaces.flatMap { it.visibleMethods }.filter { it.isStatic }
+        val abstractInherited = supertypeMethods.filter { method ->
+            if(method.access == Modifier.Access.PRIVATE)
+                return@filter false
+            if(method.access == Modifier.Access.DEFAULT && java.`package` != method.declaringClass.java.`package`)
+                return@filter false
+            if(method in interfaceStatics)
+                return@filter false
+            if(declaredMethods.any { it.overrides(method) })
+                return@filter false
+            if(method.isAbstract || method.isDefault) {
+                if(supertypeMethods.any { it.overrides(method) })
                     return@filter false
-                if(s.access == Modifier.Access.DEFAULT && java.`package` != s.declaringClass.java.`package`)
-                    return@filter false
-                return@filter declaredMethods.none { it.overrides(s) }
             }
-            .unique()
-        return@lazy MethodList(this, "inherited", list)
+            true
+        }
+
+        return@lazy MethodList(this, "inherited", abstractInherited)
     }
 
     override val publicMethods: MethodList by lazy {
-        MethodList(this, "public", java.methods.map { this.getMethod(it) })
+        MethodList(this, "public", stableSort(java.methods).map { this.getMethod(it) })
     }
 
     override val visibleMethods: MethodList by lazy {
@@ -266,13 +303,13 @@ internal class ClassMirrorImpl internal constructor(
     }
 
     override val methods: MethodList by lazy {
-        val supertypeMethods = superclass?.methods.orEmpty() + interfaces.flatMap { it.methods }
-        val list = declaredMethods + supertypeMethods
+        val allMethods = declaredMethods + superclass?.methods.orEmpty() + interfaces.flatMap { it.methods }
+        val list = allMethods
             .filter { s ->
-                declaredMethods.none { it.overrides(s) }
+                allMethods.none { it.overrides(s) }
             }
             .toList().unique()
-        return@lazy MethodList(this, "inherited", list)
+        return@lazy MethodList(this, "any", list)
     }
 
     override fun getMethod(other: MethodMirror): MethodMirror = methods.get(other.java)

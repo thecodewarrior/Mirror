@@ -31,6 +31,13 @@ internal class MethodOverrideTesterTest: MTest() {
     @Nested
     inner class FromSuperclass: MTest() {
         @Test
+        fun isOverriddenBy_itself_shouldReturnFalse() {
+            val A by sources.add("A", "class A { void method() {} }")
+            sources.compile()
+            assertFalse(MethodOverrideTester.isOverridenBy(A._m("method"), A._m("method")))
+        }
+
+        @Test
         fun isOverriddenBy_withBasicOverride_shouldReturnTrue() {
             val A by sources.add("A", "class A { void method() {} }")
             val C by sources.add("C", "class C extends A { void method() {} }")
