@@ -1,6 +1,7 @@
 package dev.thecodewarrior.mirror.type.classmirror
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
+import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.NoSuchMirrorException
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
@@ -295,7 +296,7 @@ internal class ClassMirrorImpl internal constructor(
     }
 
     override val publicMethods: MethodList by lazy {
-        MethodList(this, "public", stableSort(java.methods).map { this.getMethod(it) })
+        MethodList(this, "public", (declaredMethods + inheritedMethods).filter { it.access == Modifier.Access.PUBLIC })
     }
 
     override val visibleMethods: MethodList by lazy {
@@ -304,17 +305,24 @@ internal class ClassMirrorImpl internal constructor(
 
     override val methods: MethodList by lazy {
         val allMethods = declaredMethods + superclass?.methods.orEmpty() + interfaces.flatMap { it.methods }
-        val list = allMethods
-            .filter { s ->
-                allMethods.none { it.overrides(s) }
-            }
-            .toList().unique()
+        val list = allMethods.filter { s -> allMethods.none { it.overrides(s) } }.unique()
         return@lazy MethodList(this, "any", list)
     }
 
-    override fun getMethod(other: MethodMirror): MethodMirror = methods.get(other.java)
-
-    override fun getMethod(other: Method): MethodMirror = methods.get(other)
+    override fun getMethod(other: Method): MethodMirror {
+        if(other.declaringClass == this.java) {
+            return declaredMethods.find { it.java == other }
+                ?: throw NoSuchMirrorException("Could not find method $other in $this")
+        }
+        val superclass = findSuperclass(other.declaringClass)
+            ?: throw NoSuchMirrorException("Could not find superclass ${other.declaringClass.simpleName} for method " +
+                "$other in $this")
+        try {
+            return superclass.getMethod(other)
+        } catch (e: NoSuchMirrorException) {
+            throw NoSuchMirrorException("Could not find method $other in $this", e)
+        }
+    }
 
     override fun findMethods(name: String): List<MethodMirror> = methods.find(name)
 

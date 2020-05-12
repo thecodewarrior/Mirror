@@ -380,7 +380,6 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * **Note: this list is immutable**
      */
-    @Untested
     abstract val inheritedMethods: MethodList
 
     /**
@@ -415,21 +414,12 @@ abstract class ClassMirror : ConcreteTypeMirror() {
      *
      * **Note: This list is immutable.**
      */
-    @Untested
     abstract val methods: MethodList
-
-    /**
-     * Returns the specialized mirror that represents the same method as [other].
-     * @throws NoSuchMirrorException if this type has no corresponding mirror
-     */
-    @Untested
-    abstract fun getMethod(other: MethodMirror): MethodMirror
 
     /**
      * Returns the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    @Untested
     abstract fun getMethod(other: Method): MethodMirror
 
     /**

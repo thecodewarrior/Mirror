@@ -21,6 +21,50 @@ internal class MethodsTest: MTest() {
     @Test
     fun everything_onMutationAttempt_shouldThrow() {}
 
+    @Test
+    fun `calling getMethod(Method) with a method present in the list should return the mirror`() {
+        val X by sources.add("X", "class X<T> { void method1() {} void method2() {}}")
+        sources.compile()
+        assertEquals(
+            Mirror.reflect(X._m("method1")),
+            Mirror.reflectClass(X).getMethod(X._m("method1"))
+        )
+    }
+
+    @Test
+    fun `calling getMethod(Method) with a method not present in the list should throw`() {
+        val X by sources.add("X", "class X<T> { void method1() {} void method2() {}}")
+        sources.compile()
+        assertEquals(
+            Mirror.reflect(X._m("method1")),
+            Mirror.reflectClass(X).getMethod(X._m("method1"))
+        )
+    }
+
+    @Test
+    fun `calling getMethod(Method) on a generic class should return the unspecialized mirror`() {
+        val Generic by sources.add("Generic", "class Generic<T> { void method1() {} void method2() {}}")
+        sources.compile()
+        assertEquals(
+            Mirror.reflect(Generic._m("method1")),
+            Mirror.reflectClass(Generic).getMethod(Generic._m("method1"))
+        )
+    }
+
+    @Test
+    fun `calling getMethod(Method) on specialized class should return the specialized mirror`() {
+        val X by sources.add("X", "class X {}")
+        val Generic by sources.add("Generic", "class Generic<T> { void method1(T param) {} void method2() {}}")
+        val types = sources.types {
+            +"Generic<X>"
+        }
+        sources.compile()
+        assertEquals(
+            Mirror.reflectClass(X),
+            Mirror.reflectClass(types["Generic<X>"]).getMethod(Generic._m("method1")).parameterTypes[0]
+        )
+    }
+
 // abstract val declaredMethods: List<MethodMirror> ====================================================================
 
     @Test
@@ -32,6 +76,70 @@ internal class MethodsTest: MTest() {
     }
 
 // abstract val publicMethods: List<MethodMirror> ======================================================================
+
+    @Test
+    fun `Core Reflection getMethods() on a class doesn't include overridden methods`() {
+        val X by sources.add("X", "class X { public void xMethod() {} public void overrideMethod() {} }")
+        val Y by sources.add("Y", "class Y extends X { public void yMethod() {} public void overrideMethod() {} }")
+        sources.compile()
+        assertSetEquals(listOf(
+            X._m("xMethod"), Y._m("yMethod"), Y._m("overrideMethod")
+        ), Y.methods.toList() - Any::class.java.methods)
+    }
+
+    // supposedly fixed in Java 9: https://bugs.openjdk.java.net/browse/JDK-8029674
+    @Test
+    fun `Core Reflection getMethods() on a class with multiple redundant implements includes duplicate methods`() {
+        val I by sources.add("I", "interface I { void overrideMethod(); }")
+        val J by sources.add("J", "interface J extends I { void overrideMethod(); }")
+        val X by sources.add("X", "abstract class X implements J, I { }")
+        sources.compile()
+        assertSetEquals(listOf(
+            J._m("overrideMethod"), I._m("overrideMethod")
+        ), X.methods.toList() - Any::class.java.methods)
+    }
+
+    @Test
+    fun `'publicMethods' of a class with multiple redundant implements should not have duplicate methods`() {
+        val I by sources.add("I", "interface I { void overrideMethod(); }")
+        val J by sources.add("J", "interface J extends I { void overrideMethod(); }")
+        val X by sources.add("X", "abstract class X implements J, I { }")
+        sources.compile()
+        assertSetEquals(listOf(
+            Mirror.reflect(J._m("overrideMethod"))
+        ), Mirror.reflectClass(X).publicMethods.toList() - Mirror.types.any.methods)
+    }
+
+    // supposedly fixed in Java 9: https://bugs.openjdk.java.net/browse/JDK-8029674
+    @Test
+    fun `Core Reflection getMethods() on a class with extends and a redundant implements does not include duplicate methods`() {
+        val I by sources.add("I", "interface I { void overrideMethod(); }")
+        val J by sources.add("J", "abstract class J implements I { public void overrideMethod() {} }")
+        val X by sources.add("X", "abstract class X extends J implements I { }")
+        sources.compile()
+        assertSetEquals(listOf(
+            J._m("overrideMethod")
+        ), X.methods.toList() - Any::class.java.methods)
+    }
+
+    @Test
+    fun `'publicMethods' of a class with extends and a redundant implements should not have duplicate methods`() {
+        val I by sources.add("I", "interface I { void overrideMethod(); }")
+        val J by sources.add("J", "abstract class J implements I { public void overrideMethod() {} }")
+        val X by sources.add("X", "abstract class X extends J implements I { }")
+        sources.compile()
+        assertSetEquals(listOf(
+            Mirror.reflect(J._m("overrideMethod"))
+        ), Mirror.reflectClass(X).publicMethods.toList() - Mirror.types.any.methods)
+    }
+
+    @Test
+    fun `'publicMethods' should not include static methods from interfaces`() {
+        val I by sources.add("I", "interface I { public static void overrideMethod() {} }")
+        val X by sources.add("X", "abstract class X implements I { }")
+        sources.compile()
+        assertSetEquals(listOf(), Mirror.reflectClass(X).publicMethods.toList() - Mirror.types.any.methods)
+    }
 
     @Test
     fun `Core Reflection getMethods() on an empty interface should be empty`() {
@@ -102,26 +210,26 @@ internal class MethodsTest: MTest() {
             }
 
         @Test
-        fun inheritedMethods_ofObject_shouldBeEmpty() {
+        fun `'inheritedMethods' of 'Object' class should be empty`() {
             assertSameSet(emptyList<MethodMirror>(), Mirror.reflectClass<Any>().inheritedMethods)
         }
 
         @Test
-        fun inheritedMethods_ofInterface_shouldBeEmpty() {
+        fun `'inheritedMethods' of an interface should be empty`() {
             val I by sources.add("I", "interface I {}")
             sources.compile()
             assertSameSet(emptyList<MethodMirror>(), Mirror.reflectClass(I).inheritedMethods)
         }
 
         @Test
-        fun inheritedMethods_ofClass_shouldBeObjectMethods() {
+        fun `'inheritedMethods' of an empty class should contain the Object methods`() {
             val X by sources.add("X", "class X {}")
             sources.compile()
             assertSameSet(_any, Mirror.reflectClass(X).inheritedMethods)
         }
 
         @Test
-        fun inheritedMethods_withEmptySuperclass_shouldBeObjectMethods() {
+        fun `'inheritedMethods' with an empty superclass should contain the Object methods`() {
             val X by sources.add("X", "class X {}")
             val Y by sources.add("Y", "class Y {}")
             sources.compile()
@@ -129,7 +237,7 @@ internal class MethodsTest: MTest() {
         }
 
         @Test
-        fun inheritedMethods_withSuperclassMethodsSamePackage_shouldInheritNonPrivate() {
+        fun `'inheritedMethods' with the superclass in the same package should contain all its non-private methods`() {
             val X by sources.add("X", """
                 public class X {
                     public void publicMethod() {}
@@ -172,7 +280,7 @@ internal class MethodsTest: MTest() {
         }
 
         @Test
-        fun inheritedMethods_viaClassInSamePackage_shouldInheritNonPrivateNonPackage() {
+        fun inheritedMethods_viaClassInSamePackage_shouldInheritNonPrivate() {
             val X by sources.add("X", """
                 public class X {
                     public void publicMethod() {}
@@ -349,28 +457,6 @@ internal class MethodsTest: MTest() {
         }
 
         @Test
-        fun `Core Reflection getMethods() on a class doesn't include overridden methods`() {
-            val X by sources.add("X", "class X { public void xMethod() {} public void overrideMethod() {} }")
-            val Y by sources.add("Y", "class Y extends X { public void yMethod() {} public void overrideMethod() {} }")
-            sources.compile()
-            assertSetEquals(listOf(
-                X._m("xMethod"), Y._m("yMethod"), Y._m("overrideMethod")
-            ), Y.methods.toList() - Any::class.java.methods)
-        }
-
-        // supposedly fixed in Java 9: https://bugs.openjdk.java.net/browse/JDK-8029674
-        @Test
-        fun `Core Reflection getMethods() on a class with multiple redundant implements includes duplicate methods`() {
-            val I by sources.add("I", "interface I { void overrideMethod(); }")
-            val J by sources.add("J", "interface J extends I { void overrideMethod(); }")
-            val X by sources.add("X", "abstract class X implements J, I { }")
-            sources.compile()
-            assertSetEquals(listOf(
-                J._m("overrideMethod"), I._m("overrideMethod")
-            ), X.methods.toList() - Any::class.java.methods)
-        }
-
-        @Test
         fun `'inheritedMethods' of a class with multiple redundant implements should not have duplicate methods`() {
             val I by sources.add("I", "interface I { void overrideMethod(); }")
             val J by sources.add("J", "interface J extends I { void overrideMethod(); }")
@@ -379,18 +465,6 @@ internal class MethodsTest: MTest() {
             assertSetEquals(listOf(
                 Mirror.reflect(J._m("overrideMethod"))
             ), Mirror.reflectClass(X).inheritedMethods.toList() - Mirror.types.any.methods)
-        }
-
-        // supposedly fixed in Java 9: https://bugs.openjdk.java.net/browse/JDK-8029674
-        @Test
-        fun `Core Reflection getMethods() on a class with extends and a redundant implements does not include duplicate methods`() {
-            val I by sources.add("I", "interface I { void overrideMethod(); }")
-            val J by sources.add("J", "abstract class J implements I { public void overrideMethod() {} }")
-            val X by sources.add("X", "abstract class X extends J implements I { }")
-            sources.compile()
-            assertSetEquals(listOf(
-                J._m("overrideMethod")
-            ), X.methods.toList() - Any::class.java.methods)
         }
 
         @Test
@@ -403,7 +477,6 @@ internal class MethodsTest: MTest() {
                 Mirror.reflect(J._m("overrideMethod"))
             ), Mirror.reflectClass(X).inheritedMethods.toList() - Mirror.types.any.methods)
         }
-
 
         @Test
         fun `'inheritedMethods' should not include static methods from interfaces`() {

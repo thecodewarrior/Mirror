@@ -20,18 +20,6 @@ class MethodList internal constructor(
     private val methodNameCache = ConcurrentHashMap<String, List<MethodMirror>>()
 
     /**
-     * Returns the specialized mirror that represents [other].
-     * @throws NoSuchMirrorException if this list has no corresponding mirror
-     */
-    @Untested
-    fun get(other: Method): MethodMirror {
-        val otherMirror = Mirror.reflect(other)
-        return methods.find { it.java == other || it.overrides(otherMirror) }
-            ?: throw NoSuchMirrorException("Could not find $listName method " +
-                "${other.declaringClass.simpleName}.${other.name}(${other.parameterTypes.joinToString(", ")}) in $type")
-    }
-
-    /**
      * Returns the methods in this list that have the specified name.
      *
      * **Note: The returned list is immutable.**
