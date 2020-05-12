@@ -44,8 +44,28 @@ abstract class MTest {
             return this.getDeclaredMethod(name, *parameters)
         }
     }
+    /**
+     * Get the specified constructor from this class. If no parameters are specified and no zero-parameter constructor
+     * exists, the only constructor is returned. Throws if no matching constructors exist or if no parameters were
+     * passed and there are multiple constructors.
+     */
+    protected fun Class<*>._constructor(vararg parameters: Class<*>): Constructor<*> {
+        if(parameters.isEmpty()) {
+            declaredConstructors.find { it.parameterCount == 0 }?.let { return it }
+            if(declaredConstructors.size != 1) {
+                throw IllegalArgumentException("Found ${declaredConstructors.size} constructors when looking for the " +
+                    "only constructor")
+            }
+            return declaredConstructors.first()
+        } else {
+            return this.getDeclaredConstructor(*parameters)
+        }
+    }
     /** Get the specified field from this class. */
     protected fun Class<*>._f(name: String): Field = this.getDeclaredField(name)
+    /** Get the specified field from this class. */
+    protected fun Class<*>._c(name: String): Class<*> = this.declaredClasses.find { it.simpleName == name }
+        ?: throw IllegalArgumentException("Couldn't find declared class $name in $this")
 
     /**
      * Call the specified method from this object. If no parameters are specified and no zero-parameter method exists,

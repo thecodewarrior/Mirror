@@ -18,7 +18,6 @@ abstract class ExecutableMirror internal constructor(
 ): MemberMirror(cache, specialization?.enclosing) {
     abstract override val java: Executable
 
-    //todo: Also provide reference to what this overrides, if anything
     abstract val raw: ExecutableMirror
 
     abstract val modifiers: Set<Modifier>
@@ -110,7 +109,6 @@ abstract class ExecutableMirror internal constructor(
         if(parameters.isNotEmpty() && parameters.size != typeParameters.size)
             throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from actual " +
                 "parameter count ${typeParameters.size}")
-//        if(parameters.toList() == raw.typeParameters) return raw
         val newSpecialization = specialization?.copy(arguments = parameters.toList())
             ?: ExecutableSpecialization(null, parameters.toList())
         return cache.executables.specialize(raw, newSpecialization)
@@ -120,7 +118,6 @@ abstract class ExecutableMirror internal constructor(
         if(enclosing != null && enclosing.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $enclosing. " +
                 "$this is declared in ${java.declaringClass}")
-//        if(type == raw.declaringClass) return raw
         val newSpecialization = this.specialization?.copy(enclosing = enclosing) ?: ExecutableSpecialization(enclosing, null)
         return cache.executables.specialize(raw, newSpecialization)
     }
@@ -157,7 +154,7 @@ abstract class ExecutableMirror internal constructor(
     /**
      * This method's [signature](https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html). Unlike the
      * [descriptor], the signature uses the specialized types, includes the method name, and does not include the
-     * return type. One method will override another if its raw mirror has the same signature.
+     * return type.
      */
     @Untested
     val signature: Signature by lazy { Signature(name, parameterTypes) }

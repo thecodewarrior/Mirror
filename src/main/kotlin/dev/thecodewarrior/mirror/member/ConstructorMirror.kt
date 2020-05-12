@@ -56,11 +56,21 @@ class ConstructorMirror internal constructor(
     @JvmSynthetic
     operator fun <T> invoke(vararg args: Any?): T = call(*args)
 
-    @Untested
     override fun toString(): String {
-        var str = name
-        if(typeParameters.isNotEmpty()) {
-            str += "<${typeParameters.joinToString(", ")}>"
+        var str = ""
+        if(access != Modifier.Access.DEFAULT) {
+            str += "$access ".toLowerCase()
+        }
+        if(specialization == null) {
+            if (typeParameters.isNotEmpty()) {
+                str += "<${typeParameters.joinToString(", ")}> "
+            }
+            str += name
+        } else {
+            str += name
+            if (typeParameters.isNotEmpty()) {
+                str += "<${typeParameters.joinToString(", ")}>"
+            }
         }
         str += "(${parameters.joinToString(", ")})"
         return str
