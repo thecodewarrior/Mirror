@@ -23,7 +23,8 @@ class MethodMirror internal constructor(
 
     override val raw: MethodMirror = raw ?: this
     override val name: String = java.name
-    override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    // Removing VOLATILE due to this interaction: https://bugs.openjdk.java.net/browse/JDK-5070593
+    override val modifiers: Set<Modifier> = (Modifier.fromModifiers(java.modifiers) - setOf(Modifier.VOLATILE)).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
     override val isVarArgs: Boolean = java.isVarArgs
     override val isSynthetic: Boolean = java.isSynthetic
@@ -55,13 +56,14 @@ class MethodMirror internal constructor(
     val isBridge: Boolean = java.isBridge
     /**
      * Returns true if this method is a default interface method. Implementations of default interface methods don't
-     * have this flag.
+     * have this flag. For the default values of annotation parameters, use [defaultValue].
      *
      * @see Method.isDefault
      */
     val isDefault: Boolean = java.isDefault
     /**
-     * Returns the default value of the annotation method, if it has one
+     * Returns the default value of the annotation method, if it has one. Somewhat confusingly, this is entirely
+     * separate from [isDefault]
      *
      * @see Method.getDefaultValue
      */
@@ -144,10 +146,17 @@ class MethodMirror internal constructor(
     override fun toString(): String {
         var str = ""
         str += modifiers.joinToString("") { "$it ".toLowerCase() }
-        if(typeParameters.isNotEmpty()) {
-            str += "<${typeParameters.joinToString(", ")}>"
+        if(specialization?.arguments != null) {
+            str += "$returnType ${declaringClass.canonicalName}.$name"
+            if (typeParameters.isNotEmpty()) {
+                str += "<${typeParameters.joinToString(", ")}>"
+            }
+        } else {
+            if (typeParameters.isNotEmpty()) {
+                str += "<${typeParameters.joinToString(", ")}> "
+            }
+            str += "$returnType ${declaringClass.canonicalName}.$name"
         }
-        str += "$returnType ${declaringClass.canonicalName}.$name"
         str += "(${parameters.joinToString(", ")})"
         return str
     }

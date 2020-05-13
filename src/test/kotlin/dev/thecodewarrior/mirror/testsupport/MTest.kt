@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import java.lang.IllegalArgumentException
+import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -64,33 +65,32 @@ abstract class MTest {
     /** Get the specified field from this class. */
     protected fun Class<*>._f(name: String): Field = this.getDeclaredField(name)
     /** Get the specified field from this class. */
-    protected fun Class<*>._c(name: String): Class<*> = this.declaredClasses.find { it.simpleName == name }
+    protected fun Class<*>._class(name: String): Class<*> = this.declaredClasses.find { it.simpleName == name }
         ?: throw IllegalArgumentException("Couldn't find declared class $name in $this")
 
-    /**
-     * Call the specified method from this object. If no parameters are specified and no zero-parameter method exists,
-     * the only one with the passed name is returned. Throws if no matching methods exist or multiple matching methods
-     * exist.
-     */
-    protected fun Any._call(name: String, vararg parameters: Class<*>, params: Array<Any?> = arrayOf()): Any? {
-        if(parameters.isEmpty()) {
-            val methods = this.javaClass.declaredMethods.filter { it.name == name }
-            methods.find { it.parameterCount == 0 }?.let { return it }
-            if(methods.size != 1) {
-                throw IllegalArgumentException("Found ${methods.size} candidates for method named `$name`")
-            }
-            return methods.first().invoke(this, *params)
-        } else {
-            return this.javaClass.getDeclaredMethod(name, *parameters).invoke(this, *params)
-        }
-    }
+    /** Invokes this constructor, ensuring it's accessible before doing so. */
+    @Suppress("UNCHECKED_CAST")
+    protected fun<T> Constructor<*>._newInstance(vararg arguments: Any?): T
+        = this.also { it.isAccessible = true }.newInstance(*arguments) as T
+    /** Invokes this method, ensuring it's accessible before doing so. */
+    @Suppress("UNCHECKED_CAST")
+    protected fun<T> Method._invoke(target: Any?, vararg arguments: Any?): T
+        = this.also { it.isAccessible = true }.invoke(target, *arguments) as T
+    /** Get the value of this field, ensuring it's accessible before doing so. */
+    @Suppress("UNCHECKED_CAST")
+    protected fun<T> Field._get(target: Any?): T
+        = this.also { it.isAccessible = true }.get(target) as T
+    /** Get the value of this field, ensuring it's accessible before doing so. */
+    protected fun Field._set(target: Any?, value: Any?): Unit
+        = this.also { it.isAccessible = true }.set(target, value)
+
     /** Get the value of the specified field from this object. */
     @Suppress("UNCHECKED_CAST")
     protected fun<T> Any._get(name: String): T
-        = this.javaClass._f(name).also { it.isAccessible = true }.get(this) as T
+        = this.javaClass._f(name)._get(this)
     /** Get the value of the specified field from this object. */
     protected fun Any._set(name: String, value: Any?): Unit
-        = this.javaClass._f(name).also { it.isAccessible = true }.set(this, value)
+        = this.javaClass._f(name)._get(this)
 
     /** Shorthand to easily get the backing method for a KFunction that represents a method */
     protected val KFunction<*>.m: Method get() = this.javaMethod!!

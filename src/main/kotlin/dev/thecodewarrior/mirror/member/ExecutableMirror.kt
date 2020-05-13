@@ -48,7 +48,6 @@ abstract class ExecutableMirror internal constructor(
      * is [synthetic][isSynthetic] or if this is a [bridge method][MethodMirror.isBridge]. Other cases where no
      * KCallable exists are not yet known, but may exist.
      */
-    @Untested
     abstract val kCallable: KCallable<*>?
 
     /**
@@ -88,9 +87,7 @@ abstract class ExecutableMirror internal constructor(
         }.unmodifiableView()
     }
 
-    //todo: Should this be a public API? It is in ClassMirror, should it be private there too?
-    @Untested
-    val genericMapping: TypeMapping by lazy {
+    internal val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
     }
 

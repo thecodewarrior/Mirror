@@ -15,6 +15,8 @@ import dev.thecodewarrior.mirror.testsupport.simpletypes.JObject1
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.typeholders.classmirror.SimpleHelpersHolder
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -23,16 +25,16 @@ internal class SimpleHelpersTest: MirrorTestBase(SimpleHelpersHolder()) {
 
     @Test
     fun access_ofJavaClass_shouldBeCorrect() {
-        Assertions.assertEquals(Modifier.Access.PUBLIC, Mirror.reflectClass(holder.getClass("public class")).access)
-        Assertions.assertEquals(Modifier.Access.DEFAULT, Mirror.reflectClass(holder.getClass("default class")).access)
-        Assertions.assertEquals(Modifier.Access.PROTECTED, Mirror.reflectClass(holder.getClass("protected class")).access)
-        Assertions.assertEquals(Modifier.Access.PRIVATE, Mirror.reflectClass(holder.getClass("private class")).access)
+        assertEquals(Modifier.Access.PUBLIC, Mirror.reflectClass(holder.getClass("public class")).access)
+        assertEquals(Modifier.Access.DEFAULT, Mirror.reflectClass(holder.getClass("default class")).access)
+        assertEquals(Modifier.Access.PROTECTED, Mirror.reflectClass(holder.getClass("protected class")).access)
+        assertEquals(Modifier.Access.PRIVATE, Mirror.reflectClass(holder.getClass("private class")).access)
     }
 
     @Test
     fun access_ofKotlinInternalClass_shouldBePublicAndInternal() {
-        Assertions.assertEquals(Modifier.Access.PUBLIC, Mirror.reflectClass<KotlinInternalClass>().access)
-        Assertions.assertTrue(Mirror.reflectClass<KotlinInternalClass>().isInternalAccess)
+        assertEquals(Modifier.Access.PUBLIC, Mirror.reflectClass<KotlinInternalClass>().access)
+        assertTrue(Mirror.reflectClass<KotlinInternalClass>().isInternalAccess)
     }
 
     @Test

@@ -59,7 +59,7 @@ abstract class ClassMirror : ConcreteTypeMirror() {
 
     abstract val enclosingExecutable: ExecutableMirror?
 
-    abstract val genericMapping: TypeMapping
+    internal abstract val genericMapping: TypeMapping
 
     /**
      * Returns a copy of this mirror, replacing its type parameters the given types. This will ripple the changes to

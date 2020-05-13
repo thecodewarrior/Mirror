@@ -1,28 +1,15 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.annotations.Annotation1
-import dev.thecodewarrior.mirror.annotations.AnnotationArg1
-import dev.thecodewarrior.mirror.testsupport.Exception1
-import dev.thecodewarrior.mirror.testsupport.Exception2
-import dev.thecodewarrior.mirror.testsupport.KotlinInternalConstructor
 import dev.thecodewarrior.mirror.testsupport.MTest
-import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.TestSources
-import dev.thecodewarrior.mirror.testsupport.assertSameList
-import dev.thecodewarrior.mirror.testsupport.assertSetEquals
 import dev.thecodewarrior.mirror.type.ClassMirror
-import dev.thecodewarrior.mirror.typeholders.member.ExecutableMirrorHolder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import java.lang.reflect.Executable
-import java.lang.reflect.Method
 
 @Suppress("LocalVariableName")
 internal class ConstructorMirrorTest: MTest() {
@@ -39,7 +26,7 @@ internal class ConstructorMirrorTest: MTest() {
     fun `'name' of an inner class's constructor should be the class's binary name`() {
         val X by sources.add("X", "class X { class XX { public XX() {} } }")
         sources.compile()
-        val constructor = Mirror.reflect(X._c("XX")._constructor())
+        val constructor = Mirror.reflect(X._class("XX")._constructor())
         assertEquals("gen.X\$XX", constructor.name)
     }
 
@@ -304,7 +291,7 @@ internal class ConstructorMirrorTest: MTest() {
             }
         """.trimIndent())
         sources.compile()
-        val constructor = X._c("Nested").declaredConstructors
+        val constructor = X._class("Nested").declaredConstructors
             .first { !JvmModifier.isPrivate(it.modifiers) }
         assertTrue(Mirror.reflect(constructor).isSynthetic)
     }
@@ -324,8 +311,7 @@ internal class ConstructorMirrorTest: MTest() {
         )
     }
 
-    class Foo internal constructor() {
-    }
+    class Foo internal constructor()
 
     @Test
     fun `'access' for a Kotlin 'internal' constructor should be public and 'isInternalAccess'`() {
@@ -334,7 +320,22 @@ internal class ConstructorMirrorTest: MTest() {
     }
 
     @Test
-    fun `'kCallable' for a synthetic constructor should not exist`() {
+    fun `'KCallable' for a Kotlin constructor should be correct`() {
+        class X { }
+        val constructor = X::class.java.declaredConstructors.single()
+        assertEquals(::X, Mirror.reflect(constructor).kCallable)
+    }
+
+    @Test
+    fun `'KCallable' for a Java constructor should be correct`() {
+        val X by sources.add("X", "class X {}").typed<Any>()
+        sources.compile()
+        val constructor = X.declaredConstructors.single()
+        assertEquals(X.kotlin.constructors.single(), Mirror.reflect(constructor).kCallable)
+    }
+
+    @Test
+    fun `'KCallable' for a synthetic constructor should not exist`() {
         val X by sources.add("X", """
             class X {
                 private Nested outsideAccess = new Nested();
@@ -345,11 +346,10 @@ internal class ConstructorMirrorTest: MTest() {
             }
         """.trimIndent())
         sources.compile()
-        val constructor = X._c("Nested").declaredConstructors
+        val constructor = X._class("Nested").declaredConstructors
             .first { !JvmModifier.isPrivate(it.modifiers) }
         assertNull(Mirror.reflect(constructor).kCallable)
     }
-
 
     @Test
     fun `'modifiers' for constructors should be correct`() {
@@ -367,7 +367,7 @@ internal class ConstructorMirrorTest: MTest() {
     }
 
     @Test
-    fun modifiers_ofKotlinConstructor_shouldBeCorrect() {
+    fun `'modifiers' for Kotlin constructors should be correct`() {
         open class K {
             constructor(uniqueSignature: Byte) {}
             internal constructor(uniqueSignature: Short) {}
