@@ -337,29 +337,36 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     abstract val enumConstants: List<Enum<*>>?
 
     /**
-     * Returns the simple name of the class this mirror represents.
+     * Returns the simple name of the class this mirror represents. e.g. `"String"`
      *
-     * See [Class.getSimpleName] for nuances.
+     * @see [Class.getSimpleName]
      */
     @Untested
     abstract val simpleName: String
 
     /**
-     * Returns the internal name of the class this mirror represents. (e.g. `boolean` = `Z`,
-     * `com.example.Foo` = `Lcom.example.Foo;`)
+     * Returns an informative string describing this type. e.g. `"java.lang.String"` or `"com.example.Foo$1"`
      *
-     * See [Class.getName] for nuances.
+     * @see [Class.getTypeName]
      */
     @Untested
     abstract val name: String
 
     /**
-     * Returns the simple name of the class this mirror represents.
+     * Returns the simple fully qualified name of the class this mirror represents. e.g. `"java.lang.String"`. Returns
+     * null if the underlying class does not have a canonical name (i.e., if it is a local or anonymous class)
      *
-     * See [Class.getCanonicalName] for nuances.
+     * @see [Class.getCanonicalName]
      */
     @Untested
     abstract val canonicalName: String?
+
+    /**
+     * Returns the internal name of the class this mirror represents. (e.g. `boolean` = `"Z"`,
+     * `com.example.Foo` = `"Lcom/example/Foo;"`)
+     */
+    @Untested
+    abstract val jvmName: String
 //endregion =====================================================================================================================
 
 //region Methods ================================================================================================================

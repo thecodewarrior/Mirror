@@ -30,6 +30,17 @@ abstract class MTest {
     protected inline fun <reified T> _c(): Class<*> = T::class.java
 
     /**
+     * An easy way to get an empty list for assertions without having to specify the type. Normally you would have to
+     * use `emptyList<Any>()`
+     */
+    protected fun emptyList(): List<Any> = listOf()
+    /**
+     * An easy way to get an empty set for assertions without having to specify the type. Normally you would have to
+     * use `emptySet<Any>()`
+     */
+    protected fun emptySet(): Set<Any> = setOf()
+
+    /**
      * Get the specified method from this class. If no parameters are specified and no zero-parameter method exists, the
      * only one with the passed name is returned. Throws if no matching methods exist or multiple matching methods exist
      */

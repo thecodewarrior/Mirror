@@ -383,14 +383,12 @@ internal class MethodMirrorTest : MTest() {
         )
     }
 
-    class Foo {
-        internal fun method() {}
-    }
+    internal fun `internal access test case`() {}
 
     @Test
     fun `'access' for a Kotlin 'internal' method should be public and 'isInternalAccess'`() {
-        assertEquals(Modifier.Access.PUBLIC, Mirror.reflect(Foo::method.m).access)
-        assertTrue(Mirror.reflect(Foo::method.m).isInternalAccess)
+        assertEquals(Modifier.Access.PUBLIC, Mirror.reflect(::`internal access test case`.m).access)
+        assertTrue(Mirror.reflect(::`internal access test case`.m).isInternalAccess)
     }
 
     @Test
@@ -530,4 +528,12 @@ internal class MethodMirrorTest : MTest() {
         assertEquals("public void gen.X.method<gen.Y>(gen.Y arg)", Mirror.reflect(X._m("method")).withTypeParameters(Mirror.reflect(Y)).toString())
     }
 
+    @Test
+    fun `'toString' for a method in an anonymous class should use the dot-separated binary class name`() {
+        val X by sources.add("X", "class X { static Class type = new Y() { private void method() {} }.getClass(); }")
+        val Y by sources.add("Y", "interface Y {}")
+        sources.compile()
+        val method = X._f("type")._get<Class<*>>(null)._m("method")
+        assertEquals("private void gen.X$1.method()", Mirror.reflect(method).toString())
+    }
 }

@@ -145,9 +145,9 @@ class MethodMirror internal constructor(
     @Untested
     override fun toString(): String {
         var str = ""
-        str += modifiers.joinToString("") { "$it ".toLowerCase() }
+        str += modifiers.joinToString("") { "$it " }
         if(specialization?.arguments != null) {
-            str += "$returnType ${declaringClass.canonicalName}.$name"
+            str += "$returnType ${declaringClass.name}.$name"
             if (typeParameters.isNotEmpty()) {
                 str += "<${typeParameters.joinToString(", ")}>"
             }
@@ -155,7 +155,7 @@ class MethodMirror internal constructor(
             if (typeParameters.isNotEmpty()) {
                 str += "<${typeParameters.joinToString(", ")}> "
             }
-            str += "$returnType ${declaringClass.canonicalName}.$name"
+            str += "$returnType ${declaringClass.name}.$name"
         }
         str += "(${parameters.joinToString(", ")})"
         return str

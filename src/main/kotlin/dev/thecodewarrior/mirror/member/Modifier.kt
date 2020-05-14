@@ -53,6 +53,10 @@ enum class Modifier(
     @Untested
     fun test(mods: Int): Boolean = mask and mods != 0
 
+    override fun toString(): String {
+        return super.toString().toLowerCase()
+    }
+
     companion object {
         /**
          * The valid modifiers for class declarations. This set is in customary order, as defined in §8.1.1
@@ -131,6 +135,10 @@ enum class Modifier(
          * The `public` access level
          */
         PUBLIC(Modifier.PUBLIC);
+
+        override fun toString(): String {
+            return super.toString().toLowerCase()
+        }
 
         companion object {
             /**

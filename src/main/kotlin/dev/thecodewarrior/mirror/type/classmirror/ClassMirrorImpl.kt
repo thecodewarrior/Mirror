@@ -18,6 +18,7 @@ import dev.thecodewarrior.mirror.type.TypeSpecialization
 import dev.thecodewarrior.mirror.type.VoidMirror
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.checkedCast
+import dev.thecodewarrior.mirror.utils.jvmName
 import dev.thecodewarrior.mirror.utils.stableSort
 import dev.thecodewarrior.mirror.utils.unique
 import dev.thecodewarrior.mirror.utils.uniqueBy
@@ -233,7 +234,8 @@ internal class ClassMirrorImpl internal constructor(
     override val enumConstants: List<Enum<*>>? = java.enumConstants?.toList()?.checkedCast<Enum<*>>()?.unmodifiableView()
 
     override val simpleName: String = java.simpleName
-    override val name: String = java.name
+    override val name: String = java.typeName
+    override val jvmName: String = java.jvmName
     override val canonicalName: String? = java.canonicalName
 
 //endregion
@@ -378,7 +380,7 @@ internal class ClassMirrorImpl internal constructor(
 
     private val fieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
     override fun findField(name: String): FieldMirror? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return declaredFields.find { it.name == name } // temporary until I create FieldList
     }
 
     override fun getDeclaredField(name: String): FieldMirror {

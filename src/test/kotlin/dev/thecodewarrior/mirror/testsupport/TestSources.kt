@@ -54,6 +54,11 @@ class TestSources {
      * Adds the passed class to this compiler. This method automatically prepends the necessary `package` declaration
      * to the passed string and adds a wildcard import for the "root" package, `gen`, if needed.
      *
+     * ### Useful reference
+     * - Annotation: `@Retention(RetentionPolicy.RUNTIME) @Target(ElementType...) @interface A { int value(); }`
+     *   - ElementTypes: `TYPE`, `FIELD`, `METHOD`, `PARAMETER`, `CONSTRUCTOR`, `LOCAL`_`VARIABLE`, `ANNOTATION`_`TYPE`,
+     *     `PACKAGE`, `TYPE`_`PARAMETER`, `TYPE`_`USE`
+     *
      * @param name The qualified name relative to the "root" package (`gen`)
      * @param code The code to compile into that class
      * @return A property delegate to access the test class once [compile] has been called

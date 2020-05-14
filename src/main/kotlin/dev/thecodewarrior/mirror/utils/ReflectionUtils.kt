@@ -33,3 +33,19 @@ internal fun stableSort(constructors: Array<Constructor<*>>): List<Constructor<*
 internal fun stableSort(fields: Array<Field>): List<Field> {
     return fields.sortedBy { fieldSortHash(it) }
 }
+
+/**
+ * The descriptor of the class, as used by the Java Virtual Machine
+ */
+internal val Class<*>.jvmName: String
+    get() = when(this) {
+        Byte::class.javaPrimitiveType -> "B"
+        Char::class.javaPrimitiveType -> "C"
+        Double::class.javaPrimitiveType -> "D"
+        Float::class.javaPrimitiveType -> "F"
+        Int::class.javaPrimitiveType -> "I"
+        Long::class.javaPrimitiveType -> "J"
+        Short::class.javaPrimitiveType -> "S"
+        Boolean::class.javaPrimitiveType -> "Z"
+        else -> "L${this.name.replace(".", "/")};"
+    }
