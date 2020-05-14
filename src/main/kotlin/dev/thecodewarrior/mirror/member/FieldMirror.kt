@@ -17,27 +17,83 @@ class FieldMirror internal constructor(
     _enclosing: ClassMirror?
 ): MemberMirror(cache, _enclosing) {
 
+    /**
+     * The raw, unspecialized mirror of this field.
+     */
     var raw: FieldMirror = raw ?: this
+
+    /**
+     * True if this field holds an enum constant
+     */
     val isEnumConstant: Boolean = java.isEnumConstant
 
+    /**
+     * The field's name
+     */
     val name: String = java.name
 
     // * **Note: this value is immutable**
+    /**
+     * The set of modifiers present on this field. The valid modifiers for fields are `public`, `protected`, `private`,
+     * `static`, `final`, `transient`, and `volatile`.
+     */
     @Untested
     val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+
+    /**
+     * The access level of this field.
+     */
     val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+
+    /**
+     * A shorthand for checking if the `public` [modifier][modifiers] is present on this field.
+     */
     @Untested
     val isPublic: Boolean = Modifier.PUBLIC in modifiers
+
+    /**
+     * A shorthand for checking if the `protected` [modifier][modifiers] is present on this field.
+     */
     @Untested
     val isProtected: Boolean = Modifier.PROTECTED in modifiers
+
+    /**
+     * A shorthand for checking if the `private` [modifier][modifiers] is present on this field.
+     */
     @Untested
     val isPrivate: Boolean = Modifier.PRIVATE in modifiers
+
+    /**
+     * A shorthand for checking if neither the `public`, `protected`, nor `private` [modifiers][modifiers] are present
+     * on this field.
+     */
+    @Untested
+    val isPackagePrivate: Boolean = !isPublic && !isProtected && !isPrivate
+
+    /**
+     * A shorthand for checking if the `static` [modifier][modifiers] is present on this field.
+     */
     val isStatic: Boolean = Modifier.STATIC in modifiers
+
+    /**
+     * A shorthand for checking if the `final` [modifier][modifiers] is present on this field.
+     */
     @Untested
     val isFinal: Boolean = Modifier.FINAL in modifiers
+
+    /**
+     * A shorthand for checking if the `transient` [modifier][modifiers] is present on this field.
+     */
     val isTransient: Boolean = Modifier.TRANSIENT in modifiers
+
+    /**
+     * A shorthand for checking if the `volatile` [modifier][modifiers] is present on this field.
+     */
     val isVolatile: Boolean = Modifier.VOLATILE in modifiers
 
+    /**
+     * The field type, specialized based on the declaring class's specialization.
+     */
     val type: TypeMirror by lazy {
         declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
@@ -67,6 +123,11 @@ class FieldMirror internal constructor(
         MethodHandleHelper.wrapperForStaticGetter(java)
     }
 
+    /**
+     * Get the value of this field in the passed instance. If this is a static field, `null` should be used for the
+     * instance. After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle] the access should
+     * be near-native speed. TODO: TEST SPEED!
+     */
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> get(receiver: Any?): T {
         if(isStatic) {
@@ -91,6 +152,11 @@ class FieldMirror internal constructor(
         MethodHandleHelper.wrapperForStaticSetter(java)
     }
 
+    /**
+     * Set the value of this field in the passed instance. If this is a static field, `null` should be used for the
+     * instance. After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle] the access should
+     * be near-native speed. TODO: TEST SPEED!
+     */
     @Suppress("UNCHECKED_CAST")
     fun set(receiver: Any?, value: Any?) {
         if(isStatic) {
