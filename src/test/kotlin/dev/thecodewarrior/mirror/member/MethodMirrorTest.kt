@@ -444,6 +444,8 @@ internal class MethodMirrorTest : MTest() {
                 static void _static() {}
                 final void _final() {}
                 strictfp void _strictfp() {}
+                synchronized void _synchronized() {}
+                native void _native();
             }
         """.trimIndent())
         sources.compile()
@@ -456,7 +458,41 @@ internal class MethodMirrorTest : MTest() {
             { test(X._m("_abstract"), Modifier.ABSTRACT) },
             { test(X._m("_static"), Modifier.STATIC) },
             { test(X._m("_final"), Modifier.FINAL) },
-            { test(X._m("_strictfp"), Modifier.STRICT) }
+            { test(X._m("_strictfp"), Modifier.STRICT) },
+            { test(X._m("_synchronized"), Modifier.SYNCHRONIZED) },
+            { test(X._m("_native"), Modifier.NATIVE) }
+        )
+    }
+
+    @Test
+    fun `modifier helpers for methods should be correct`() {
+        val X by sources.add("X", """
+            public abstract class X {
+                public void _public() {}
+                protected void _protected() {}
+                void _default() {}
+                private void _private() {}
+                abstract void _abstract();
+                static void _static() {}
+                final void _final() {}
+                strictfp void _strictfp() {}
+                synchronized void _synchronized() {}
+                native void _native();
+            }
+        """.trimIndent())
+        sources.compile()
+        fun test(method: Method, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(method).modifiers)
+        assertAll(
+            { assertTrue(Mirror.reflect(X._m("_public")).isPublic) },
+            { assertTrue(Mirror.reflect(X._m("_default")).isPackagePrivate) },
+            { assertTrue(Mirror.reflect(X._m("_protected")).isProtected) },
+            { assertTrue(Mirror.reflect(X._m("_private")).isPrivate) },
+            { assertTrue(Mirror.reflect(X._m("_abstract")).isAbstract) },
+            { assertTrue(Mirror.reflect(X._m("_static")).isStatic) },
+            { assertTrue(Mirror.reflect(X._m("_final")).isFinal) },
+            { assertTrue(Mirror.reflect(X._m("_strictfp")).isStrict) },
+            { assertTrue(Mirror.reflect(X._m("_synchronized")).isSynchronized) },
+            { assertTrue(Mirror.reflect(X._m("_native")).isNative) }
         )
     }
 

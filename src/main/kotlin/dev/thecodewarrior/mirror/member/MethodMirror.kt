@@ -34,19 +34,56 @@ class MethodMirror internal constructor(
         declaringClass.kClass.functions.find { it.javaMethod == java }
     }
 
-    @Untested
+    /**
+     * A shorthand for checking if the `public` [modifier][modifiers] is present on this field.
+     */
+    val isPublic: Boolean = Modifier.PUBLIC in modifiers
+
+    /**
+     * A shorthand for checking if the `protected` [modifier][modifiers] is present on this field.
+     */
+    val isProtected: Boolean = Modifier.PROTECTED in modifiers
+
+    /**
+     * A shorthand for checking if the `private` [modifier][modifiers] is present on this field.
+     */
+    val isPrivate: Boolean = Modifier.PRIVATE in modifiers
+
+    /**
+     * A shorthand for checking if neither the `public`, `protected`, nor `private` [modifiers][modifiers] are present
+     * on this field.
+     */
+    val isPackagePrivate: Boolean = !isPublic && !isProtected && !isPrivate
+
+    /**
+     * A shorthand for checking if the `abstract` [modifier][modifiers] is present on this field.
+     */
     val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
-    @Untested
+
+    /**
+     * A shorthand for checking if the `static` [modifier][modifiers] is present on this field.
+     */
     val isStatic: Boolean = Modifier.STATIC in modifiers
-    @Untested
+
+    /**
+     * A shorthand for checking if the `final` [modifier][modifiers] is present on this field.
+     */
     val isFinal: Boolean = Modifier.FINAL in modifiers
-    @Untested
-    val isSynchronized: Boolean = Modifier.SYNCHRONIZED in modifiers
-    @Untested
-    val isNative: Boolean = Modifier.NATIVE in modifiers
-    @Untested
+
+    /**
+     * A shorthand for checking if the `strictfp` [modifier][modifiers] is present on this field.
+     */
     val isStrict: Boolean = Modifier.STRICT in modifiers
 
+    /**
+     * A shorthand for checking if the `synchronized` [modifier][modifiers] is present on this field.
+     */
+    val isSynchronized: Boolean = Modifier.SYNCHRONIZED in modifiers
+
+    /**
+     * A shorthand for checking if the `native` [modifier][modifiers] is present on this field.
+     */
+    val isNative: Boolean = Modifier.NATIVE in modifiers
 
     /**
      * Returns true if this method is a [bridge method](https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html#bridgeMethods).
@@ -142,7 +179,6 @@ class MethodMirror internal constructor(
     @JvmSynthetic
     operator fun <T> invoke(receiver: Any?, vararg args: Any?): T = call(receiver, *args)
 
-    @Untested
     override fun toString(): String {
         var str = ""
         str += modifiers.joinToString("") { "$it " }
