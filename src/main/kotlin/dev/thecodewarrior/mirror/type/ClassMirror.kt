@@ -10,6 +10,7 @@ import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.type.classmirror.MethodList
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.UntestedFailure
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -23,7 +24,7 @@ import kotlin.reflect.KClass
  * @see VoidMirror
  * @see WildcardMirror
  */
-abstract class ClassMirror : ConcreteTypeMirror() {
+abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
 
     /**
      * The raw, unspecialized version of this mirror.
@@ -502,25 +503,14 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     @Untested
     abstract val publicFields: List<FieldMirror>
 
-    // TODO - this is inconsistent with `methods`, and may be renamed to `visibleFields` or something more descriptive
-    //   does this even include superclass private fields? It seems to indicate so.
     /**
-     * The fields declared in this class and inherited from its superclasses. Since fields can be shadowed but not
-     * overridden, there may be multiple fields with the same name in this list.
+     * The fields declared in this class and its superclasses. Since fields can be shadowed but not overridden, there
+     * may be multiple fields with the same name in this list.
      *
      * **Note: This list is immutable.**
      */
     @Untested
     abstract val fields: List<FieldMirror>
-
-    // TODO - add allFields, which contains all the methods, barring any that have been overridden
-
-    /**
-     * Returns the specialized mirror that represents the same field as [other].
-     * @throws NoSuchMirrorException if this type has no corresponding mirror
-     */
-    @Untested
-    abstract fun getField(other: FieldMirror): FieldMirror
 
     /**
      * Returns the specialized mirror that represents [other].
@@ -741,6 +731,27 @@ abstract class ClassMirror : ConcreteTypeMirror() {
     @Untested
     abstract fun getMemberClass(name: String): ClassMirror?
 //endregion =====================================================================================================================
+
+    /**
+     * Returns true if the specified annotation is present on this class.
+     *
+     * @see AnnotatedElement.isAnnotationPresent
+     */
+    inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
+
+    /**
+     * Returns the annotation of the specified type, or null if no such annotation is present.
+     *
+     * @see AnnotatedElement.getAnnotation
+     */
+    inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
+
+    /**
+     * Returns the annotation of the specified type, or null if no such annotation is _directly_ present on this class.
+     *
+     * @see AnnotatedElement.getDeclaredAnnotation
+     */
+    inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
 
     /**
      * Returns a string representing the declaration of this type with type parameters substituted in,

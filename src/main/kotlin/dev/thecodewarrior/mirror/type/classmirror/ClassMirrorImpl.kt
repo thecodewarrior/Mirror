@@ -23,6 +23,7 @@ import dev.thecodewarrior.mirror.utils.stableSort
 import dev.thecodewarrior.mirror.utils.unique
 import dev.thecodewarrior.mirror.utils.uniqueBy
 import dev.thecodewarrior.mirror.utils.unmodifiableView
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -39,7 +40,7 @@ internal class ClassMirrorImpl internal constructor(
     override val java: Class<*>,
     raw: ClassMirror?,
     override val specialization: TypeSpecialization.Class?
-): ClassMirror() {
+): ClassMirror(), AnnotatedElement by java {
     override val coreType: Type
     override val coreAnnotatedType: AnnotatedType
 
@@ -344,12 +345,13 @@ internal class ClassMirrorImpl internal constructor(
             cache.fields.reflect(it).withDeclaringClass(this)
         }.unmodifiableView()
     }
-    override val publicFields: List<FieldMirror> by lazy { java.fields.mapNotNull { getField(it) }.unmodifiableView() }
+    override val publicFields: List<FieldMirror> by lazy {
+        java.fields.mapNotNull { getField(it) }.unmodifiableView()
+    }
     override val fields: List<FieldMirror> by lazy {
-        (declaredFields + superclass?.fields.orEmpty()).uniqueBy { it.name }.unmodifiableView()
+        (declaredFields + superclass?.fields.orEmpty()).unmodifiableView()
     }
 
-    override fun getField(other: FieldMirror): FieldMirror = getField(other.java)
     override fun getField(other: Field): FieldMirror {
         if(other.declaringClass == this.java) {
             return declaredFields.find { it.java == other }
@@ -378,9 +380,8 @@ internal class ClassMirrorImpl internal constructor(
         }
     }
 
-    private val fieldNameCache = ConcurrentHashMap<String, FieldMirror?>()
     override fun findField(name: String): FieldMirror? {
-        return declaredFields.find { it.name == name } // temporary until I create FieldList
+        return declaredFields.find { it.name == name }
     }
 
     override fun getDeclaredField(name: String): FieldMirror {
@@ -498,7 +499,6 @@ internal class ClassMirrorImpl internal constructor(
             ?: throw NoSuchMirrorException("Could not find member class with name $name in $this")
     }
 //endregion =====================================================================================================================
-
 
 //region TypeMirror =============================================================================================================
     private val isAssignableCache = ConcurrentHashMap<TypeMirror, Boolean>()

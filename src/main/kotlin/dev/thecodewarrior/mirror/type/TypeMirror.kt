@@ -5,6 +5,8 @@ import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.unmodifiableView
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
@@ -79,14 +81,6 @@ abstract class TypeMirror internal constructor() {
     }
 
     /**
-     * The [type annotations][java.lang.annotation.ElementType.TYPE_USE] present on this type.
-     * In the case of [ClassMirror], these are not the annotations present on the class _declaration,_
-     * they are the annotations present on the _use_ of the type.
-     */
-    val typeAnnotations: List<Annotation>
-        get() = specialization?.annotations ?: emptyList()
-
-    /**
      * Creates a copy of this type mirror that has been specialized to have the passed
      * [type annotation][java.lang.annotation.ElementType.TYPE_USE]. Type annotations on this mirror will not be
      * present on the resulting mirror.
@@ -101,6 +95,47 @@ abstract class TypeMirror internal constructor() {
             )
         )
     }
+
+//region Type Annotations
+    /**
+     * The [type annotations][java.lang.annotation.ElementType.TYPE_USE] present on this type.
+     * In the case of [ClassMirror], these are not the annotations present on the class _declaration,_
+     * they are the annotations present on the _use_ of the type.
+     */
+    val typeAnnotations: List<Annotation>
+        get() = specialization?.annotations ?: emptyList()
+
+    /**
+     * Returns true if the specified annotation is present on this class.
+     */
+    @Untested
+    fun isTypeAnnotationPresent(annotationType: Class<out Annotation>): Boolean {
+        return this.getTypeAnnotation(annotationType) != null
+    }
+
+    /**
+     * Returns the annotation of the specified type, or null if no such annotation is present.
+     */
+    @Untested
+    fun <T: Annotation> getTypeAnnotation(annotationClass: Class<T>): T? {
+        return coreAnnotatedType.getDeclaredAnnotation(annotationClass)
+    }
+
+    @Untested
+    fun <T: Annotation> getTypeAnnotationsByType(annotationClass: Class<T>): List<T> {
+        return coreAnnotatedType.getDeclaredAnnotationsByType(annotationClass).toList()
+    }
+
+    /**
+     * Returns true if the specified annotation is present on this class.
+     */
+    inline fun <reified T: Annotation> isTypeAnnotationPresent(): Boolean = this.isTypeAnnotationPresent(T::class.java)
+
+    /**
+     * Returns the annotation of the specified type, or null if no such annotation is present.
+     */
+    inline fun <reified T: Annotation> getTypeAnnotation(): T? = this.getTypeAnnotation(T::class.java)
+//endregion
 
     /**
      * Casts this TypeMirror to ClassMirror. Designed to avoid the nested casts from hell:

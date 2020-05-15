@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.type
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.utils.Untested
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
@@ -24,7 +25,7 @@ class VariableMirror internal constructor(
     override val coreType: TypeVariable<*>,
     raw: VariableMirror?,
     override val specialization: TypeSpecialization.Common?
-): TypeMirror() {
+): TypeMirror(), AnnotatedElement by coreType {
 
     override val coreAnnotatedType: AnnotatedTypeVariable
         = CoreTypeUtils.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedTypeVariable
@@ -59,6 +60,28 @@ class VariableMirror internal constructor(
             it.isAssignableFrom(other)
         }
     }
+
+    /**
+     * Returns true if the specified annotation is present on this type variable.
+     *
+     * @see AnnotatedElement.isAnnotationPresent
+     */
+    inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
+
+    /**
+     * Returns the annotation of the specified type, or null if no such annotation is present.
+     *
+     * @see AnnotatedElement.getAnnotation
+     */
+    inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
+
+    /**
+     * Returns the annotation of the specified type, or null if no such annotation is _directly_ present on this type
+     * variable.
+     *
+     * @see AnnotatedElement.getDeclaredAnnotation
+     */
+    inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
 
     @Untested
     override fun toString(): String {

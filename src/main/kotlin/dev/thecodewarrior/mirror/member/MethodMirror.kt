@@ -7,6 +7,7 @@ import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 import java.util.LinkedList
 import kotlin.reflect.KFunction
@@ -22,6 +23,7 @@ class MethodMirror internal constructor(
 ): ExecutableMirror(cache, specialization) {
 
     override val raw: MethodMirror = raw ?: this
+    override val annotatedElement: AnnotatedElement = java
     override val name: String = java.name
     // Removing VOLATILE due to this interaction: https://bugs.openjdk.java.net/browse/JDK-5070593
     override val modifiers: Set<Modifier> = (Modifier.fromModifiers(java.modifiers) - setOf(Modifier.VOLATILE)).unmodifiableView()

@@ -6,6 +6,7 @@ import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Constructor
 import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
@@ -21,6 +22,7 @@ class ConstructorMirror internal constructor(
 ): ExecutableMirror(cache, specialization) {
 
     override val raw: ConstructorMirror = raw ?: this
+    override val annotatedElement: AnnotatedElement = java
     override val name: String = java.name
     override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)

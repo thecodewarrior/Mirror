@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MTest
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -181,8 +182,8 @@ internal class MethodMirrorTest : MTest() {
         fun `'annotations' of an non-annotated parameter should return an empty list`() {
             val X by sources.add("X", "class X { public void method(int param) {} }")
             sources.compile()
-            assertEquals(
-                emptyList<Any>(),
+            assertArrayEquals(
+                emptyArray<Any>(),
                 Mirror.reflect(X._m("method")).parameters.single().annotations
             )
         }
@@ -193,8 +194,20 @@ internal class MethodMirrorTest : MTest() {
             val A2 by sources.add("A2", "@Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface A2 { String value(); }").typed<Annotation>()
             val X by sources.add("X", "class X { public void method(@A @A2(\"annotation value\") int param) {} }")
             sources.compile()
-            assertEquals(
-                listOf(Mirror.newAnnotation(A), Mirror.newAnnotation(A2, "value" to "annotation value")),
+            assertArrayEquals(
+                arrayOf(Mirror.newAnnotation(A), Mirror.newAnnotation(A2, "value" to "annotation value")),
+                Mirror.reflect(X._m("method")).parameters.single().annotations
+            )
+        }
+
+        @Test
+        fun `'annotations' of a parameter with an annotated type should return an empty list`() {
+            val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
+            val A2 by sources.add("A2", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A2 { String value(); }").typed<Annotation>()
+            val X by sources.add("X", "class X { public void method(@A @A2(\"annotation value\") int param) {} }")
+            sources.compile()
+            assertArrayEquals(
+                arrayOf<Any>(),
                 Mirror.reflect(X._m("method")).parameters.single().annotations
             )
         }

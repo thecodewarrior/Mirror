@@ -26,6 +26,7 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
         javaParameters = true
+        freeCompilerArgs += "-Xjvm-default=enable"
     }
 }
 
@@ -33,6 +34,7 @@ compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
         javaParameters = true
+        freeCompilerArgs += "-Xjvm-default=enable"
     }
 }
 

@@ -8,6 +8,7 @@ import dev.thecodewarrior.mirror.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.UntestedNegative
 import dev.thecodewarrior.mirror.utils.unmodifiableView
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Field
 
 class FieldMirror internal constructor(
@@ -21,6 +22,7 @@ class FieldMirror internal constructor(
      * The raw, unspecialized mirror of this field.
      */
     var raw: FieldMirror = raw ?: this
+    override val annotatedElement: AnnotatedElement = java
 
     /**
      * The field's name
