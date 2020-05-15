@@ -9,6 +9,7 @@ version = "0.1.0"
 
 repositories {
     mavenCentral()
+    jcenter()
     maven { url = "https://jitpack.io" }
 }
 
@@ -20,6 +21,7 @@ dependencies {
     api('org.jetbrains.kotlin:kotlin-stdlib-jdk8')
     implementation('org.jetbrains.kotlin:kotlin-reflect')
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.0')
+    testImplementation('io.mockk:mockk:1.10.0')
 }
 
 compileKotlin {

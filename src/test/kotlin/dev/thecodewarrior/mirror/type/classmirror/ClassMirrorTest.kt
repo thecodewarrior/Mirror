@@ -1,4 +1,4 @@
-package dev.thecodewarrior.mirror.type
+package dev.thecodewarrior.mirror.type.classmirror
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.GenericObject1
@@ -11,6 +11,7 @@ import dev.thecodewarrior.mirror.testsupport.OuterClass1
 import dev.thecodewarrior.mirror.testsupport.OuterGenericClass1
 import dev.thecodewarrior.mirror.testsupport.assertSameList
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
+import dev.thecodewarrior.mirror.type.TypeMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame

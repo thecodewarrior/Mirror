@@ -14,7 +14,6 @@ abstract class ConcreteTypeMirror: TypeMirror() {
     /**
      * The raw Core Reflection class this mirror represents
      */
-    @Untested
     abstract val java: Class<*>
 }
 

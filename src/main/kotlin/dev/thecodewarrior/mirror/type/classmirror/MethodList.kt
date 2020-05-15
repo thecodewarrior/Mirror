@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * A searchable list of MethodMirrors
  */
-@Untested
 class MethodList internal constructor(
     private val type: ClassMirror, private val listName: String, private val methods: List<MethodMirror>
 ): List<MethodMirror> by methods.unmodifiableView() {
@@ -24,8 +23,7 @@ class MethodList internal constructor(
      *
      * **Note: The returned list is immutable.**
      */
-    @Untested
-    fun find(name: String): List<MethodMirror> {
+    fun findAll(name: String): List<MethodMirror> {
         return methodNameCache.getOrPut(name) {
             methods.filter { it.name == name }.unmodifiableView()
         }
@@ -34,7 +32,6 @@ class MethodList internal constructor(
     /**
      * Finds the method in this list that has the specified signature, or null if no such method exists.
      */
-    @Untested
     fun find(name: String, vararg params: TypeMirror): MethodMirror? {
         val paramsList = params.toList()
         return methods.find {
@@ -45,11 +42,10 @@ class MethodList internal constructor(
     /**
      * Finds the method in this list that has the specified raw signature, or null if no such method exists.
      */
-    @Untested
     fun findRaw(name: String, vararg params: Class<*>): MethodMirror? {
-        val paramsList = params.map { type.cache.types.reflect(it) }
-        return methods.find {
-            it.name == name && it.raw.parameterTypes == paramsList
+        return methods.find { method ->
+            @Suppress("PlatformExtensionReceiverOfInline")
+            method.name == name && method.java.parameterTypes.contentEquals(params)
         }
     }
 
@@ -58,7 +54,6 @@ class MethodList internal constructor(
      *
      * @throws NoSuchMirrorException if no method with the specified signature exists
      */
-    @Untested
     fun get(name: String, vararg params: TypeMirror): MethodMirror {
         return find(name, *params)
             ?: throw NoSuchMirrorException("Could not find $listName method $name(${params.joinToString(", ")}) in $type")
@@ -69,22 +64,8 @@ class MethodList internal constructor(
      *
      * @throws NoSuchMirrorException if no method with the specified signature exists
      */
-    @Untested
     fun getRaw(name: String, vararg params: Class<*>): MethodMirror {
         return findRaw(name, *params)
             ?: throw NoSuchMirrorException("Could not find $listName method $name(${params.joinToString(", ")}) in $type")
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is List<*>) return false
-
-        if (methods != other) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return methods.hashCode()
     }
 }

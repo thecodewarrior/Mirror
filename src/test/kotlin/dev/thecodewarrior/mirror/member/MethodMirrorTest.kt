@@ -211,6 +211,20 @@ internal class MethodMirrorTest : MTest() {
                 Mirror.reflect(X._m("method")).parameters.single().annotations
             )
         }
+
+        @Test
+        fun `'isFinal' of a final parameter should be true`() {
+            val X by sources.add("X", "class X { public void method(final int param) {} }")
+            sources.compile()
+            assertTrue(Mirror.reflect(X._m("method")).parameters.single().isFinal)
+        }
+
+        @Test
+        fun `'isFinal' of a non-final parameter should be false`() {
+            val X by sources.add("X", "class X { public void method(int param) {} }")
+            sources.compile()
+            assertFalse(Mirror.reflect(X._m("method")).parameters.single().isFinal)
+        }
     }
 
     @Test

@@ -21,7 +21,6 @@ class ParameterMirror internal constructor(
     /**
      * True if the `final` modifier is present on this parameter
      */
-    @Untested
     val isFinal: Boolean = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
 
     /**

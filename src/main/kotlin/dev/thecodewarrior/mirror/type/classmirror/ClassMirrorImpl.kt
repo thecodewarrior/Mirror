@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.type.classmirror
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
-import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.NoSuchMirrorException
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
@@ -327,7 +326,7 @@ internal class ClassMirrorImpl internal constructor(
         }
     }
 
-    override fun findMethods(name: String): List<MethodMirror> = methods.find(name)
+    override fun findMethods(name: String): List<MethodMirror> = methods.findAll(name)
 
     override fun findMethod(name: String, vararg params: TypeMirror): MethodMirror? = methods.find(name, *params)
 

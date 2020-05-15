@@ -15,7 +15,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod
 
-@Suppress("TestFunctionName")
+@Suppress("TestFunctionName", "PropertyName")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MTest {
     /**
@@ -27,7 +27,17 @@ abstract class MTest {
     private var _sources: TestSources = TestSources()
 
     /** Get a Class instance */
-    protected inline fun <reified T> _c(): Class<*> = T::class.java
+    protected inline fun <reified T> _c(): Class<T> = T::class.java
+
+    protected val _boolean: Class<*> = Boolean::class.javaPrimitiveType!!
+    protected val _byte: Class<*> = Byte::class.javaPrimitiveType!!
+    protected val _char: Class<*> = Char::class.javaPrimitiveType!!
+    protected val _short: Class<*> = Short::class.javaPrimitiveType!!
+    protected val _int: Class<*> = Int::class.javaPrimitiveType!!
+    protected val _long: Class<*> = Long::class.javaPrimitiveType!!
+    protected val _float: Class<*> = Float::class.javaPrimitiveType!!
+    protected val _double: Class<*> = Double::class.javaPrimitiveType!!
+    protected val _object: Class<*> = Any::class.java
 
     /**
      * An easy way to get an empty list for assertions without having to specify the type. Normally you would have to
