@@ -251,11 +251,11 @@ internal class MethodsTest: MTest() {
             """.trimIndent())
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflect(X._m("publicMethod")),
                 Mirror.reflect(X._m("protectedMethod")),
                 Mirror.reflect(X._m("packagePrivateMethod"))
-            ), Mirror.reflectClass(Y).inheritedMethods)
+            ), Mirror.reflectClass(Y).inheritedMethods - _any)
         }
 
         @Test
@@ -273,10 +273,10 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflect(X._m("publicMethod")),
                 Mirror.reflect(X._m("protectedMethod"))
-            ), Mirror.reflectClass(Y).inheritedMethods)
+            ), Mirror.reflectClass(Y).inheritedMethods - _any)
         }
 
         @Test
@@ -297,11 +297,11 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflect(X._m("publicMethod")),
                 Mirror.reflect(X._m("protectedMethod")),
                 Mirror.reflect(X._m("packagePrivateMethod"))
-            ), Mirror.reflectClass(Z).inheritedMethods)
+            ), Mirror.reflectClass(Z).inheritedMethods - _any)
         }
 
         @Test
@@ -322,10 +322,10 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflect(X._m("publicMethod")),
                 Mirror.reflect(X._m("protectedMethod"))
-            ), Mirror.reflectClass(Z).inheritedMethods)
+            ), Mirror.reflectClass(Z).inheritedMethods - _any)
         }
 
         @Test
@@ -341,9 +341,9 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflect(I._m("interfaceMethod"))
-            ), Mirror.reflectClass(X).inheritedMethods)
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
         }
 
         @Test
@@ -360,8 +360,8 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
-            ), Mirror.reflectClass(X).inheritedMethods)
+            assertSameSet(listOf(
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
         }
 
         @Test
@@ -378,9 +378,9 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflect(I._m("interfaceMethod"))
-            ), Mirror.reflectClass(X).inheritedMethods)
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
         }
 
         @Test
@@ -397,9 +397,9 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
+            assertSameSet(listOf(
                 Mirror.reflectClass(X).getMethod(Generic._m("generic")) // getMethod because it will be specialized for V
-            ), Mirror.reflectClass(X).inheritedMethods)
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
         }
 
         @Test
@@ -416,8 +416,8 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
-            ), Mirror.reflectClass(X).inheritedMethods)
+            assertSameSet(listOf(
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
         }
 
         @Test
@@ -434,8 +434,8 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
-            ), Mirror.reflectClass(X).inheritedMethods)
+            assertSameSet(listOf(
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
         }
 
         @Test
@@ -452,8 +452,19 @@ internal class MethodsTest: MTest() {
             """)
             sources.compile()
 
-            assertSameSet(_any + listOf(
-            ), Mirror.reflectClass(X).inheritedMethods)
+            assertSameSet(listOf(
+            ), Mirror.reflectClass(X).inheritedMethods - _any)
+        }
+
+        @Test
+        fun `'inheritedMethods' of a class with multiple interfaces with same signature should not have duplicate methods`() {
+            val I by sources.add("I", "interface I { void overrideMethod(); }")
+            val J by sources.add("J", "interface J { void overrideMethod(); }")
+            val X by sources.add("X", "abstract class X implements J, I { }")
+            sources.compile()
+            assertSetEquals(listOf(
+                Mirror.reflect(I._m("overrideMethod")), Mirror.reflect(J._m("overrideMethod"))
+            ), Mirror.reflectClass(X).inheritedMethods.toList() - Mirror.types.any.methods)
         }
 
         @Test

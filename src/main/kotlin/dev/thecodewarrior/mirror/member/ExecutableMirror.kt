@@ -73,6 +73,13 @@ abstract class ExecutableMirror internal constructor(
         parameters.map { it.type }.unmodifiableView()
     }
 
+    /**
+     * Used to determine method override relationships
+     */
+    internal val erasedParameterTypes: List<Class<*>> by lazy {
+        parameterTypes.map { it.erasure }
+    }
+
     // * **Note: this value is immutable**
     val exceptionTypes: List<TypeMirror> by lazy {
         java.annotatedExceptionTypes.map {

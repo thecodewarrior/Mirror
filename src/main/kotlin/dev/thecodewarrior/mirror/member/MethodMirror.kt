@@ -153,7 +153,16 @@ class MethodMirror internal constructor(
      */
     @Untested
     fun overrides(other: MethodMirror): Boolean {
-        return MethodOverrideTester.isOverridenBy(other.java, java)
+        return MethodOverrideTester.overrides(java, other.java)
+    }
+
+    @Untested
+    fun visibleFrom(clazz: Class<*>): Boolean {
+        if(access == Modifier.Access.PRIVATE)
+            return false
+        if(access == Modifier.Access.DEFAULT && clazz.`package` != declaringClass.java.`package`)
+            return false
+        return true
     }
 
     @Suppress("UNCHECKED_CAST")

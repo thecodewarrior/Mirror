@@ -10,9 +10,19 @@ import java.lang.reflect.Modifier
 internal object MethodOverrideTester {
 
     @Untested
-    fun findOverridenMethod(it: Method) = it.findOverridenMethodIn(it.declaringClass)
-    @Untested
-    fun isOverridenBy(it: Method, other: Method) = it.isOverridenBy(other)
+    fun overrides(method: Method, baseMethod: Method): Boolean {
+        if(baseMethod == method) return false
+        val bridge = method.findBridgeMethod()
+
+        if (bridge != null) return overrides(bridge, baseMethod)
+
+        @Suppress("PlatformExtensionReceiverOfInline")
+        return baseMethod.name == method.name &&
+           baseMethod.isOverridableIn(method.declaringClass) &&
+            method.access <= baseMethod.access &&
+            method.returnType == baseMethod.returnType &&
+            method.parameterTypes.contentEquals(baseMethod.parameterTypes)
+    }
 
     private fun Method.isOverridableIn(cls: Class<*>): Boolean {
         if (isFinal || isPrivate || isStatic) return false
@@ -29,44 +39,12 @@ internal object MethodOverrideTester {
         if (isBridge) return null
         return declaringClass.declaredMethods.find {
             it != this &&
-                isBridge && //todo should this be `it.isBridge`?
+                it.isBridge &&
                 it.name == name &&
                 it.returnType.isAssignableFrom(returnType) &&
                 it.parameterCount == parameterCount &&
                 it.parameterTypes.zip(parameterTypes).all { (other, our) -> other.isAssignableFrom(our) }
         }
-    }
-
-    @Suppress("PlatformExtensionReceiverOfInline")
-    @JvmName("isOverriddenByExt")
-    private fun Method.isOverridenBy(other: Method): Boolean {
-        if(this == other) return false
-        val bridge = findBridgeMethod()
-
-        if (bridge != null) return bridge.isOverridenBy(other)
-
-        return name == other.name &&
-            isOverridableIn(other.declaringClass) &&
-            other.access <= access &&
-            other.returnType == returnType &&
-            other.parameterTypes.contentEquals(parameterTypes)
-    }
-
-    private fun Method.findOverridenMethodIn(cls: Class<*>): Method? {
-        val superclasses = arrayListOf<Class<*>?>(cls.superclass)
-        cls.interfaces.forEach { superclasses.add(it) }
-
-        for (superclass in superclasses) {
-            if (superclass == null) continue
-
-            var overriden = superclass.declaredMethods.find { it.isOverridenBy(this) }
-            if (overriden != null) return overriden
-
-            overriden = findOverridenMethodIn(superclass)
-            if (overriden != null) return overriden
-        }
-
-        return null
     }
 
     private inline val Member.isFinal: Boolean get() = Modifier.isFinal(modifiers)

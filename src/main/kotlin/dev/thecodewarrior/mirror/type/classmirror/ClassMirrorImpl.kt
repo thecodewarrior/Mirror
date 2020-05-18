@@ -276,19 +276,21 @@ internal class ClassMirrorImpl internal constructor(
      * A class does not inherit private or static methods from its superinterfaces.
      */
     override val inheritedMethods: MethodList by lazy {
-        val supertypeMethods = superclass?.visibleMethods.orEmpty() + interfaces.flatMap { it.visibleMethods }
-        val interfaceStatics = interfaces.flatMap { it.visibleMethods }.filter { it.isStatic }
-        val abstractInherited = supertypeMethods.filter { method ->
+        fun overrides(method: MethodMirror, base: MethodMirror)
+            = base !== method && base.name == method.name &&
+            base.declaringClass.isAssignableFrom(method.declaringClass) &&
+            base.erasedParameterTypes == method.erasedParameterTypes
+
+        val supertypeMethods = superclass?.visibleMethods.orEmpty() + interfaces.flatMap { it.visibleMethods }.filter { !it.isStatic }
+        val abstractInherited = supertypeMethods.unique().filter { method ->
             if(method.access == Modifier.Access.PRIVATE)
                 return@filter false
             if(method.access == Modifier.Access.DEFAULT && java.`package` != method.declaringClass.java.`package`)
                 return@filter false
-            if(method in interfaceStatics)
-                return@filter false
-            if(declaredMethods.any { it.overrides(method) })
+            if(declaredMethods.any { overrides(it, method) })
                 return@filter false
             if(method.isAbstract || method.isDefault) {
-                if(supertypeMethods.any { it.overrides(method) })
+                if(supertypeMethods.any { overrides(it, method) })
                     return@filter false
             }
             true
@@ -335,6 +337,51 @@ internal class ClassMirrorImpl internal constructor(
     override fun getMethod(name: String, vararg params: TypeMirror): MethodMirror = methods.get(name, *params)
 
     override fun getMethodRaw(name: String, vararg params: Class<*>): MethodMirror = methods.getRaw(name, *params)
+
+    // this implementation relies on the fact that supertype methods will have already been specialized, meaning that
+    // the complex generic override semantics will have been collapsed down into a simple "are the erasures the same"
+    // relationship. We test based on the erasures, since you may have something like these:
+    // `class X<T> { void method(T t) {} }` and `class Y<T extends String> extends X<T> { void method(String t) {} }`.
+    // In this case the `T` in `X` will be erased down to `String`, matching the `String` method in `Y`
+    override fun doesMethodOverride(method: Method, base: Method): Boolean {
+        if(method == base || method.name != base.name)
+            return false // methods shouldn't override themselves
+        if(findSuperclass(method.declaringClass) == null || findSuperclass(base.declaringClass) == null)
+            return false // either of the methods are in classes unrelated to this one, they won't override here
+
+        if(method.declaringClass.isInterface == base.declaringClass.isInterface &&
+            !base.declaringClass.isAssignableFrom(method.declaringClass))
+            return false // if both are interfaces or both are classes, and aren't supertypes, they won't override
+        if(method.declaringClass.isInterface && !base.declaringClass.isInterface)
+            return false // interfaces can't override class methods, even abstract ones
+
+        // by the time we get here, either
+        // - they're both interfaces with a sub/superinterface relationship
+        // - they're both classes with a sub/superclass relationship
+        // - `method` is from a class and `base` is from an interface
+
+        val methodMirror = this.getMethod(method)
+        val baseMirror = this.getMethod(base)
+
+        if(!baseMirror.returnType.isAssignableFrom(methodMirror.returnType) ||
+            methodMirror.erasedParameterTypes != baseMirror.erasedParameterTypes)
+            return false // if the signatures don't match, they won't override
+
+        if(method.declaringClass.isInterface && base.declaringClass.isInterface)
+            return true // no accessibility checks required for interfaces, everything is always public
+
+        // by the time we get here, the signatures match, `method` is from a class, and `base` is from a class or
+        // interface
+
+        if(methodMirror.access < baseMirror.access)
+            return false // overrides can't have more restricted visibility
+        if(methodMirror.isPrivate || baseMirror.isPrivate)
+            return false // can't override private methods or override with a private method
+
+        if(!methodMirror.visibleFrom(java) || !baseMirror.visibleFrom(java))
+            return false
+        return true
+    }
 
     //endregion =====================================================================================================================
 

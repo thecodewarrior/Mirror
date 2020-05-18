@@ -481,6 +481,9 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      */
     @Untested
     abstract fun getMethodRaw(name: String, vararg params: Class<*>): MethodMirror
+
+    @Untested
+    abstract fun doesMethodOverride(method: Method, base: Method): Boolean
 //endregion =====================================================================================================================
 
 //region Fields =================================================================================================================
