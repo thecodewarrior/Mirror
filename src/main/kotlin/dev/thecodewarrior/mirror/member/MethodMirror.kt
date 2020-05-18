@@ -1,7 +1,6 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.MirrorCache
-import dev.thecodewarrior.mirror.coretypes.MethodOverrideTester
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
@@ -9,7 +8,6 @@ import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
-import java.util.LinkedList
 import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.functions
@@ -126,43 +124,53 @@ class MethodMirror internal constructor(
     }
 
     /**
-     * Returns the method this method overrides, if any. This will return the method this directly overrides, not the
-     * root method.
+     * Returns the method overridden by this method, if any. This will return the method this overrides from its superclass,
+     * not from any interfaces.
      */
     @Untested
     val overrides: MethodMirror? by lazy {
-        generateSequence(declaringClass.superclass) { it.superclass }.forEach { cls ->
-            cls.declaredMethods.find { this.overrides(it) }?.also { return@lazy it }
-        }
+        if(this != this.raw)
+            return@lazy this.raw.overrides?.let { declaringClass.getMethod(it.java) }
 
-        val interfaces = LinkedList<ClassMirror>()
         generateSequence(declaringClass.superclass) { it.superclass }.forEach { cls ->
-            interfaces.addAll(cls.interfaces)
-            while(interfaces.isNotEmpty()) {
-                val iface = interfaces.pop()
-                iface.declaredMethods.find { this.overrides(it) }?.also { return@lazy it }
-                interfaces.addAll(iface.interfaces)
-            }
+            cls.declaredMethods.find { base ->
+                base.name == this.name &&
+                    !(base.isPrivate || base.isPackagePrivate &&
+                        base.declaringClass.java.`package` != this.declaringClass.java.`package`) &&
+                    base.declaringClass.isAssignableFrom(this.declaringClass) &&
+                    base.erasedParameterTypes == this.erasedParameterTypes
+            }?.also { return@lazy it }
         }
 
         return@lazy null
     }
 
     /**
-     * Returns true if this method overrides the passed method
+     * Returns true if this method overrides the passed method. This performs all its calculations based on this
+     * method's declaring class, so if this method is inherited by another class and overrides an interface declared on
+     * on that other class, this will _not_ detect that.
      */
     @Untested
-    fun overrides(other: MethodMirror): Boolean {
-        return MethodOverrideTester.overrides(java, other.java)
-    }
+    fun doesOverride(otherMethod: Method): Boolean {
+        if(this != this.raw)
+            return this.raw.doesOverride(otherMethod)
+        if(!otherMethod.declaringClass.isAssignableFrom(declaringClass.java))
+            return false
+        // interfaces are assignable to Object, which leads to issues where the interfaces think
+        // they can override methods from Object
+        if(!otherMethod.declaringClass.isInterface && this.declaringClass.isInterface)
+            return false
+        val other = declaringClass.getMethod(otherMethod)
+        if(other == this || other.name != this.name ||
+            other.erasedParameterTypes != this.erasedParameterTypes) {
+            return false
+        }
 
-    @Untested
-    fun visibleFrom(clazz: Class<*>): Boolean {
-        if(access == Modifier.Access.PRIVATE)
-            return false
-        if(access == Modifier.Access.DEFAULT && clazz.`package` != declaringClass.java.`package`)
-            return false
-        return true
+        // Interfaces are _always_ public, so there will never be any access trouble here. If other is assignable from
+        // this, we're either an implementing class or a superinterface, in either case we override.
+        if(other.declaringClass.isInterface)
+            return true
+        return generateSequence(this.overrides) { it.overrides }.any { it == other }
     }
 
     @Suppress("UNCHECKED_CAST")

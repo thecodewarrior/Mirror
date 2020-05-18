@@ -4,6 +4,7 @@ import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.TestSources
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -15,7 +16,7 @@ internal class MethodOverrides: MTest() {
     fun `methods should not override themselves`() {
         val X by sources.add("X", "public class X { public void method() {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(X).doesMethodOverride(X._m("method"), X._m("method")))
+        assertFalse(Mirror.reflect(X._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -23,7 +24,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { public void method() {} }")
         val Y by sources.add("Y", "public class Y extends X { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -31,7 +32,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { public void method() {} }")
         val Y by sources.add("Y", "public class Y extends X { public void method() {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(X._m("method"), Y._m("method")))
+        assertFalse(Mirror.reflect(X._m("method")).doesOverride(Y._m("method")))
     }
 
     @Test
@@ -39,7 +40,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { private void method() {} }")
         val Y by sources.add("Y", "public class Y extends X { public void method() {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -47,7 +48,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("sub.X", "public class X { void method() {} }")
         val Y by sources.add("Y", "public class Y extends gen.sub.X { public void method() {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -55,7 +56,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { public void method(int a) {} }")
         val Y by sources.add("Y", "public class Y extends X { public void method(float a) {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -64,7 +65,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { public void method(Object a) {} }")
         val Y by sources.add("Y", "public class Y extends X { public void method(A a) {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -72,7 +73,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { public void method() {} }")
         val Y by sources.add("Y", "public class Y { public void method() {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -80,7 +81,16 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public abstract class X { public abstract void method(); }")
         val Y by sources.add("Y", "public class Y extends X { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
+    }
+
+    @Test
+    fun `interfaces should not override Object methods`() {
+        // due to potential artifacts with the fact that Object is assignable from interfaces, an interface method might
+        // believe it overrides an Object method
+        val I by sources.add("I", "public interface I { String toString(); }")
+        sources.compile()
+        assertFalse(Mirror.reflect(I._m("toString")).doesOverride(_object._m("toString")))
     }
 
     @Test
@@ -88,7 +98,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public interface X { void method(); }")
         val Y by sources.add("Y", "public interface Y extends X { void method(); }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -96,15 +106,7 @@ internal class MethodOverrides: MTest() {
         val I by sources.add("I", "public interface I { void method(); }")
         val Y by sources.add("Y", "public class Y implements I { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), I._m("method")))
-    }
-
-    @Test
-    fun `interface methods should not override concrete methods`() {
-        val I by sources.add("I", "public interface I { void method(); }")
-        val Y by sources.add("Y", "public class Y implements I { public void method() {} }")
-        sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(I._m("method"), Y._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(I._m("method")))
     }
 
     @Test
@@ -112,7 +114,7 @@ internal class MethodOverrides: MTest() {
         val I by sources.add("I", "public interface I { void method(); }")
         val Y by sources.add("Y", "public class Y { public void method() {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), I._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(I._m("method")))
     }
 
     @Test
@@ -121,8 +123,8 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X { public void method() {} }")
         val Y by sources.add("Y", "public class Y extends X implements I { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), I._m("method")))
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(I._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -131,8 +133,8 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X implements I { public void method() {} }")
         val Y by sources.add("Y", "public class Y extends X { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), I._m("method")))
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(I._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -141,8 +143,8 @@ internal class MethodOverrides: MTest() {
         val Y by sources.add("Y", "public class Y extends gen.sub.X { public void method() {} }")
         val Z by sources.add("sub.Z", "public class Z extends Y { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method"), Y._m("method")))
-        assertFalse(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Z._m("method")).doesOverride(Y._m("method")))
+        assertFalse(Mirror.reflect(Z._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -151,16 +153,7 @@ internal class MethodOverrides: MTest() {
         val Y by sources.add("Y", "public class Y extends gen.sub.X { }")
         val Z by sources.add("sub.Z", "public class Z extends Y { void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method"), X._m("method")))
-    }
-
-    @Test
-    fun `package-private method should not override method from interface in same package`() {
-        val I by sources.add("sub.I", "public interface I { void method(); }")
-        val X by sources.add("sub.X", "public class X { void method() {} }")
-        val Y by sources.add("Y", "public abstract class Y extends gen.sub.X implements gen.sub.I { }")
-        sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(X._m("method"), I._m("method")))
+        assertTrue(Mirror.reflect(Z._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -169,7 +162,7 @@ internal class MethodOverrides: MTest() {
         val Y by sources.add("sub.Y", "public class Y extends X { public void method() {} }")
         val Z by sources.add("Z", "public class Z extends gen.sub.Y { public void method() {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method"), X._m("method")))
+        assertTrue(Mirror.reflect(Z._m("method")).doesOverride(X._m("method")))
     }
 
     @Test
@@ -177,7 +170,7 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X<T> { void method(T t) {} }")
         val Y by sources.add("Y", "public class Y extends X<String> { void method(String t) {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", _c<String>()), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method", _c<String>())).doesOverride(X._m("method")))
     }
 
     @Test
@@ -185,7 +178,41 @@ internal class MethodOverrides: MTest() {
         val X by sources.add("X", "public class X<T> { void method(T t) {} }")
         val Y by sources.add("Y", "public class Y extends X<Y> { void method(String t) {} }")
         sources.compile()
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", _c<String>()), X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method", _c<String>())).doesOverride(X._m("method")))
+    }
+
+    @Test
+    fun `specialization shouldn't change method override`() {
+        val X by sources.add("X", "public class X { void method(String s) {} }")
+        val Y by sources.add("Y", "public class Y<T> extends X { void method(T t) {} }")
+        val types = sources.types {
+            +"Y<String>"
+        }
+        sources.compile()
+        assertFalse(Mirror.reflect(Y._m("method")).doesOverride(X._m("method")))
+        val specializedMethod = Mirror.reflectClass(types["Y<String>"]).declaredMethods.get("method", Mirror.reflect<String>())
+        assertFalse(specializedMethod.doesOverride(X._m("method")))
+        assertNull(specializedMethod.overrides)
+    }
+
+    @Test
+    fun `methods should override when signatures match but generic superclass specialization doesn't match`() {
+        val X by sources.add("X", "public class X { void method() {} }")
+        val Y by sources.add("Y", "public class Y<T> extends X { void method() {} }")
+        val types = sources.types {
+            +"Y<String>"
+        }
+        sources.compile()
+        assertTrue(Mirror.reflectClass(types["Y<String>"]).declaredMethods.get("method").doesOverride(X._m("method")))
+    }
+
+    @Test
+    fun `specialized generic methods should override based on their raw type parameters`() {
+        val X by sources.add("X", "public class X { void method(String t) {} }")
+        val Y by sources.add("Y", "public class Y extends X { <T> void method(T t) {} }")
+        sources.compile()
+        assertFalse(Mirror.reflect(Y._m("method")).withTypeParameters(Mirror.reflect(_c<String>()))
+            .doesOverride(X._m("method")))
     }
 
     @Test
@@ -196,7 +223,7 @@ internal class MethodOverrides: MTest() {
         val Y by sources.add("Y", "public class Y<T extends A> extends X<T> { void method(T t) {} }")
         val Z by sources.add("Z", "public class Z extends Y<B> { void method(B t) {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method", B), X._m("method")))
+        assertTrue(Mirror.reflect(Z._m("method", B)).doesOverride(X._m("method")))
     }
 
     @Test
@@ -207,9 +234,9 @@ internal class MethodOverrides: MTest() {
         val Y by sources.add("Y", "public class Y<T extends A> extends X<T> { void method(A t) {} }")
         val Z by sources.add("Z", "public class Z extends Y<B> { void method(B t) {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method", B), X._m("method")))
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", A), X._m("method")))
-        assertFalse(Mirror.reflectClass(Z).doesMethodOverride(Z._m("method", B), Y._m("method", A)))
+        assertTrue(Mirror.reflect(Z._m("method", B)).doesOverride(X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method", A)).doesOverride(X._m("method")))
+        assertFalse(Mirror.reflect(Z._m("method", B)).doesOverride(Y._m("method", A)))
     }
 
     @Test
@@ -223,8 +250,8 @@ internal class MethodOverrides: MTest() {
         // Y will have bridge methods to forward calls to `X.method(Object)` and `I.method(A)` to its own `Y.method(B)`
         val Y by sources.add("Y", "public class Y extends X<B> implements I<B> { public void method(B t) {} }")
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", B), I._m("method")))
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", B), X._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method", B)).doesOverride(I._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method", B)).doesOverride(X._m("method")))
     }
 
     @Test
@@ -238,25 +265,7 @@ internal class MethodOverrides: MTest() {
             }
         """.trimIndent())
         sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", A), X._m("method")))
-        assertFalse(Mirror.reflectClass(Y).doesMethodOverride(Y._m("method", _c<String>()), X._m("method")))
-    }
-
-    @Test
-    fun `methods in unrelated class and interface should override when both supertypes of another class`() {
-        val I by sources.add("I", "public interface I { void method(); }")
-        val X by sources.add("X", "public class X { public void method() {} }")
-        val Y by sources.add("Y", "public class Y extends X implements I { }")
-        sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(X._m("method"), I._m("method")))
-    }
-
-    @Test
-    fun `overridden methods in unrelated class and interface should override each other when both supertypes of another class`() {
-        val I by sources.add("I", "public interface I { void method(); }")
-        val X by sources.add("X", "public class X { public void method() {} }")
-        val Y by sources.add("Y", "public class Y extends X implements I { public void method() {} }")
-        sources.compile()
-        assertTrue(Mirror.reflectClass(Y).doesMethodOverride(X._m("method"), I._m("method")))
+        assertTrue(Mirror.reflect(Y._m("method", A)).doesOverride(X._m("method")))
+        assertFalse(Mirror.reflect(Y._m("method", _c<String>())).doesOverride(X._m("method")))
     }
 }
