@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.testsupport
 
 import dev.thecodewarrior.mirror.joor.Compile
 import dev.thecodewarrior.mirror.joor.CompileOptions
+import org.intellij.lang.annotations.Language
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
 import java.lang.IllegalStateException
@@ -29,10 +30,10 @@ import kotlin.reflect.KProperty
  */
 class TestSources {
 
-    private val sources = mutableMapOf<String, String>()
+    private val javaSources = mutableMapOf<String, String>()
     private val typeSets = mutableListOf<TypeSet>()
     var options: MutableList<String> = mutableListOf()
-    var classLoader: Compile.RuntimeClassLoader? = null
+    var classLoader: ClassLoader? = null
 
     init {
         options.add("-parameters")
@@ -56,16 +57,16 @@ class TestSources {
      *
      * ### Useful reference
      * - Annotation: `@Retention(RetentionPolicy.RUNTIME) @Target(ElementType...) @interface A { int value(); }`
-     *   - ElementTypes: `TYPE`, `FIELD`, `METHOD`, `PARAMETER`, `CONSTRUCTOR`, `LOCAL`_`VARIABLE`, `ANNOTATION`_`TYPE`,
-     *     `PACKAGE`, `TYPE`_`PARAMETER`, `TYPE`_`USE`
+     *   - ElementTypes: `TYPE`, `FIELD`, `METHOD`, `PARAMETER`, `CONSTRUCTOR`, `LOCAL_VARIABLE`, `ANNOTATION_TYPE`,
+     *     `PACKAGE`, `TYPE_PARAMETER`, `TYPE_USE`
      *
      * @param name The qualified name relative to the "root" package (`gen`)
      * @param code The code to compile into that class
      * @return A property delegate to access the test class once [compile] has been called
      */
-    fun add(name: String, code: String): TestClass<*> {
+    fun add(name: String, @Language("java") code: String, trimIndent: Boolean = true): TestClass<*> {
         requireNotCompiled()
-        if("gen.$name" in sources)
+        if("gen.$name" in javaSources)
             throw IllegalArgumentException("Class name $name already exists")
 
         var fullSource = ""
@@ -76,9 +77,9 @@ class TestSources {
 
         fullSource += globalImports.joinToString("") { "import $it;" }
         fullSource += "\n"
-        fullSource += code
+        fullSource += if(trimIndent) code.trimIndent() else code
 
-        sources["gen.$name"] = fullSource
+        javaSources["gen.$name"] = fullSource
 
         return TestClass<Any>("gen.$name")
     }
@@ -94,20 +95,22 @@ class TestSources {
 
     fun compile() {
         requireNotCompiled()
-        this.classLoader = Compile.compile(sources + typeSets.associate { set ->
+        this.classLoader = Compile.compile(javaSources + typeSets.associate { set ->
             set.fullClassName to set.classText
         }, CompileOptions().options(options))
     }
 
     fun getClass(name: String): Class<*> {
-        if(classLoader == null)
-            throw IllegalStateException("Sources not compiled yet")
-        return Class.forName(name, true, classLoader)
+        return Class.forName(name, true, requireCompiled())
     }
 
     private fun requireNotCompiled() {
         if(classLoader != null)
             throw IllegalStateException("The sources have already been compiled")
+    }
+    private fun requireCompiled(): ClassLoader {
+        return classLoader
+            ?: throw IllegalStateException("The sources have not been compiled")
     }
 
     inner class TypeSet(val packageName: String, val className: String, private val definition: TypeSetDefinition) {
@@ -136,9 +139,7 @@ class TestSources {
         val holder: Class<*>
             get() {
                 holderCache?.also { return it }
-                if(classLoader == null)
-                    throw IllegalStateException("Sources not compiled yet")
-                return Class.forName(fullClassName, true, classLoader).also { holderCache = it }
+                return getClass(fullClassName).also { holderCache = it }
             }
 
         fun createClassText(): String {

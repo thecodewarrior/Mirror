@@ -10,7 +10,7 @@ internal class VariableMirrorTest: MTest() {
     val A by sources.add("A", """ 
         @Target(ElementType.TYPE_USE)
         @interface A {}
-    """.trimIndent())
+    """)
 
     val types = sources.types {
         typeVariables("T") {

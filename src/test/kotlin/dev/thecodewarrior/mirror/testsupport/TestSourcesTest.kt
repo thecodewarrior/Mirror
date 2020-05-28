@@ -84,8 +84,6 @@ class X { whoops! }
     @Test
     fun compiling_shouldIncludeParameterNames() {
         val sources = TestSources()
-//        sources.options.clear()
-//        sources.options.add( "-version")
         val X by sources.add("X", "class X { void method(int named) {} }")
         sources.compile()
         assertEquals("named", X.getDeclaredMethod("method", Int::class.javaPrimitiveType).parameters[0].name)

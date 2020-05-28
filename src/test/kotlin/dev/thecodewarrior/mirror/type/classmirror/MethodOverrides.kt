@@ -263,7 +263,7 @@ internal class MethodOverrides: MTest() {
                 public void method(A t) {}
                 public void method(String s) {} 
             }
-        """.trimIndent())
+        """)
         sources.compile()
         assertTrue(Mirror.reflect(Y._m("method", A)).doesOverride(X._m("method")))
         assertFalse(Mirror.reflect(Y._m("method", _c<String>())).doesOverride(X._m("method")))

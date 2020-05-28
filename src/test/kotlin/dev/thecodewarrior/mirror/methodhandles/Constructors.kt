@@ -18,7 +18,7 @@ internal class Constructors: MTest() {
                 this.value = param;
             }
         }
-    """.trimIndent())
+    """)
     val Private by sources.add("Private", """
         class Private {
             public int value = 0;
@@ -29,7 +29,7 @@ internal class Constructors: MTest() {
                 this.value = param;
             }
         }
-    """.trimIndent())
+    """)
 
     @Test
     fun call_zeroArg() {

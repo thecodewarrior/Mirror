@@ -245,10 +245,10 @@ internal class MethodsTest: MTest() {
                     void packagePrivateMethod() {}
                     private void privateMethod() {}
                 }
-            """.trimIndent())
+            """)
             val Y by sources.add("Y", """
                 public class Y extends X {}
-            """.trimIndent())
+            """)
             sources.compile()
 
             assertSameSet(listOf(

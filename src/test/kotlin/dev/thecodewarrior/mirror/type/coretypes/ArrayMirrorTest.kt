@@ -10,7 +10,7 @@ internal class ArrayMirrorTest: MTest() {
     val A by sources.add("A", """
         @Target(ElementType.TYPE_USE)
         @interface A {}
-    """.trimIndent())
+    """)
     val X by sources.add("X", "class X {}")
     val Generic by sources.add("Generic", "class Generic<T> {}")
 

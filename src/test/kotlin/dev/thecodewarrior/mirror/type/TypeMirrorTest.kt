@@ -28,7 +28,7 @@ internal class TypeMirrorTest: MTest() {
         public class X {
             public static TypeToken token = new TypeToken<X>() {};
         }
-    """.trimIndent())
+    """)
     val Generic by sources.add("Generic", "class Generic<T> {}")
 
     val types = sources.types {
@@ -130,7 +130,7 @@ internal class TypeMirrorTest: MTest() {
             class C {
                 void method() {}
             }
-        """.trimIndent())
+        """)
         sources.compile()
 
         val method = C._m("method")
@@ -146,7 +146,7 @@ internal class TypeMirrorTest: MTest() {
             class C {
                 int field;
             }
-        """.trimIndent())
+        """)
         sources.compile()
         val field = C._f("field")
         val fromClassMirror = Mirror.reflectClass(C).declaredFields.first { it.name == "field" }

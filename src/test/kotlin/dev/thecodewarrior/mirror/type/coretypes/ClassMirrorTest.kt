@@ -10,7 +10,7 @@ internal class ClassMirrorTest: MTest() {
     val A by sources.add("A", """
         @Target(ElementType.TYPE_USE)
         @interface A {}
-    """.trimIndent())
+    """)
     val X by sources.add("X", "class X {}")
     val Y by sources.add("Y", "class Y {}")
     val Generic by sources.add("Generic", """
@@ -18,7 +18,7 @@ internal class ClassMirrorTest: MTest() {
             class Inner {}
             class InnerGeneric<W> {}
         }
-    """.trimIndent())
+    """)
     val types = sources.types {
         +"Generic"
         +"Generic<X>"

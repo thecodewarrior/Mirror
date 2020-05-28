@@ -316,7 +316,7 @@ internal class ConstructorMirrorTest: MTest() {
                     private Nested() {}
                 }
             }
-        """.trimIndent())
+        """)
         sources.compile()
         val constructor = X._class("Nested").declaredConstructors
             .first { !JvmModifier.isPrivate(it.modifiers) }
@@ -371,7 +371,7 @@ internal class ConstructorMirrorTest: MTest() {
                     private Nested() {}
                 }
             }
-        """.trimIndent())
+        """)
         sources.compile()
         val constructor = X._class("Nested").declaredConstructors
             .first { !JvmModifier.isPrivate(it.modifiers) }

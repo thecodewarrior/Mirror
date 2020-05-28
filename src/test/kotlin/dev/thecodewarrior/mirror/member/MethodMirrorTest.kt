@@ -308,7 +308,7 @@ internal class MethodMirrorTest : MTest() {
                     private int method() { return 1; }
                 }
             }
-        """.trimIndent())
+        """)
         sources.compile()
         val method = X._class("Nested").declaredMethods
             .first { it.name.startsWith("access$") }
@@ -400,7 +400,7 @@ internal class MethodMirrorTest : MTest() {
                 void _default() {}
                 private void _private() {}
             }
-        """.trimIndent())
+        """)
         sources.compile()
         assertAll(
             { assertEquals(Modifier.Access.PUBLIC, Mirror.reflect(X._m("_public")).access) },
@@ -442,7 +442,7 @@ internal class MethodMirrorTest : MTest() {
                     private int method() { return 1; }
                 }
             }
-        """.trimIndent())
+        """)
         sources.compile()
         val method = X._class("Nested").declaredMethods
             .first { it.name.startsWith("access$") }
@@ -474,7 +474,7 @@ internal class MethodMirrorTest : MTest() {
                 synchronized void _synchronized() {}
                 native void _native();
             }
-        """.trimIndent())
+        """)
         sources.compile()
         fun test(method: Method, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(method).modifiers)
         assertAll(
@@ -506,7 +506,7 @@ internal class MethodMirrorTest : MTest() {
                 synchronized void _synchronized() {}
                 native void _native();
             }
-        """.trimIndent())
+        """)
         sources.compile()
         fun test(method: Method, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(method).modifiers)
         assertAll(

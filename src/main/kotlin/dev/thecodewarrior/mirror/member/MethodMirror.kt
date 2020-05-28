@@ -150,7 +150,6 @@ class MethodMirror internal constructor(
      * method's declaring class, so if this method is inherited by another class and overrides an interface declared on
      * on that other class, this will _not_ detect that.
      */
-    @Untested
     fun doesOverride(otherMethod: Method): Boolean {
         if(this != this.raw)
             return this.raw.doesOverride(otherMethod)

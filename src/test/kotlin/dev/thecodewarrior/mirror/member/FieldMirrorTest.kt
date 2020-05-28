@@ -85,7 +85,7 @@ internal class FieldMirrorTest: MTest() {
                 int _default;
                 private int _private;
             }
-        """.trimIndent())
+        """)
         sources.compile()
         assertAll(
             { assertEquals(Modifier.Access.PUBLIC, Mirror.reflect(X._f("_public")).access) },
@@ -108,7 +108,7 @@ internal class FieldMirrorTest: MTest() {
                 transient int _transient;
                 volatile int _volatile;
             }
-        """.trimIndent())
+        """)
         sources.compile()
         fun test(method: Field, vararg mods: Modifier) = assertEquals(setOf(*mods), Mirror.reflect(method).modifiers)
         assertAll(
@@ -136,7 +136,7 @@ internal class FieldMirrorTest: MTest() {
                 transient int _transient;
                 volatile int _volatile;
             }
-        """.trimIndent())
+        """)
         sources.compile()
         assertAll(
             { assertTrue(Mirror.reflect(X._f("_public")).isPublic) },
