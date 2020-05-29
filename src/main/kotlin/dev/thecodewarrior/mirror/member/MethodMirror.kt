@@ -124,8 +124,8 @@ class MethodMirror internal constructor(
     }
 
     /**
-     * Returns the method overridden by this method, if any. This will return the method this overrides from its superclass,
-     * not from any interfaces.
+     * Returns the method overridden by this method, if any. This will return the method this overrides from its
+     * superclass, not from any interfaces.
      */
     @Untested
     val overrides: MethodMirror? by lazy {

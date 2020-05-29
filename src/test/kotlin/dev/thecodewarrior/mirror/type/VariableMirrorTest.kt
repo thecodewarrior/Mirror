@@ -8,13 +8,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class VariableMirrorTest: MTest() {
-    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}")
+    val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
     val I1 by sources.add("I1", "interface I1 {}")
     val I2 by sources.add("I2", "interface I2 {}")
     val X by sources.add("X", "class X {}")
     val types = sources.types {
         typeVariables("T") {
             add("T", "T")
+            +"@A T"
         }
         typeVariables("T extends X") {
             add("T extends X", "T")
@@ -50,5 +51,17 @@ internal class VariableMirrorTest: MTest() {
     fun getBounds_onTypeWithAnnotatedBound_shouldReturnListOfAnnotatedBound() {
         val type = Mirror.reflect(types["T extends @A X"]) as VariableMirror
         assertEquals(listOf(Mirror.reflect(types["@A X"])), type.bounds)
+    }
+
+    @Test
+    fun `'toString' of unannotated type variable should return its name`() {
+        val type = Mirror.reflect(types["T"]) as VariableMirror
+        assertEquals("T", type.toString())
+    }
+
+    @Test
+    fun `'toString' of annotated type variable use should return its type annotations then name`() {
+        val type = Mirror.reflect(types["@A T"]) as VariableMirror
+        assertEquals("@gen.A() T", type.toString())
     }
 }

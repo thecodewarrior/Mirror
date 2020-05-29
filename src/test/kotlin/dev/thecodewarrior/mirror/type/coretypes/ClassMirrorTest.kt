@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ClassMirrorTest: MTest() {
-    val A by sources.add("A", """
-        @Target(ElementType.TYPE_USE)
-        @interface A {}
-    """)
+    val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
     val X by sources.add("X", "class X {}")
     val Y by sources.add("Y", "class Y {}")
     val Generic by sources.add("Generic", """

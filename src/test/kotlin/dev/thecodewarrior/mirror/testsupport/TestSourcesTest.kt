@@ -92,7 +92,7 @@ class X { whoops! }
     @Test
     fun compiling_shouldIncludeTypeAnnotations() {
         val sources = TestSources()
-        val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
+        val A by sources.add("A", "@rt(TYPE_USE) @interface A {}").typed<Annotation>()
         val X by sources.add("X", "class X { @A Object method() { return null; } }")
         sources.compile()
         assertTrue(X.getDeclaredMethod("method").annotatedReturnType.isAnnotationPresent(A))

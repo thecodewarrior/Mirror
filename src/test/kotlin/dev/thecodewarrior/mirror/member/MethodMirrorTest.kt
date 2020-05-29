@@ -190,8 +190,8 @@ internal class MethodMirrorTest : MTest() {
 
         @Test
         fun `'annotations' of an annotated parameter should return the annotations in declaration order`() {
-            val A by sources.add("A", "@Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
-            val A2 by sources.add("A2", "@Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface A2 { String value(); }").typed<Annotation>()
+            val A by sources.add("A", "@rt(PARAMETER) @interface A {}").typed<Annotation>()
+            val A2 by sources.add("A2", "@rt(PARAMETER) @interface A2 { String value(); }").typed<Annotation>()
             val X by sources.add("X", "class X { public void method(@A @A2(\"annotation value\") int param) {} }")
             sources.compile()
             assertArrayEquals(
@@ -281,8 +281,8 @@ internal class MethodMirrorTest : MTest() {
 
     @Test
     fun `'annotations' of a method with annotations should return an array of annotations`() {
-        val A by sources.add("A", "@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
-        val A2 by sources.add("A2", "@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME) @interface A2 { String value(); }").typed<Annotation>()
+        val A by sources.add("A", "@rt(METHOD) @interface A {}").typed<Annotation>()
+        val A2 by sources.add("A2", "@rt(METHOD) @interface A2 { String value(); }").typed<Annotation>()
         val X by sources.add("X", "class X { @A @A2(\"annotation value\") public void method() {} }")
         sources.compile()
         assertEquals(

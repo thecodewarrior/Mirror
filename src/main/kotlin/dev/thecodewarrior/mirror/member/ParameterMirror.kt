@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.type.ArrayMirror
 import dev.thecodewarrior.mirror.type.TypeMapping
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.Untested
@@ -22,6 +23,12 @@ class ParameterMirror internal constructor(
      * True if the `final` modifier is present on this parameter
      */
     val isFinal: Boolean = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
+
+    /**
+     * True if this is a vararg parameter
+     */
+    @Untested
+    val isVarArgs: Boolean = java.isVarArgs
 
     /**
      * The type of this parameter
@@ -77,10 +84,16 @@ class ParameterMirror internal constructor(
         return if(enclosing == null) raw else cache.parameters.specialize(this, enclosing)
     }
 
-    @Untested
     override fun toString(): String {
         var str = ""
-        str += "$type $name"
+        if(isFinal)
+            str += "final "
+        val type = type
+        if(isVarArgs && type is ArrayMirror) {
+            str += "${type.component}... $name"
+        } else {
+            str += "$type $name"
+        }
         return str
     }
 }

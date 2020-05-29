@@ -86,6 +86,14 @@ class VariableMirror internal constructor(
     @Untested
     override fun toString(): String {
         var str = ""
+        str += typeAnnotationString()
+        str += coreType.name
+        return str
+    }
+
+    @Untested
+    fun toDeclarationString(): String {
+        var str = ""
         str += coreType.name
         if(bounds.isNotEmpty() && !(bounds.size == 1 && bounds[0] == cache.types.reflect(Any::class.java))) {
             str += " extends ${bounds.joinToString(" & ")}"

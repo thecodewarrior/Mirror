@@ -55,6 +55,9 @@ class TestSources {
      * Adds the passed class to this compiler. This method automatically prepends the necessary `package` declaration
      * to the passed string and adds a wildcard import for the "root" package, `gen`, if needed.
      *
+     * Any occurrences of `@rt(targets)` in the text will be replaced with the annotations for runtime annotation
+     * retention and the passed element targets.
+     *
      * ### Useful reference
      * - Annotation: `@Retention(RetentionPolicy.RUNTIME) @Target(ElementType...) @interface A { int value(); }`
      *   - ElementTypes: `TYPE`, `FIELD`, `METHOD`, `PARAMETER`, `CONSTRUCTOR`, `LOCAL_VARIABLE`, `ANNOTATION_TYPE`,
@@ -77,7 +80,12 @@ class TestSources {
 
         fullSource += globalImports.joinToString("") { "import $it;" }
         fullSource += "\n"
-        fullSource += if(trimIndent) code.trimIndent() else code
+        var processedCode = if(trimIndent) code.trimIndent() else code
+        processedCode = processedCode.replace("""@rt\((\w+(?:,\s*\w+)*)\)""".toRegex()) { match ->
+            val types = match.groupValues[1].split(",").joinToString(", ") { "ElementType.${it.trim()}" }
+            "@Retention(RetentionPolicy.RUNTIME) @Target({ $types })"
+        }
+        fullSource += processedCode
 
         javaSources["gen.$name"] = fullSource
 

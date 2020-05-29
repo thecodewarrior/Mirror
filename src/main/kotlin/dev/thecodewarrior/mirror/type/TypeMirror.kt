@@ -135,6 +135,11 @@ abstract class TypeMirror internal constructor() {
      * Returns the annotation of the specified type, or null if no such annotation is present.
      */
     inline fun <reified T: Annotation> getTypeAnnotation(): T? = this.getTypeAnnotation(T::class.java)
+
+    @Untested
+    internal fun typeAnnotationString(): String {
+        return typeAnnotations.joinToString("") { "$it " }
+    }
 //endregion
 
     /**
@@ -183,6 +188,7 @@ abstract class TypeMirror internal constructor() {
      */
     val specificity: Specificity = Specificity(this)
 
+    // TODO: Is this needed? I thought everything was supposed to be cached to equal by identity.
     @Untested
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

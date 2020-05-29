@@ -233,6 +233,30 @@ internal class ConstructorMirrorTest: MTest() {
             sources.compile()
             assertFalse(Mirror.reflect(X._constructor()).parameters.single().isFinal)
         }
+
+        @Test
+        fun `'toString' of a plain parameter should be correct`() {
+            val X by sources.add("X", "class X { public X(int param) {} }")
+            sources.compile()
+            val param = Mirror.reflect(X._constructor()).parameters.single()
+            assertEquals(param.java.toString(), param.toString())
+        }
+
+        @Test
+        fun `'toString' of a final parameter should be correct`() {
+            val X by sources.add("X", "class X { public X(final int param) {} }")
+            sources.compile()
+            val param = Mirror.reflect(X._constructor()).parameters.single()
+            assertEquals(param.java.toString(), param.toString())
+        }
+
+        @Test
+        fun `'toString' of a vararg parameter should be correct`() {
+            val X by sources.add("X", "class X { public X(int... param) {} }")
+            sources.compile()
+            val param = Mirror.reflect(X._constructor()).parameters.single()
+            assertEquals(param.java.toString(), param.toString())
+        }
     }
 
     @Test
@@ -289,8 +313,8 @@ internal class ConstructorMirrorTest: MTest() {
 
     @Test
     fun `'annotations' of a constructor with annotations should return an array of annotations`() {
-        val A by sources.add("A", "@Target(ElementType.CONSTRUCTOR) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
-        val A2 by sources.add("A2", "@Target(ElementType.CONSTRUCTOR) @Retention(RetentionPolicy.RUNTIME) @interface A2 { String value(); }").typed<Annotation>()
+        val A by sources.add("A", "@rt(CONSTRUCTOR) @interface A {}").typed<Annotation>()
+        val A2 by sources.add("A2", "@rt(CONSTRUCTOR) @interface A2 { String value(); }").typed<Annotation>()
         val X by sources.add("X", "class X { @A @A2(\"annotation value\") public X() {} }")
         sources.compile()
         assertEquals(

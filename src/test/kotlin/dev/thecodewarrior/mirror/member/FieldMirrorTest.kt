@@ -174,7 +174,7 @@ internal class FieldMirrorTest: MTest() {
 
     @Test
     fun `'annotations' for an annotated field should return a list of the annotations`() {
-        val A by sources.add("A", " @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) @interface A {}").typed<Annotation>()
+        val A by sources.add("A", " @rt(FIELD) @interface A {}").typed<Annotation>()
         val X by sources.add("X", "class X { @A int field; }")
         sources.compile()
         val field = Mirror.reflect(X._f("field"))
@@ -183,7 +183,7 @@ internal class FieldMirrorTest: MTest() {
 
     @Test
     fun `'annotations' for a field with a type annotation should return an empty list`() {
-        val A by sources.add("A", " @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.TYPE_USE) @interface A {}").typed<Annotation>()
+        val A by sources.add("A", " @rt(TYPE_USE) @interface A {}").typed<Annotation>()
         val X by sources.add("X", "class X { @A int field; }")
         sources.compile()
         val field = Mirror.reflect(X._f("field"))

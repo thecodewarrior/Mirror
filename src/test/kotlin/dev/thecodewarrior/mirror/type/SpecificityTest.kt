@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test
 
 @Suppress("PropertyName")
 internal class SpecificityTest: MTest() {
-    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
-    val A2 by sources.add("A2", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A2 {}").typed<Annotation>()
+    val A by sources.add("A", "@rt(TYPE_USE) @interface A {}").typed<Annotation>()
+    val A2 by sources.add("A2", "@rt(TYPE_USE) @interface A2 {}").typed<Annotation>()
     val X by sources.add("X", "class X {}")
     val Y by sources.add("Y", "class Y {}")
     val X_X by sources.add("X_X", "class X_X extends X {}")

@@ -3,14 +3,9 @@ package dev.thecodewarrior.mirror.type
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.TypeToken
 import dev.thecodewarrior.mirror.annotations.TypeAnnotation1
-import dev.thecodewarrior.mirror.testsupport.GenericObject1
-import dev.thecodewarrior.mirror.testsupport.GenericObject1Sub
 import dev.thecodewarrior.mirror.testsupport.KotlinTypeAnnotation1
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.Object1
-import dev.thecodewarrior.mirror.testsupport.Object1Sub
-import dev.thecodewarrior.mirror.testsupport.Object1Sub2
-import dev.thecodewarrior.mirror.testsupport.Object2
 import dev.thecodewarrior.mirror.testsupport.assertInstanceOf
 import dev.thecodewarrior.mirror.typeToken
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,8 +16,10 @@ import java.lang.IllegalArgumentException
 
 @Suppress("UNCHECKED_CAST")
 internal class TypeMirrorTest: MTest() {
-    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}").typed<Annotation>()
-    val AArg by sources.add("AArg", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface AArg { int v(); }").typed<Annotation>()
+    val A by sources.add("A", "@rt(TYPE_USE) @interface A {}").typed<Annotation>()
+    val B by sources.add("B", "@rt(TYPE_USE) @interface B { int a(); int b(); }").typed<Annotation>()
+    val C by sources.add("C", "@rt(TYPE_USE) @interface C { int value(); }").typed<Annotation>()
+    val D by sources.add("D", "@rt(TYPE_USE) @interface D { Class<?> value(); }").typed<Annotation>()
     val X by sources.add("X", """
         import dev.thecodewarrior.mirror.TypeToken;
         public class X {
@@ -39,13 +36,16 @@ internal class TypeMirrorTest: MTest() {
         +"? extends X"
         +"X"
         +"@A X"
-        +"@A @AArg(v=1) X"
+        +"@B(a=1, b=2) X"
+        +"@C(1) X"
+        +"@A @B(a=1, b=2) @C(1) X"
+        +"@D(X.class) X"
         +"Generic<@A X>"
         +"@A X[]"
         +"X @A[]"
         +"@A Generic<X>"
         +"@A Generic<X>[]"
-        +"Generic<@A ? extends X>"
+        +"@A ? extends X"
     }
 
     @Test
@@ -169,10 +169,11 @@ internal class TypeMirrorTest: MTest() {
 
     @Test
     fun getAnnotation_ofMultiAnnotatedType_shouldReturnAnnotations() {
-        val type = Mirror.reflect(types["@A @AArg(v=1) X"])
+        val type = Mirror.reflect(types["@A @B(a=1, b=2) @C(1) X"])
         assertEquals(listOf(
             Mirror.newAnnotation(A),
-            Mirror.newAnnotation(AArg, mapOf("v" to 1))
+            Mirror.newAnnotation(B, mapOf("a" to 1, "b" to 2)),
+            Mirror.newAnnotation(C, mapOf("value" to 1))
         ), type.typeAnnotations)
     }
 
@@ -260,7 +261,37 @@ internal class TypeMirrorTest: MTest() {
 
     @Test
     fun getAnnotation_ofAnnotatedWildcard_shouldReturnAnnotations() {
-        val wildcard = Mirror.reflectClass(types["Generic<@A ? extends X>"]).typeParameters[0]
+        val wildcard = Mirror.reflect(types["@A ? extends X"])
         assertEquals(listOf(Mirror.newAnnotation(A)), wildcard.typeAnnotations)
+    }
+
+    @Test
+    fun `'typeAnnotationString' of a type with no annotations should return an empty string`() {
+        assertEquals("", Mirror.reflectClass(types["X"]).typeAnnotationString())
+    }
+
+    @Test
+    fun `'typeAnnotationString' of a type with a simple annotation should return the qualified annotation name followed by a space`() {
+        assertEquals("@gen.A() ", Mirror.reflectClass(types["@A X"]).typeAnnotationString())
+    }
+
+    @Test
+    fun `'typeAnnotationString' of a type with a parameterized annotation should include the parameters with the name`() {
+        assertEquals("@gen.B(a=1, b=2) ", Mirror.reflectClass(types["@B(a=1, b=2) X"]).typeAnnotationString())
+    }
+
+    @Test
+    fun `'typeAnnotationString' of a type with a value= annotation should include the value= parameter name`() {
+        assertEquals("@gen.C(value=1) ", Mirror.reflectClass(types["@C(1) X"]).typeAnnotationString())
+    }
+
+    @Test
+    fun `'typeAnnotationString' of a type with multiple annotations should return the annotation strings`() {
+        assertEquals("@gen.A() @gen.B(a=1, b=2) @gen.C(value=1) ", Mirror.reflectClass(types["@A @B(a=1, b=2) @C(1) X"]).typeAnnotationString())
+    }
+
+    @Test
+    fun `'typeAnnotationString' of a type with an annotation with a class parameter should use the fully qualified class name`() {
+        assertEquals("@gen.D(value=class gen.X) ", Mirror.reflectClass(types["@D(X.class) X"]).typeAnnotationString())
     }
 }

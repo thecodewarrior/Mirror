@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class WildcardMirrorTest: MTest() {
-    val A by sources.add("A", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A {}")
+    val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
     val X by sources.add("X", "class X {}")
 
     val types = sources.types {
