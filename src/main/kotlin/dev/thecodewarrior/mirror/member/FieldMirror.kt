@@ -113,7 +113,7 @@ class FieldMirror internal constructor(
         if(enclosing != null && enclosing.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $type. " +
                 "$this is declared in ${java.declaringClass}")
-        return cache.fields.specialize(this, enclosing)
+        return if(enclosing == null || enclosing == raw.declaringClass) raw else cache.fields.specialize(this, enclosing)
     }
 
     private val instanceGetWrapper by lazy {

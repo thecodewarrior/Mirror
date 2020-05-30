@@ -122,6 +122,16 @@ abstract class ExecutableMirror internal constructor(
         if(parameters.isNotEmpty() && parameters.size != typeParameters.size)
             throw InvalidSpecializationException("Passed parameter count ${parameters.size} is different from actual " +
                 "parameter count ${typeParameters.size}")
+
+        if(parameters.isNotEmpty() && parameters.indices.all { parameters[it] == this.typeParameters[it] }) {
+            return this // the same type parameters were specified, return this
+        }
+        if(this.declaringClass == raw.declaringClass && parameters.indices.all { parameters[it] == raw.typeParameters[it] }) {
+            // if the declaring class is raw and the raw type parameters were supplied, return the raw type.
+            // Calling the `all` method on an empty list will always return true, so an empty parameter list will
+            // conveniently implicitly be like having the raw parameters match.
+            return raw
+        }
         val newSpecialization = specialization?.copy(arguments = parameters.toList())
             ?: ExecutableSpecialization(null, parameters.toList())
         return cache.executables.specialize(raw, newSpecialization)
@@ -131,6 +141,10 @@ abstract class ExecutableMirror internal constructor(
         if(enclosing != null && enclosing.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $enclosing. " +
                 "$this is declared in ${java.declaringClass}")
+        if(enclosing == declaringClass)
+            return this
+        if(enclosing == raw.declaringClass && typeParameters == raw.typeParameters)
+            return raw
         val newSpecialization = this.specialization?.copy(enclosing = enclosing) ?: ExecutableSpecialization(enclosing, null)
         return cache.executables.specialize(raw, newSpecialization)
     }

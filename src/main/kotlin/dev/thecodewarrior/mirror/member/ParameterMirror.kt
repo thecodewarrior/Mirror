@@ -81,7 +81,7 @@ class ParameterMirror internal constructor(
             throw InvalidSpecializationException("Invalid declaring " +
                 (if(enclosing is ConstructorMirror) "constructor" else "method") +
                 " $enclosing. $this is declared in ${java.declaringExecutable}")
-        return if(enclosing == null) raw else cache.parameters.specialize(this, enclosing)
+        return if(enclosing == null || enclosing == raw.declaringExecutable) raw else cache.parameters.specialize(this, enclosing)
     }
 
     override fun toString(): String {

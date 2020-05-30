@@ -23,15 +23,11 @@ internal class ExecutableMirrorCache(private val cache: MirrorCache) {
     fun specialize(executable: ExecutableMirror, specialization: ExecutableSpecialization): ExecutableMirror {
         val raw = executable.raw
         return specializedCache.getOrPut(raw to specialization) {
-            if ((specialization.arguments == null || specialization.arguments.isEmpty() || specialization.arguments == raw.typeParameters) &&
-                (specialization.enclosing == null || specialization.enclosing == raw.declaringClass))
-                raw
-            else
-                when (raw) {
-                    is ConstructorMirror -> ConstructorMirror(cache, raw.java, raw, specialization)
-                    is MethodMirror -> MethodMirror(cache, raw.java, raw, specialization)
-                    else -> throw IllegalArgumentException("Unknown executable $executable")
-                }
+            when (raw) {
+                is ConstructorMirror -> ConstructorMirror(cache, raw.java, raw, specialization)
+                is MethodMirror -> MethodMirror(cache, raw.java, raw, specialization)
+                else -> throw IllegalArgumentException("Unknown executable $executable")
+            }
         }
     }
 }
