@@ -36,7 +36,7 @@ internal class ArrayMirrorHelperTest: MTest() {
     @Test
     fun newInstance_onGenericArray_shouldReturnObjectArray() {
         val types = sources.types {
-            typeVariables("T") {
+            block("T") {
                 +"T[]"
             }
         }

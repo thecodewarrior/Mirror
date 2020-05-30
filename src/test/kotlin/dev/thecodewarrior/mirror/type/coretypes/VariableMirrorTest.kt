@@ -10,8 +10,7 @@ internal class VariableMirrorTest: MTest() {
     val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
 
     val types = sources.types {
-        typeVariables("T") {
-            +"T"
+        block("T") {
             +"@A T"
         }
     }

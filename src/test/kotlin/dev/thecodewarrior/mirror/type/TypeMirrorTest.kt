@@ -29,8 +29,7 @@ internal class TypeMirrorTest: MTest() {
     val Generic by sources.add("Generic", "class Generic<T> {}")
 
     val types = sources.types {
-        typeVariables("T") {
-            +"T"
+        block("T") {
             +"T[]"
         }
         +"? extends X"

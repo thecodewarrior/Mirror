@@ -14,6 +14,7 @@ import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMapping
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.type.TypeSpecialization
+import dev.thecodewarrior.mirror.type.VariableMirror
 import dev.thecodewarrior.mirror.type.VoidMirror
 import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.checkedCast
@@ -514,11 +515,15 @@ internal class ClassMirrorImpl internal constructor(
             if(other is ClassMirror && other.java.isPrimitive) return false
             return true
         }
+        if(other is VariableMirror)
+            return other.bounds.any { this.isAssignableFrom(it) }
         if(other !is ClassMirror)
             return false
 
         return isAssignableCache.getOrPut(other) {
             if(other.raw == this.raw) {
+                if(this == this.raw)
+                    return@getOrPut true // ignore type parameters when raw
                 return@getOrPut this.typeParameters.zip(other.typeParameters)
                     .all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
             }

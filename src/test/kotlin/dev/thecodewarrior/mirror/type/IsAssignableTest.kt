@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 @Suppress("LocalVariableName")
 internal class IsAssignableTest: MTest() {
@@ -87,13 +88,6 @@ internal class IsAssignableTest: MTest() {
             )
         )
     }
-
-    interface ClassASuperInterface
-    interface ClassAInterface
-    interface ClassASubInterface
-    open class ClassASuper: ClassASuperInterface
-    open class ClassA: ClassASuper(), ClassAInterface
-    open class ClassASub: ClassA(), ClassASubInterface
 
     @Test
     @DisplayName("A class mirror should be assignable from itself")
@@ -356,6 +350,36 @@ internal class IsAssignableTest: MTest() {
     }
 
     @Test
+    fun `classes should be assignable from type variables with them in their bound`() {
+        val I by sources.add("I", "interface I {}")
+        val types = sources.types {
+            block("T extends I") {}
+            +"I"
+        }
+        sources.compile()
+        assertTrue(
+            Mirror.reflect(types["I"]).isAssignableFrom(
+                Mirror.reflect(types["T extends I"])
+            )
+        )
+    }
+
+    @Test
+    fun `class 'isAssignableFrom' with a self-referential type variable should not infinitely recurse`() {
+        val I by sources.add("I", "interface I<K> {}")
+        val types = sources.types {
+            block("T extends I<T>") {}
+            +"I<I>"
+        }
+        sources.compile()
+        assertDoesNotThrow {
+            Mirror.reflect(types["I<I>"]).isAssignableFrom(
+                Mirror.reflect(types["T extends I<T>"])
+            )
+        }
+    }
+
+    @Test
     @DisplayName("The void mirror should be assignable from itself")
     fun voidAssignableFromSelf() {
         assertTrue(
@@ -523,111 +547,17 @@ internal class IsAssignableTest: MTest() {
             )
         )
     }
-
     @Test
-    @DisplayName("Variable mirrors should be assignable from mirrors of their bounds")
-    fun variableAssignableFromSameType() {
-        val I by sources.add("I", "interface I {}")
-        val types = sources.types {
-            typeVariables("T extends I") {
-                +"T"
-            }
-        }
-        sources.compile()
-        assertTrue(
-            Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(I)
-            )
-        )
-    }
-
-    @Test
-    @DisplayName("Variable mirrors should be assignable from subtypes of their bounds")
-    fun variableAssignableFromSubtype() {
+    fun `type variables should not be assignable from classes that implement their bounds`() {
         val I by sources.add("I", "interface I {}")
         val X by sources.add("X", "class X implements I {}")
         val types = sources.types {
-            typeVariables("T extends I") {
-                +"T"
-            }
-        }
-        sources.compile()
-        assertTrue(
-            Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(X)
-            )
-        )
-    }
-
-    @Test
-    @DisplayName("Variable mirrors should be assignable from mirrors that implement all of their bounds")
-    fun variableAssignableFromDoubleImplement() {
-        val I by sources.add("I", "interface I {}")
-        val I2 by sources.add("I2", "interface I2 {}")
-        val I3 by sources.add("I3", "interface I3 extends I, I2 {}")
-        val types = sources.types {
-            typeVariables("T extends I & I2") {
-                +"T"
-            }
-        }
-        sources.compile()
-        assertTrue(
-            Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(I3)
-            )
-        )
-    }
-
-    @Test
-    @DisplayName("Variable mirrors should be assignable from mirrors that subclass all of their bounds")
-    fun variableAssignableFromDoubleSubtype() {
-        val I by sources.add("I", "interface I {}")
-        val I2 by sources.add("I2", "interface I2 {}")
-        val X by sources.add("X", "class X implements I, I2{}")
-        val types = sources.types {
-            typeVariables("T extends I & I2") {
-                +"T"
-            }
-        }
-        sources.compile()
-        assertTrue(
-            Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(X)
-            )
-        )
-    }
-
-    @Test
-    @DisplayName("Variable mirrors should not be assignable from mirrors that superclass their bounds")
-    fun variableNotAssignableFromSupertype() {
-        val I by sources.add("I", "interface I {}")
-        val I2 by sources.add("I2", "interface I2 extends I {}")
-        val types = sources.types {
-            typeVariables("T extends I2") {
-                +"T"
+            block("T extends I") {
             }
         }
         sources.compile()
         assertFalse(
-            Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(I)
-            )
-        )
-    }
-
-    @Test
-    @DisplayName("Variable mirrors should not be assignable from mirrors unrelated to their bounds")
-    fun variableNotAssignableFromUnrelated() {
-        val I by sources.add("I", "interface I {}")
-        val X by sources.add("X", "class X {}")
-        val types = sources.types {
-            typeVariables("T extends I") {
-                +"T"
-            }
-        }
-        sources.compile()
-        assertFalse(
-            Mirror.reflect(types["T"]).isAssignableFrom(
+            Mirror.reflect(types["T extends I"]).isAssignableFrom(
                 Mirror.reflect(X)
             )
         )
@@ -637,8 +567,7 @@ internal class IsAssignableTest: MTest() {
     @DisplayName("Variable mirrors should be assignable from themselves")
     fun variableAssignableFromSelf() {
         val types = sources.types {
-            typeVariables("T") {
-                +"T"
+            block("T") {
             }
         }
         sources.compile()
@@ -650,18 +579,15 @@ internal class IsAssignableTest: MTest() {
     }
 
     @Test
-    @DisplayName("Variable mirrors should be assignable from variables with subclassed bounds")
-    fun variableAssignableFromSubtypeBounds() {
+    fun `type variables should not be assignable from unrelated variables`() {
         val I by sources.add("I", "interface I {}")
         val I2 by sources.add("I2", "interface I2 extends I {}")
         val types = sources.types {
-            typeVariables("T extends I", "T2 extends I2") {
-                +"T"
-                +"T2"
+            block("T", "T2") {
             }
         }
         sources.compile()
-        assertTrue(
+        assertFalse(
             Mirror.reflect(types["T"]).isAssignableFrom(
                 Mirror.reflect(types["T2"])
             )
@@ -669,42 +595,94 @@ internal class IsAssignableTest: MTest() {
     }
 
     @Test
-    @DisplayName("Variable mirrors should be assignable from variables with multiple subclassed bounds")
-    fun variableAssignableFromMultipleSubtypeBounds() {
+    fun `type variables should not be assignable from unrelated variables with compatible bounds`() {
         val I by sources.add("I", "interface I {}")
-        val J by sources.add("J", "interface J {}")
-        val I2 by sources.add("I2", "interface I2 extends I {}")
-        val J2 by sources.add("J2", "interface J2 extends J {}")
         val types = sources.types {
-            typeVariables("T extends I & J", "T2 extends I2 & J2") {
-                +"T"
-                +"T2"
+            block("T extends I", "T2 extends I") {
             }
         }
         sources.compile()
-        assertTrue(
-            Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(types["T2"])
+        assertFalse(
+            Mirror.reflect(types["T extends I"]).isAssignableFrom(
+                Mirror.reflect(types["T2 extends I"])
             )
         )
     }
 
     @Test
-    @DisplayName("Variable mirrors should be assignable from variables with double subclassed bounds")
-    fun variableAssignableFromDoubleSubtypeBounds() {
-        val I by sources.add("I", "interface I {}")
-        val J by sources.add("J", "interface J {}")
-        val IJ by sources.add("IJ", "interface IJ extends I, J {}")
+    fun `type variables should be assignable from variables bounded by them`() {
         val types = sources.types {
-            typeVariables("T extends I & J", "T2 extends IJ") {
-                +"T"
-                +"T2"
+            block("T") {
+                block("T2 extends T") {}
             }
         }
         sources.compile()
         assertTrue(
             Mirror.reflect(types["T"]).isAssignableFrom(
-                Mirror.reflect(types["T2"])
+                Mirror.reflect(types["T2 extends T"])
+            )
+        )
+    }
+
+    @Test
+    fun `type variables should not be assignable from variables in their bounds`() {
+        val types = sources.types {
+            block("T") {
+                block("T2 extends T") {}
+            }
+        }
+        sources.compile()
+        assertFalse(
+            Mirror.reflect(types["T2 extends T"]).isAssignableFrom(
+                Mirror.reflect(types["T"])
+            )
+        )
+    }
+
+    @Test
+    fun `type variables should not be assignable from wildcards with compatible bounds`() {
+        val I by sources.add("I", "interface I {}")
+        val types = sources.types {
+            block("T extends I") {
+            }
+            +"? extends I"
+        }
+        sources.compile()
+        assertFalse(
+            Mirror.reflect(types["T extends I"]).isAssignableFrom(
+                Mirror.reflect(types["? extends I"])
+            )
+        )
+    }
+
+    @Test
+    fun `type variables should be assignable from wildcards with them in their upper bounds`() {
+        val I by sources.add("I", "interface I {}")
+        val types = sources.types {
+            block("T extends I") {
+                +"? extends T"
+            }
+        }
+        sources.compile()
+        assertTrue(
+            Mirror.reflect(types["T extends I"]).isAssignableFrom(
+                Mirror.reflect(types["? extends T"])
+            )
+        )
+    }
+
+    @Test
+    fun `type variables should not be assignable from wildcards with them in their lower bounds`() {
+        val I by sources.add("I", "interface I {}")
+        val types = sources.types {
+            block("T extends I") {
+                +"? super T"
+            }
+        }
+        sources.compile()
+        assertFalse(
+            Mirror.reflect(types["T extends I"]).isAssignableFrom(
+                Mirror.reflect(types["? super T"])
             )
         )
     }

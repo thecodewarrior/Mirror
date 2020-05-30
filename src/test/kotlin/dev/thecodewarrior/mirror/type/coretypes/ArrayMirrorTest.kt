@@ -16,7 +16,7 @@ internal class ArrayMirrorTest: MTest() {
         +"Generic<X>[]"
         +"@A X @A []"
         +"Generic<@A X>[]"
-        typeVariables("K", "V") {
+        block("K", "V") {
             +"K[]"
             +"@A Generic<V>"
         }

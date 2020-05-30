@@ -53,11 +53,11 @@ class VariableMirror internal constructor(
     }
 
     override fun isAssignableFrom(other: TypeMirror): Boolean {
-        if(other == this) return true
-        if(other is VariableMirror)
-            return this.bounds.zip(other.bounds).all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
-        return bounds.all {
-            it.isAssignableFrom(other)
+        return when(other) {
+            this -> true
+            is VariableMirror -> this in other.bounds
+            is WildcardMirror -> this in other.upperBounds
+            else -> false
         }
     }
 

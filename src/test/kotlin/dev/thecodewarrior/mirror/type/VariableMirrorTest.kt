@@ -9,23 +9,19 @@ import org.junit.jupiter.api.Test
 
 internal class VariableMirrorTest: MTest() {
     val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
+    val B by sources.add("B", "@rt(TYPE_PARAMETER) @interface B {}")
     val I1 by sources.add("I1", "interface I1 {}")
     val I2 by sources.add("I2", "interface I2 {}")
     val X by sources.add("X", "class X {}")
     val types = sources.types {
-        typeVariables("T") {
-            add("T", "T")
+        block("T") {
             +"@A T"
         }
-        typeVariables("T extends X") {
-            add("T extends X", "T")
+        block("@B T") {
         }
-        typeVariables("T extends I1 & I2") {
-            add("T extends I1 & I2", "T")
-        }
-        typeVariables("T extends @A X") {
-            add("T extends @A X", "T")
-        }
+        block("T extends X") {}
+        block("T extends I1 & I2") {}
+        block("T extends @A X") {}
         +"@A X"
     }
 

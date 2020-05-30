@@ -55,8 +55,7 @@ internal class MirrorTest: MTest() {
     @Test
     fun createArrayType_withGeneric_shouldReturnGeneric() {
         val types = sources.types {
-            typeVariables("T") {
-                +"T"
+            block("T") {
                 +"T[]"
             }
         }

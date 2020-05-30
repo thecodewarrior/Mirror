@@ -92,10 +92,10 @@ class TestSources {
         return TestClass<Any>("gen.$name")
     }
 
-    fun types(packageName: String? = null, block: TypeSetDefinition.() -> Unit): TypeSet {
+    fun types(packageName: String? = null, block: TypeBlock.() -> Unit): TypeSet {
         requireNotCompiled()
         val builder = TypeSetDefinition()
-        builder.block()
+        builder.rootBlock.block()
         val set = TypeSet(packageName?.let { "gen.$it" } ?: "gen", "__Types_${typeSets.size}", builder)
         typeSets.add(set)
         return set
@@ -128,19 +128,9 @@ class TestSources {
         private var typeCache = mutableMapOf<String, AnnotatedType>()
 
         operator fun get(name: String): AnnotatedType {
-            typeCache[name]?.also { return it }
-
-            val typeDef = definition.find(name)
-            val blockName = "block_${typeDef.blockIndex}"
-            val block = holder.declaredClasses.find { it.simpleName == blockName }
-                ?: throw IllegalStateException("Unable to find block `$blockName` in type holder class")
-            val defName = "type_${typeDef.index}"
-            val field = block.getDeclaredField(defName)
-                ?: throw IllegalStateException("Unable to find type ${typeDef.index} in type block")
-
-            val type = (field.annotatedType as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
-            typeCache[name] = type
-            return type
+            return typeCache.getOrPut(name) {
+                definition.find(name).getType(holder)
+            }
         }
 
         private var holderCache: Class<*>? = null
@@ -157,26 +147,9 @@ class TestSources {
                 classText += "import gen.*;"
             }
             classText += globalImports.joinToString("") { "import $it;" }
-            definition.imports.forEach {
-                classText += "import $it;"
-            }
-            classText += "\nclass $className {\n"
-
-            classText += definition.blocks.joinToString("") { block ->
-                var blockText = "    class block_${block.index}"
-                if(block.variables.isNotEmpty())
-                    blockText += "<${block.variables.joinToString(", ")}>"
-                blockText += " {\n"
-                blockText += block.definitions.joinToString("") { def ->
-                    "        __<${def.type}> type_${def.index}; // ${def.name.replace("\n", " ")}\n"
-                }
-                blockText += "    }\n"
-                blockText
-            }
-
-            classText += "    final class __<T> {}\n"
-            classText += "}"
-
+            classText += definition.imports.joinToString("") { "import $it;" }
+            classText += "\n"
+            classText += definition.createClassText(className)
             return classText
         }
     }
@@ -216,43 +189,106 @@ private annotation class TypeSetDSL
  * }
  * ```
  */
-@TypeSetDSL
 class TypeSetDefinition {
-    val imports: MutableList<String> = mutableListOf()
-    val defaultBlock: TypeBlock = TypeBlock(0)
-    val blocks: MutableList<TypeBlock> = mutableListOf(defaultBlock)
-    private val names: MutableSet<String> = mutableSetOf()
+    var nextBlockIndex: Int = 1
+    val definitions: MutableMap<String, TypeDefinition> = mutableMapOf()
+    val imports: MutableSet<String> = mutableSetOf()
+    val rootBlock = TypeBlock(this, null, 0)
 
     fun import(vararg imports: String) {
         this.imports.addAll(imports)
     }
 
-    inline fun typeVariables(vararg variables: String, config: TypeBlock.() -> Unit) {
-        val block = TypeBlock(blocks.size, *variables)
-        block.config()
-        blocks.add(block)
-    }
-
-    operator fun String.unaryPlus(): Unit = defaultBlock.add(this, this)
-    fun add(name: String, type: String): Unit = defaultBlock.add(name, type)
-
     fun find(name: String): TypeDefinition {
-        return blocks.asSequence().flatMap { it.definitions.asSequence() }.find { it.name == name }
-            ?: throw IllegalArgumentException("No such type found: `$name`")
+        return definitions[name] ?: throw IllegalArgumentException("No such type found: `$name`")
     }
 
-    @TypeSetDSL
-    inner class TypeBlock(val index: Int, vararg val variables: String) {
-        val definitions: MutableList<TypeDefinition> = mutableListOf()
+    fun createClassText(className: String): String {
+        var bodyText = ""
+        bodyText += rootBlock.createClassText()
+        bodyText += "\nfinal class __<T> {}"
 
-        operator fun String.unaryPlus(): Unit = add(this, this)
-        fun add(name: String, type: String) {
-            if(this@TypeSetDefinition.names.add(name))
-                definitions.add(TypeDefinition(index, definitions.size, name, type))
-            else
-                throw IllegalArgumentException("A type named `$name` already exists")
+        return "class $className {\n${bodyText.prependIndent("    ")}\n}"
+    }
+}
+
+@TypeSetDSL
+class TypeBlock(val root: TypeSetDefinition, val parent: TypeBlock?, val index: Int, vararg val variables: String) {
+    val definitions: MutableList<TypeDefinition> = mutableListOf()
+    val children: MutableList<TypeBlock> = mutableListOf()
+
+    init {
+        val re = """(\w+)(?:\s+extends|\s*$)""".toRegex()
+        variables.forEach { variable ->
+            re.find(variable)?.also { match ->
+                add(variable, match.groupValues[1])
+            } ?: throw IllegalArgumentException("Couldn't parse type variable '${variable}' to extract its name")
         }
     }
 
-    data class TypeDefinition(val blockIndex: Int, val index: Int, val name: String, val type: String)
+    operator fun String.unaryPlus(): Unit = add(this, this)
+    fun add(name: String, type: String) {
+        if(name in root.definitions)
+            throw IllegalArgumentException("A type named `$name` already exists")
+        val def = TypeDefinition(this, definitions.size, name, type)
+        definitions.add(def)
+        root.definitions[name] = def
+    }
+
+    inline fun block(vararg variables: String, config: TypeBlock.() -> Unit) {
+        val block = TypeBlock(root, this, root.nextBlockIndex++, *variables)
+        block.config()
+        children.add(block)
+    }
+
+    fun createClassText(): String {
+        var classText = ""
+
+        classText += "class block_$index"
+        if(variables.isNotEmpty())
+            classText += "<${variables.joinToString(", ")}>"
+        classText += " {\n"
+
+        var bodyText = ""
+        bodyText += definitions.joinToString("\n") { def ->
+            def.createClassText()
+        }
+
+        if(definitions.isNotEmpty() && children.isNotEmpty()) {
+            bodyText += "\n"
+        }
+
+        bodyText += children.joinToString("\n") { block ->
+            block.createClassText()
+        }
+
+        classText += bodyText.prependIndent("    ")
+        classText += "\n}"
+
+        return classText
+    }
+
+    fun getClass(rootClass: Class<*>): Class<*> {
+        val parentClass = this.parent?.getClass(rootClass) ?: rootClass
+        val blockName = "block_$index"
+        return parentClass.declaredClasses.find { it.simpleName == blockName }
+            ?: throw IllegalStateException("Unable to find block `$blockName`")
+    }
 }
+
+data class TypeDefinition(val block: TypeBlock, val index: Int, val name: String, val type: String) {
+    private val fieldName = "type_${index}"
+    fun getType(rootClass: Class<*>): AnnotatedType {
+        val blockClass = block.getClass(rootClass)
+
+        val field = blockClass.getDeclaredField(fieldName)
+            ?: throw IllegalStateException("Unable to find field $fieldName in type block")
+
+        return (field.annotatedType as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
+    }
+
+    fun createClassText(): String {
+        return "__<$type> $fieldName; // ${name.replace("\n", " ")}"
+    }
+}
+
