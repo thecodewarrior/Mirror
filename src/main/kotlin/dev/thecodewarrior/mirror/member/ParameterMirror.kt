@@ -15,9 +15,16 @@ class ParameterMirror internal constructor(
     val declaringExecutable: ExecutableMirror?,
     internal val java: Parameter
 ): AnnotatedElement by java {
-    val name: String? = if(java.isNamePresent) java.name else null
+    val hasName: Boolean = java.isNamePresent
+    val name: String = java.name
 
     val raw: ParameterMirror = raw ?: this
+
+
+    /**
+     * The index in the parameter list
+     */
+    val index: Int = java.declaringExecutable.parameters.indexOf(java)
 
     /**
      * True if the `final` modifier is present on this parameter

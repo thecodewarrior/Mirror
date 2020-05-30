@@ -48,15 +48,19 @@ class TestSources {
         "java.lang.annotation.ElementType",
         "java.lang.annotation.Target",
         "java.lang.annotation.Retention",
-        "java.lang.annotation.RetentionPolicy"
+        "java.lang.annotation.RetentionPolicy",
+        "dev.thecodewarrior.mirror.testsupport.TestSourceNopException"
     )
 
     /**
      * Adds the passed class to this compiler. This method automatically prepends the necessary `package` declaration
      * to the passed string and adds a wildcard import for the "root" package, `gen`, if needed.
      *
-     * Any occurrences of `@rt(targets)` in the text will be replaced with the annotations for runtime annotation
-     * retention and the passed element targets.
+     * ### Expansions
+     * This method will perform these expansions in the source code:
+     * - Any occurrences of `@rt(targets)` in the text will be replaced with the annotations for runtime annotation
+     *   retention and the passed element targets.
+     * - Any occurrences of `NOP;` in the text will be replaced with a throw statement
      *
      * ### Useful reference
      * - Annotation: `@Retention(RetentionPolicy.RUNTIME) @Target(ElementType...) @interface A { int value(); }`
@@ -85,6 +89,7 @@ class TestSources {
             val types = match.groupValues[1].split(",").joinToString(", ") { "ElementType.${it.trim()}" }
             "@Retention(RetentionPolicy.RUNTIME) @Target({ $types })"
         }
+        processedCode = processedCode.replace("NOP;", "throw new TestSourceNopException();")
         fullSource += processedCode
 
         javaSources["gen.$name"] = fullSource
