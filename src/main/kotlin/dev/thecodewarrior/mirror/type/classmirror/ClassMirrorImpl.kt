@@ -313,9 +313,13 @@ internal class ClassMirrorImpl internal constructor(
         return@lazy MethodList(this, "any", list)
     }
 
+    private val declaredMethodsByJava: Map<Method, MethodMirror> by lazy {
+        declaredMethods.associateBy { it.java }
+    }
+
     override fun getMethod(other: Method): MethodMirror {
         if(other.declaringClass == this.java) {
-            return declaredMethods.find { it.java == other }
+            return declaredMethodsByJava[other]
                 ?: throw NoSuchMirrorException("Could not find method $other in $this")
         }
         val superclass = findSuperclass(other.declaringClass)
