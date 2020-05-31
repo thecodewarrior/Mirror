@@ -12,7 +12,7 @@ import java.lang.reflect.WildcardType
  *
  * @see ArrayMirror
  * @see ClassMirror
- * @see VariableMirror
+ * @see TypeVariableMirror
  * @see VoidMirror
  */
 class WildcardMirror internal constructor(

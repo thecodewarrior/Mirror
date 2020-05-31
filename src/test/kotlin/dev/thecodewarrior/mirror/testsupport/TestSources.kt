@@ -18,7 +18,7 @@ import kotlin.reflect.KProperty
  * val A: Class<Annotation> by sources.add("A", "@interface A {}")
  * val types = sources.types {
  *     +"? extends X"
- *     typeVariables("T") {
+ *     block("T") {
  *         +"T"
  *     }
  * }
@@ -188,7 +188,7 @@ private annotation class TypeSetDSL
  * import("java.util.List")
  * add("name", "ClassName[]")
  * +"List<ClassName>"
- * typeVariables("K", "V") {
+ * block("K", "V") {
  *     +"Generic<K>"
  *     +"Generic<V>"
  * }

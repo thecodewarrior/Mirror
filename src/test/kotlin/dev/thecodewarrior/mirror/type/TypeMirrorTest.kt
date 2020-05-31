@@ -68,8 +68,8 @@ internal class TypeMirrorTest: MTest() {
     }
 
     @Test
-    fun reflect_withVariable_shouldReturnVariableMirror() {
-        assertInstanceOf<VariableMirror>(Mirror.reflect(types["T"]))
+    fun reflect_withTypeVariable_shouldReturnTypeVariableMirror() {
+        assertInstanceOf<TypeVariableMirror>(Mirror.reflect(types["T"]))
     }
 
     @Test
@@ -102,7 +102,7 @@ internal class TypeMirrorTest: MTest() {
     }
 
     @Test
-    fun reflectClass_withVariable_shouldThrow() {
+    fun reflectClass_withTypeVariable_shouldThrow() {
         assertThrows<IllegalArgumentException> {
             Mirror.reflectClass(types["T"])
         }

@@ -75,9 +75,9 @@ object Mirror {
 
     /**
      * Gets the [ClassMirror] representing the passed annotated type. This is a convenience method for when the type
-     * is known to be a class, rather than an array, void, variable, or wildcard.
+     * is known to be a class, rather than an array, void, type variable, or wildcard.
      *
-     * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
+     * @throws IllegalArgumentException if the input type is an array, void, type variable, or wildcard
      */
     @JvmStatic
     fun reflectClass(token: TypeToken<*>): ClassMirror {
@@ -86,9 +86,9 @@ object Mirror {
 
     /**
      * Gets the [ClassMirror] representing the passed annotated type. This is a convenience method for when the type
-     * is known to be a class, rather than an array, void, variable, or wildcard.
+     * is known to be a class, rather than an array, void, type variable, or wildcard.
      *
-     * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
+     * @throws IllegalArgumentException if the input type is an array, void, type type variable, or wildcard
      */
     @JvmStatic
     fun reflectClass(type: AnnotatedType): ClassMirror {
@@ -102,9 +102,9 @@ object Mirror {
 
     /**
      * Gets the [ClassMirror] representing the passed type. This is a convenience method for when the type is known
-     * to be a class, rather than an array, void, variable, or wildcard.
+     * to be a class, rather than an array, void, type type variable, or wildcard.
      *
-     * @throws IllegalArgumentException if the input type is an array, void, variable, or wildcard
+     * @throws IllegalArgumentException if the input type is an array, void, type type variable, or wildcard
      */
     @JvmStatic
     fun reflectClass(type: Type): ClassMirror {

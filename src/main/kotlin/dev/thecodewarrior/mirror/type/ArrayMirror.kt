@@ -13,7 +13,7 @@ import java.lang.reflect.Type
  * The type of mirror used to represent arrays, as opposed to classes, type variables, wildcards, and `void`.
  *
  * @see ClassMirror
- * @see VariableMirror
+ * @see TypeVariableMirror
  * @see VoidMirror
  * @see WildcardMirror
  */

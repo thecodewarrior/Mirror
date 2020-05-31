@@ -19,21 +19,20 @@ import java.lang.reflect.TypeVariable
  * @see VoidMirror
  * @see WildcardMirror
  */
-// TODO: rename to TypeVariableMirror
-class VariableMirror internal constructor(
+class TypeVariableMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: TypeVariable<*>,
-    raw: VariableMirror?,
+    raw: TypeVariableMirror?,
     override val specialization: TypeSpecialization.Common?
 ): TypeMirror(), AnnotatedElement by coreType {
 
     override val coreAnnotatedType: AnnotatedTypeVariable
         = CoreTypeUtils.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedTypeVariable
 
-    override val raw: VariableMirror = raw ?: this
+    override val raw: TypeVariableMirror = raw ?: this
 
     /**
-     * The bounds of this variable. Types specializing this variable must extend all of these.
+     * The bounds of this type variable. Types specializing this type variable must extend all of these.
      *
      * By default it contains the [Object] mirror.
      */
@@ -48,14 +47,14 @@ class VariableMirror internal constructor(
             specialization,
             { true }
         ) {
-            VariableMirror(cache, coreType, raw, it)
+            TypeVariableMirror(cache, coreType, raw, it)
         }
     }
 
     override fun isAssignableFrom(other: TypeMirror): Boolean {
         return when(other) {
             this -> true
-            is VariableMirror -> this in other.bounds
+            is TypeVariableMirror -> this in other.bounds
             is WildcardMirror -> this in other.upperBounds
             else -> false
         }

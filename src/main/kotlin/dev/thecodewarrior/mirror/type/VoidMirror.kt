@@ -9,7 +9,7 @@ import java.lang.reflect.AnnotatedType
  *
  * @see ArrayMirror
  * @see ClassMirror
- * @see VariableMirror
+ * @see TypeVariableMirror
  * @see WildcardMirror
  */
 class VoidMirror internal constructor(

@@ -9,7 +9,6 @@ import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.type.classmirror.MethodList
 import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.UntestedFailure
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -20,7 +19,7 @@ import kotlin.reflect.KClass
  * The type of mirror used to represent classes, as opposed to arrays, type variables, wildcards, and `void`.
  *
  * @see ArrayMirror
- * @see VariableMirror
+ * @see TypeVariableMirror
  * @see VoidMirror
  * @see WildcardMirror
  */

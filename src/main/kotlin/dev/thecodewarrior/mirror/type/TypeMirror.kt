@@ -5,8 +5,6 @@ import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.unmodifiableView
-import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
@@ -15,7 +13,7 @@ import java.lang.reflect.Type
  *
  * @see ArrayMirror
  * @see ClassMirror
- * @see VariableMirror
+ * @see TypeVariableMirror
  * @see VoidMirror
  * @see WildcardMirror
  */

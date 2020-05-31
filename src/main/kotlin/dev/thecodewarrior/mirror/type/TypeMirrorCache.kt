@@ -43,7 +43,7 @@ internal class TypeMirrorCache(private val cache: MirrorCache) {
                     mirror = theMirror
                 }
                 is TypeVariable<*> -> {
-                    mirror = VariableMirror(cache, type, null, null)
+                    mirror = TypeVariableMirror(cache, type, null, null)
                 }
                 is WildcardType -> {
                     mirror = WildcardMirror(cache, type, null, null, null)
