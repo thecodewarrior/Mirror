@@ -97,14 +97,15 @@ abstract class TypeMirror internal constructor() {
 //region Type Annotations
     /**
      * The [type annotations][java.lang.annotation.ElementType.TYPE_USE] present on this type.
-     * In the case of [ClassMirror], these are not the annotations present on the class _declaration,_
-     * they are the annotations present on the _use_ of the type.
+     * These are not the annotations present on the _declaration,_ they are the annotations present on the _use_ of the
+     * type.
      */
     val typeAnnotations: List<Annotation>
         get() = specialization?.annotations ?: emptyList()
 
     /**
-     * Returns true if the specified annotation is present on this class.
+     * Returns true if the specified [type annotation][java.lang.annotation.ElementType.TYPE_USE] is present on this
+     * type.
      */
     @Untested
     fun isTypeAnnotationPresent(annotationType: Class<out Annotation>): Boolean {
@@ -112,32 +113,34 @@ abstract class TypeMirror internal constructor() {
     }
 
     /**
-     * Returns the annotation of the specified type, or null if no such annotation is present.
+     * Returns the [type annotation][java.lang.annotation.ElementType.TYPE_USE] of the specified type, or null if no
+     * such annotation is present.
      */
     @Untested
     fun <T: Annotation> getTypeAnnotation(annotationClass: Class<T>): T? {
         return coreAnnotatedType.getDeclaredAnnotation(annotationClass)
     }
 
+    /**
+     * Returns the [type annotation][java.lang.annotation.ElementType.TYPE_USE] with the specified type, detecting
+     * repeatable annotations.
+     */
     @Untested
     fun <T: Annotation> getTypeAnnotationsByType(annotationClass: Class<T>): List<T> {
         return coreAnnotatedType.getDeclaredAnnotationsByType(annotationClass).toList()
     }
 
     /**
-     * Returns true if the specified annotation is present on this class.
+     * Returns true if the specified [type annotation][java.lang.annotation.ElementType.TYPE_USE] is present on this
+     * type.
      */
     inline fun <reified T: Annotation> isTypeAnnotationPresent(): Boolean = this.isTypeAnnotationPresent(T::class.java)
 
     /**
-     * Returns the annotation of the specified type, or null if no such annotation is present.
+     * Returns the [type annotation][java.lang.annotation.ElementType.TYPE_USE] of the specified type, or null if no
+     * such annotation is present.
      */
     inline fun <reified T: Annotation> getTypeAnnotation(): T? = this.getTypeAnnotation(T::class.java)
-
-    @Untested
-    internal fun typeAnnotationString(): String {
-        return typeAnnotations.joinToString("") { "$it " }
-    }
 //endregion
 
     /**

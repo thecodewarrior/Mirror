@@ -263,34 +263,4 @@ internal class TypeMirrorTest: MTest() {
         val wildcard = Mirror.reflect(types["@A ? extends X"])
         assertEquals(listOf(Mirror.newAnnotation(A)), wildcard.typeAnnotations)
     }
-
-    @Test
-    fun `'typeAnnotationString' of a type with no annotations should return an empty string`() {
-        assertEquals("", Mirror.reflectClass(types["X"]).typeAnnotationString())
-    }
-
-    @Test
-    fun `'typeAnnotationString' of a type with a simple annotation should return the qualified annotation name followed by a space`() {
-        assertEquals("@gen.A() ", Mirror.reflectClass(types["@A X"]).typeAnnotationString())
-    }
-
-    @Test
-    fun `'typeAnnotationString' of a type with a parameterized annotation should include the parameters with the name`() {
-        assertEquals("@gen.B(a=1, b=2) ", Mirror.reflectClass(types["@B(a=1, b=2) X"]).typeAnnotationString())
-    }
-
-    @Test
-    fun `'typeAnnotationString' of a type with a value= annotation should include the value= parameter name`() {
-        assertEquals("@gen.C(value=1) ", Mirror.reflectClass(types["@C(1) X"]).typeAnnotationString())
-    }
-
-    @Test
-    fun `'typeAnnotationString' of a type with multiple annotations should return the annotation strings`() {
-        assertEquals("@gen.A() @gen.B(a=1, b=2) @gen.C(value=1) ", Mirror.reflectClass(types["@A @B(a=1, b=2) @C(1) X"]).typeAnnotationString())
-    }
-
-    @Test
-    fun `'typeAnnotationString' of a type with an annotation with a class parameter should use the fully qualified class name`() {
-        assertEquals("@gen.D(value=class gen.X) ", Mirror.reflectClass(types["@D(X.class) X"]).typeAnnotationString())
-    }
 }

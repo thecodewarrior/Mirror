@@ -49,3 +49,13 @@ internal val Class<*>.jvmName: String
         Boolean::class.javaPrimitiveType -> "Z"
         else -> "L${this.name.replace(".", "/")};"
     }
+
+@Untested
+internal fun List<Annotation>.annotationString(): String {
+    return this.joinToString("") { "$it " }
+}
+
+@Untested
+internal fun Array<Annotation>.annotationString(): String {
+    return this.joinToString("") { "$it " }
+}

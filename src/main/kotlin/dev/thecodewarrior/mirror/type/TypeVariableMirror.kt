@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.type
 import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.utils.annotationString
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
@@ -82,17 +83,19 @@ class TypeVariableMirror internal constructor(
      */
     inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
 
-    @Untested
     override fun toString(): String {
         var str = ""
-        str += typeAnnotationString()
+        str += typeAnnotations.annotationString()
         str += coreType.name
         return str
     }
 
-    @Untested
+    /**
+     * The declaration string for this type. e.g. `T extends X`
+     */
     fun toDeclarationString(): String {
         var str = ""
+        str += coreType.annotations.annotationString()
         str += coreType.name
         if(bounds.isNotEmpty() && !(bounds.size == 1 && bounds[0] == cache.types.reflect(Any::class.java))) {
             str += " extends ${bounds.joinToString(" & ")}"

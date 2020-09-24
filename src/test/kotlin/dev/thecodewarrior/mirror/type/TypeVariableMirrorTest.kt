@@ -59,4 +59,16 @@ internal class TypeVariableMirrorTest: MTest() {
         val type = Mirror.reflect(types["@A T"]) as TypeVariableMirror
         assertEquals("@gen.A() T", type.toString())
     }
+
+    @Test
+    fun `'toDeclarationString' of bounded type variable should return its name then bounds`() {
+        val type = Mirror.reflect(types["T extends X"]) as TypeVariableMirror
+        assertEquals("T extends gen.X", type.toDeclarationString())
+    }
+
+    @Test
+    fun `'toDeclarationString' of annotated type variable declaration should return its name then bounds`() {
+        val type = Mirror.reflect(types["@B T"]) as TypeVariableMirror
+        assertEquals("@gen.B() T", type.toDeclarationString())
+    }
 }

@@ -1,116 +1,99 @@
 package dev.thecodewarrior.mirror.methodhandles
 
 import dev.thecodewarrior.mirror.Mirror
+import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import java.lang.IllegalArgumentException
 
-internal class StaticMethods: MirrorTestBase() {
-
+internal class StaticMethods: MTest() {
     @Test
-    fun call_staticVoid() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("incrementCounter")
-        method<Unit>(null)
-        assertEquals(1, counterValue)
+    fun `calling a static void method should correctly invoke it`() {
+        val X by sources.add("X", "class X { static int field = 10; static void method() { field = 20; } }")
+        sources.compile()
+        Mirror.reflect(X._m("method")).call<Unit>(null)
+        assertEquals(20, X._get<Any>("field"))
     }
 
     @Test
-    fun call_staticPrivate() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("privateIncrementCounter")
-        method<Unit>(null)
-        assertEquals(1, counterValue)
-    }
-
-    @Test
-    fun call_staticWithParam() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("addCounter", Mirror.types.int)
-        method<Unit>(null, 5)
-        assertEquals(5, counterValue)
-    }
-
-    @Test
-    fun call_staticWithReturn() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("getCounter")
-        counterValue = 3
-        assertEquals(3, method(null))
-    }
-
-    @Test
-    fun call_staticVoid_passingReceiver() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("incrementCounter")
-        assertThrows<IllegalArgumentException> {
-            method<Unit>("whoops!")
+    fun `calling a static private method should not throw`() {
+        val X by sources.add("X", "class X { private static void method() { } }")
+        sources.compile()
+        assertDoesNotThrow {
+            Mirror.reflect(X._m("method")).call<Unit>(null)
         }
     }
 
     @Test
-    fun call_staticVoid_passingParam() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("incrementCounter")
+    fun `calling a static method with arguments should correctly pass them`() {
+        val X by sources.add("X", "class X { static int field = 10; static void method(int param) { field = param; } }")
+        sources.compile()
+        Mirror.reflect(X._m("method")).call<Unit>(null, 20)
+        assertEquals(20, X._get<Any>("field"))
+    }
+
+    @Test
+    fun `calling a static method with a return value should correctly return it`() {
+        val X by sources.add("X", "class X { static int method() { return 20; } }")
+        sources.compile()
+        assertEquals(20, Mirror.reflect(X._m("method")).call(null))
+    }
+
+    @Test
+    fun `calling a static method with a receiver should not throw`() {
+        val X by sources.add("X", "class X { static void method() { } }")
+        sources.compile()
+        val instance = X._new<Any>()
         assertThrows<IllegalArgumentException> {
-            method<Unit>(null, "whoops!")
+            Mirror.reflect(X._m("method")).call<Unit>(instance)
         }
     }
 
     @Test
-    fun call_staticWithParam_withoutParam() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("addCounter", Mirror.types.int)
+    fun `calling a static method with the wrong receiver type should throw`() {
+        val X by sources.add("X", "class X { static void method() { } }")
+        sources.compile()
         assertThrows<IllegalArgumentException> {
-            method<Unit>(null)
+            Mirror.reflect(X._m("method")).call<Unit>("")
         }
     }
 
     @Test
-    fun call_staticWithParam_withIncorrectParamType() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("addCounter", Mirror.types.int)
+    fun `calling a static method with arguments and no parameters should throw`() {
+        val X by sources.add("X", "class X { static void method() { } }")
+        sources.compile()
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflect(X._m("method")).callFast<Unit>(null, 0)
+        }
+    }
+
+    @Test
+    fun `calling a static method with too many arguments should throw`() {
+        val X by sources.add("X", "class X { static void method(int a) { } }")
+        sources.compile()
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflect(X._m("method")).call<Unit>(null, 0, 1)
+        }
+    }
+
+    @Test
+    fun `calling a static method with too few arguments should throw`() {
+        val X by sources.add("X", "class X { static void method(int a, int b) { } }")
+        sources.compile()
+        assertThrows<IllegalArgumentException> {
+            Mirror.reflect(X._m("method")).call<Unit>(null, 0)
+        }
+    }
+
+    @Test
+    fun `calling a static method with wrong parameter types should throw`() {
+        val X by sources.add("X", "class X { static void method(int a, float b) { } }")
+        sources.compile()
         assertThrows<ClassCastException> {
-            method<Unit>(null, "whoops!")
-        }
-    }
-
-    @Test
-    fun call_staticWithParam_withExtraParam() {
-        val thisType = Mirror.reflectClass<StaticMethods>()
-        val method = thisType.getMethod("addCounter", Mirror.types.int)
-        assertThrows<IllegalArgumentException> {
-            method<Unit>(null, 5, "whoops!")
-        }
-    }
-
-    override fun initializeForTest() {
-        super.initializeForTest()
-        counterValue = 0
-    }
-
-    companion object {
-        var counterValue = 0
-
-        @JvmStatic
-        fun incrementCounter() {
-            counterValue++
-        }
-
-        @JvmStatic
-        private fun privateIncrementCounter() {
-            counterValue++
-        }
-
-        @JvmStatic
-        fun addCounter(value: Int) {
-            counterValue += value
-        }
-
-        @JvmStatic
-        fun getCounter(): Int {
-            return counterValue
+            Mirror.reflect(X._m("method")).call<Unit>(null, 0, "")
         }
     }
 }

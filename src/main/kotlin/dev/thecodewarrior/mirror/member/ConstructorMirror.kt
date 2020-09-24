@@ -4,15 +4,12 @@ import dev.thecodewarrior.mirror.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.utils.MethodHandleHelper
-import dev.thecodewarrior.mirror.utils.Untested
 import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Constructor
 import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
-import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaConstructor
-import kotlin.reflect.jvm.javaMethod
 
 class ConstructorMirror internal constructor(
     cache: MirrorCache,
@@ -38,8 +35,8 @@ class ConstructorMirror internal constructor(
         return super.withTypeParameters(*parameters) as ConstructorMirror
     }
 
-    override fun withDeclaringClass(type: ClassMirror?): ConstructorMirror {
-        return super.withDeclaringClass(type) as ConstructorMirror
+    override fun withDeclaringClass(enclosing: ClassMirror?): ConstructorMirror {
+        return super.withDeclaringClass(enclosing) as ConstructorMirror
     }
 
     private val wrapper by lazy {
@@ -48,6 +45,10 @@ class ConstructorMirror internal constructor(
         MethodHandleHelper.wrapperForConstructor(java as Constructor<Any>)
     }
 
+    /**
+     * Create a new instance using this constructor. If performance is of the essence use [callFast], which should be
+     * near-native speed, but will provide somewhat less helpful exceptions.
+     */
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> call(vararg args: Any?): T {
         if(args.size != parameters.size)
@@ -57,6 +58,16 @@ class ConstructorMirror internal constructor(
 
     @JvmSynthetic
     operator fun <T> invoke(vararg args: Any?): T = call(*args)
+
+    /**
+     * Create a new instance using this constructor. After the one-time cost of creating the
+     * [MethodHandle][java.lang.invoke.MethodHandle], the access should be near-native speed. This method, while faster
+     * than [call], will provide somewhat less helpful exceptions.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> callFast(vararg args: Any?): T {
+        return raw.wrapper(args as Array<Any?>) as T
+    }
 
     override fun toString(): String {
         var str = ""

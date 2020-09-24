@@ -172,6 +172,11 @@ class MethodMirror internal constructor(
         return generateSequence(this.overrides) { it.overrides }.any { it == other }
     }
 
+    /**
+     * Call this method on the passed instance. If this is a static method, `null` should be used for the instance. If
+     * performance is of the essence use [callFast], which should be near-native speed, but will provide somewhat less
+     * helpful exceptions.
+     */
     @Suppress("UNCHECKED_CAST")
     @Throws(Throwable::class)
     fun <T> call(receiver: Any?, vararg args: Any?): T {
@@ -196,6 +201,20 @@ class MethodMirror internal constructor(
 
     @JvmSynthetic
     operator fun <T> invoke(receiver: Any?, vararg args: Any?): T = call(receiver, *args)
+
+    /**
+     * Call this method on the passed instance. If this is a static method, `null` should be used for the instance.
+     * After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access should be
+     * near-native speed. This method, while faster than [call], will provide somewhat less helpful exceptions.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> callFast(receiver: Any?, vararg args: Any?): T {
+        if(isStatic) {
+            return raw.staticWrapper(args as Array<Any?>) as T
+        } else {
+            return raw.instanceWrapper(receiver!!, args as Array<Any?>) as T
+        }
+    }
 
     override fun toString(): String {
         var str = ""

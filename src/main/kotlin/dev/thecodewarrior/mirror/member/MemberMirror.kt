@@ -20,7 +20,7 @@ abstract class MemberMirror internal constructor(
      */
     abstract val java: Member
 
-    protected abstract val annotatedElement: AnnotatedElement
+    internal abstract val annotatedElement: AnnotatedElement
 
     /**
      * The potentially specialized class this member is declared in
