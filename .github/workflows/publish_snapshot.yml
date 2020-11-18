@@ -3,7 +3,10 @@
 
 name: Publish Snapshots
 
-on: push
+on:
+  push:
+    branches:
+      - '**'
 
 jobs:
   build:
