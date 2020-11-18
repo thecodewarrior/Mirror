@@ -10,10 +10,10 @@ import dev.thecodewarrior.mirror.utils.Untested
  * @see ClassMirror
  * @see ArrayMirror
  */
-abstract class ConcreteTypeMirror: TypeMirror() {
+public abstract class ConcreteTypeMirror: TypeMirror() {
     /**
      * The raw Core Reflection class this mirror represents
      */
-    abstract val java: Class<*>
+    public abstract val java: Class<*>
 }
 

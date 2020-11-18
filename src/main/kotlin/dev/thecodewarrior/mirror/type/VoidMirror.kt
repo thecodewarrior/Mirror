@@ -12,7 +12,7 @@ import java.lang.reflect.AnnotatedType
  * @see TypeVariableMirror
  * @see WildcardMirror
  */
-class VoidMirror internal constructor(
+public class VoidMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: Class<*>,
     raw: VoidMirror?,

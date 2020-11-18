@@ -24,7 +24,7 @@ import java.lang.reflect.Type
 /**
  * The central class used to retrieve mirrors of Core Reflection objects
  */
-object Mirror {
+public object Mirror {
     // these instances are replaced by the unit tests using reflection. `types` isn't a `var` with a private setter
     // because if it was IDEA would mark it as mutable with an underline, which is incorrect and gets irritating
     private var cache = MirrorCache()
@@ -39,13 +39,13 @@ object Mirror {
      * Easy access to core Java types (void + primitives + Object)
      */
     @JvmStatic
-    val types: Types get() = _types
+    public val types: Types get() = _types
 
     /**
      * Gets the type mirror representing the passed type
      */
     @JvmStatic
-    fun reflect(type: Type): TypeMirror {
+    public fun reflect(type: Type): TypeMirror {
         return cache.types.reflect(type)
     }
 
@@ -54,7 +54,7 @@ object Mirror {
      */
     @JvmStatic
     @IndirectTests
-    fun reflect(type: TypeToken<*>): TypeMirror {
+    public fun reflect(type: TypeToken<*>): TypeMirror {
         return cache.types.reflect(type.getAnnotated())
     }
 
@@ -62,14 +62,14 @@ object Mirror {
      * Gets the type mirror representing the passed annotated type
      */
     @JvmStatic
-    fun reflect(type: AnnotatedType): TypeMirror {
+    public fun reflect(type: AnnotatedType): TypeMirror {
         return cache.types.reflect(type)
     }
 
     /**
      * Gets the type mirror representing the specified type
      */
-    inline fun <reified T> reflect(): TypeMirror {
+    public inline fun <reified T> reflect(): TypeMirror {
         return reflect(typeToken<T>())
     }
 
@@ -80,7 +80,7 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, type variable, or wildcard
      */
     @JvmStatic
-    fun reflectClass(token: TypeToken<*>): ClassMirror {
+    public fun reflectClass(token: TypeToken<*>): ClassMirror {
         return reflectClass(token.getAnnotated())
     }
 
@@ -91,7 +91,7 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, type type variable, or wildcard
      */
     @JvmStatic
-    fun reflectClass(type: AnnotatedType): ClassMirror {
+    public fun reflectClass(type: AnnotatedType): ClassMirror {
         val reflected = reflect(type)
         if(reflected is ClassMirror) {
             return reflected
@@ -107,7 +107,7 @@ object Mirror {
      * @throws IllegalArgumentException if the input type is an array, void, type type variable, or wildcard
      */
     @JvmStatic
-    fun reflectClass(type: Type): ClassMirror {
+    public fun reflectClass(type: Type): ClassMirror {
         val reflected = reflect(type)
         if(reflected is ClassMirror) {
             return reflected
@@ -122,7 +122,7 @@ object Mirror {
      *
      * @throws IllegalArgumentException if the input type is an array or void
      */
-    inline fun <reified T> reflectClass(): ClassMirror {
+    public inline fun <reified T> reflectClass(): ClassMirror {
         if(T::class.java.isArray) throw IllegalArgumentException("reflectClass cannot reflect an array type")
         if(T::class.java == Void.TYPE) throw IllegalArgumentException("reflectClass cannot reflect the void type")
         return reflect<T>() as ClassMirror
@@ -132,7 +132,7 @@ object Mirror {
      * Gets the field mirror representing the passed field
      */
     @JvmStatic
-    fun reflect(field: Field): FieldMirror {
+    public fun reflect(field: Field): FieldMirror {
         return cache.fields.reflect(field)
     }
 
@@ -140,7 +140,7 @@ object Mirror {
      * Gets the method mirror representing the passed method
      */
     @JvmStatic
-    fun reflect(method: Method): MethodMirror {
+    public fun reflect(method: Method): MethodMirror {
         return cache.executables.reflect(method) as MethodMirror
     }
 
@@ -148,7 +148,7 @@ object Mirror {
      * Gets the constructor mirror representing the passed constructor
      */
     @JvmStatic
-    fun reflect(constructor: Constructor<*>): ConstructorMirror {
+    public fun reflect(constructor: Constructor<*>): ConstructorMirror {
         return cache.executables.reflect(constructor) as ConstructorMirror
     }
 
@@ -156,7 +156,7 @@ object Mirror {
      * Gets the method or constructor mirror representing the passed method or constructor
      */
     @JvmStatic
-    fun reflect(executable: Executable): ExecutableMirror {
+    public fun reflect(executable: Executable): ExecutableMirror {
         return cache.executables.reflect(executable)
     }
 
@@ -170,7 +170,7 @@ object Mirror {
     @JvmStatic
     @JvmOverloads
     @IndirectTests("via the <reified T> newAnnotation(pairs)")
-    fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
+    public fun <T: Annotation> newAnnotation(clazz: Class<T>, arguments: Map<String, Any> = emptyMap()): T {
         return CoreTypeUtils.createAnnotation(clazz, arguments)
     }
 
@@ -183,7 +183,7 @@ object Mirror {
      */
     @JvmStatic
     @IndirectTests
-    fun <T: Annotation> newAnnotation(clazz: Class<T>, vararg arguments: Pair<String, Any>): T {
+    public fun <T: Annotation> newAnnotation(clazz: Class<T>, vararg arguments: Pair<String, Any>): T {
         return newAnnotation(clazz, mapOf(*arguments))
     }
 
@@ -195,7 +195,7 @@ object Mirror {
      * @throws AnnotationFormatException if any values in the map have incompatible types with the attributes of the annotation
      */
     @IndirectTests
-    inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
+    public inline fun <reified T: Annotation> newAnnotation(arguments: Map<String, Any> = emptyMap()): T {
         return newAnnotation(T::class.java, arguments)
     }
 
@@ -206,7 +206,7 @@ object Mirror {
      * @throws AnnotationFormatException if any required annotation values are missing from the passed name-value pair set
      * @throws AnnotationFormatException if any values in the set have incompatible types with the attributes of the annotation
      */
-    inline fun <reified T: Annotation> newAnnotation(vararg arguments: Pair<String, Any>): T {
+    public inline fun <reified T: Annotation> newAnnotation(vararg arguments: Pair<String, Any>): T {
         return newAnnotation(T::class.java, mapOf(*arguments))
     }
 
@@ -214,7 +214,7 @@ object Mirror {
      * Create an array whose component type is the passed mirror
      */
     @JvmStatic
-    fun createArrayType(type: TypeMirror): ArrayMirror {
+    public fun createArrayType(type: TypeMirror): ArrayMirror {
         return reflect(TypeImplAccess.createArrayType(type.coreAnnotatedType, emptyArray())) as ArrayMirror
     }
 
@@ -223,34 +223,34 @@ object Mirror {
      */
     @JvmStatic
     @IndirectTests
-    fun <T: AnnotatedType> toCanonical(type: T): T = CoreTypeUtils.toCanonical(type)
+    public fun <T: AnnotatedType> toCanonical(type: T): T = CoreTypeUtils.toCanonical(type)
 
     /**
      * Easy access to core Java types (void + primitives + Object)
      */
-    class Types private constructor() {
+    public class Types private constructor() {
         /** The type mirror representing the `void` type */
-        val void: VoidMirror = reflect(Void.TYPE) as VoidMirror
+        public val void: VoidMirror = reflect(Void.TYPE) as VoidMirror
 
         /** The type mirror representing the primitive `boolean` type */
-        val boolean: ClassMirror = reflectClass(Boolean::class.javaPrimitiveType!!)
+        public val boolean: ClassMirror = reflectClass(Boolean::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `byte` type */
-        val byte: ClassMirror = reflectClass(Byte::class.javaPrimitiveType!!)
+        public val byte: ClassMirror = reflectClass(Byte::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `char` type */
-        val char: ClassMirror = reflectClass(Char::class.javaPrimitiveType!!)
+        public val char: ClassMirror = reflectClass(Char::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `short` type */
-        val short: ClassMirror = reflectClass(Short::class.javaPrimitiveType!!)
+        public val short: ClassMirror = reflectClass(Short::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `int` type */
-        val int: ClassMirror = reflectClass(Int::class.javaPrimitiveType!!)
+        public val int: ClassMirror = reflectClass(Int::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `long` type */
-        val long: ClassMirror = reflectClass(Long::class.javaPrimitiveType!!)
+        public val long: ClassMirror = reflectClass(Long::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `float` type */
-        val float: ClassMirror = reflectClass(Float::class.javaPrimitiveType!!)
+        public val float: ClassMirror = reflectClass(Float::class.javaPrimitiveType!!)
         /** The type mirror representing the primitive `double` type */
-        val double: ClassMirror = reflectClass(Double::class.javaPrimitiveType!!)
+        public val double: ClassMirror = reflectClass(Double::class.javaPrimitiveType!!)
 
         /** The type mirror representing the `Object` type (`Any` in Kotlin) */
         @get:JvmName("getObject")
-        val any: ClassMirror = reflectClass<Any>()
+        public val any: ClassMirror = reflectClass<Any>()
     }
 }

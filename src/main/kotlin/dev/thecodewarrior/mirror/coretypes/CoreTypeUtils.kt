@@ -180,6 +180,7 @@ internal object CoreTypeUtils {
      */
     @JvmStatic
     private fun <T: AnnotatedType> toCanonical(type: T, leafTransformer: (Type) -> Type): T {
+        @Suppress("UNCHECKED_CAST")
         return transform(type, object: TypeVisitor() {
             override fun visitClass(type: AnnotatedType): AnnotatedType {
                 return AnnotatedTypeImpl(leafTransformer(type.type), type.annotations)

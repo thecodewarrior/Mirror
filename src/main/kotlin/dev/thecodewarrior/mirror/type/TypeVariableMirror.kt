@@ -20,7 +20,7 @@ import java.lang.reflect.TypeVariable
  * @see VoidMirror
  * @see WildcardMirror
  */
-class TypeVariableMirror internal constructor(
+public class TypeVariableMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: TypeVariable<*>,
     raw: TypeVariableMirror?,
@@ -37,7 +37,7 @@ class TypeVariableMirror internal constructor(
      *
      * By default it contains the [Object] mirror.
      */
-    val bounds: List<TypeMirror> by lazy {
+    public val bounds: List<TypeMirror> by lazy {
         coreType.annotatedBounds.map { cache.types.reflect(it) }
     }
 
@@ -66,14 +66,14 @@ class TypeVariableMirror internal constructor(
      *
      * @see AnnotatedElement.isAnnotationPresent
      */
-    inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
+    public inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
 
     /**
      * Returns the annotation of the specified type, or null if no such annotation is present.
      *
      * @see AnnotatedElement.getAnnotation
      */
-    inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
 
     /**
      * Returns the annotation of the specified type, or null if no such annotation is _directly_ present on this type
@@ -81,7 +81,7 @@ class TypeVariableMirror internal constructor(
      *
      * @see AnnotatedElement.getDeclaredAnnotation
      */
-    inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
 
     override fun toString(): String {
         var str = ""
@@ -93,7 +93,7 @@ class TypeVariableMirror internal constructor(
     /**
      * The declaration string for this type. e.g. `T extends X`
      */
-    fun toDeclarationString(): String {
+    public fun toDeclarationString(): String {
         var str = ""
         str += coreType.annotations.annotationString()
         str += coreType.name

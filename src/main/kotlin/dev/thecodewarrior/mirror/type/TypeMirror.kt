@@ -17,7 +17,7 @@ import java.lang.reflect.Type
  * @see VoidMirror
  * @see WildcardMirror
  */
-abstract class TypeMirror internal constructor() {
+public abstract class TypeMirror internal constructor() {
     /**
      * The cache this mirror was created by. Mirrors from other caches will not be considered equal even if they
      * represent the same type. However, no production code should use anything but
@@ -28,7 +28,7 @@ abstract class TypeMirror internal constructor() {
     /**
      * The Java Core Reflection type this mirror represents
      */
-    abstract val coreType: Type
+    public abstract val coreType: Type
 
     /**
      * The Java Core Reflection annotated type this mirror represents.
@@ -37,12 +37,12 @@ abstract class TypeMirror internal constructor() {
      * equal neither each other nor this.
      * If you need these methods pass any annotated type through [Mirror.toCanonical].
      */
-    abstract val coreAnnotatedType: AnnotatedType
+    public abstract val coreAnnotatedType: AnnotatedType
 
     /**
      * The JVM erasure of this type.
      */
-    val erasure: Class<*> get() = CoreTypeUtils.erase(coreType)
+    public val erasure: Class<*> get() = CoreTypeUtils.erase(coreType)
 
     internal abstract val specialization: TypeSpecialization?
     internal abstract fun defaultSpecialization(): TypeSpecialization
@@ -50,7 +50,7 @@ abstract class TypeMirror internal constructor() {
     /**
      * The mirror representing this type without any generic specialization
      */
-    abstract val raw: TypeMirror
+    public abstract val raw: TypeMirror
 
     internal abstract fun applySpecialization(specialization: TypeSpecialization): TypeMirror
 
@@ -60,7 +60,7 @@ abstract class TypeMirror internal constructor() {
      *
      * @see Class.isAssignableFrom
      */
-    abstract fun isAssignableFrom(other: TypeMirror): Boolean
+    public abstract fun isAssignableFrom(other: TypeMirror): Boolean
 
     internal inline fun <reified T: TypeSpecialization> defaultApplySpecialization(
         specialization: TypeSpecialization,
@@ -86,7 +86,7 @@ abstract class TypeMirror internal constructor() {
      * In the case of [ClassMirror], these are not the annotations present on the class _declaration,_
      * they are the annotations present on the _use_ of the type.
      */
-    fun withTypeAnnotations(annotations: List<Annotation>): TypeMirror {
+    public fun withTypeAnnotations(annotations: List<Annotation>): TypeMirror {
         return cache.types.specialize(raw,
             (this.specialization ?: this.defaultSpecialization()).copy(
                 annotations = annotations
@@ -100,7 +100,7 @@ abstract class TypeMirror internal constructor() {
      * These are not the annotations present on the _declaration,_ they are the annotations present on the _use_ of the
      * type.
      */
-    val typeAnnotations: List<Annotation>
+    public val typeAnnotations: List<Annotation>
         get() = specialization?.annotations ?: emptyList()
 
     /**
@@ -108,7 +108,7 @@ abstract class TypeMirror internal constructor() {
      * type.
      */
     @Untested
-    fun isTypeAnnotationPresent(annotationType: Class<out Annotation>): Boolean {
+    public fun isTypeAnnotationPresent(annotationType: Class<out Annotation>): Boolean {
         return this.getTypeAnnotation(annotationType) != null
     }
 
@@ -117,7 +117,7 @@ abstract class TypeMirror internal constructor() {
      * such annotation is present.
      */
     @Untested
-    fun <T: Annotation> getTypeAnnotation(annotationClass: Class<T>): T? {
+    public fun <T: Annotation> getTypeAnnotation(annotationClass: Class<T>): T? {
         return coreAnnotatedType.getDeclaredAnnotation(annotationClass)
     }
 
@@ -126,7 +126,7 @@ abstract class TypeMirror internal constructor() {
      * repeatable annotations.
      */
     @Untested
-    fun <T: Annotation> getTypeAnnotationsByType(annotationClass: Class<T>): List<T> {
+    public fun <T: Annotation> getTypeAnnotationsByType(annotationClass: Class<T>): List<T> {
         return coreAnnotatedType.getDeclaredAnnotationsByType(annotationClass).toList()
     }
 
@@ -134,13 +134,13 @@ abstract class TypeMirror internal constructor() {
      * Returns true if the specified [type annotation][java.lang.annotation.ElementType.TYPE_USE] is present on this
      * type.
      */
-    inline fun <reified T: Annotation> isTypeAnnotationPresent(): Boolean = this.isTypeAnnotationPresent(T::class.java)
+    public inline fun <reified T: Annotation> isTypeAnnotationPresent(): Boolean = this.isTypeAnnotationPresent(T::class.java)
 
     /**
      * Returns the [type annotation][java.lang.annotation.ElementType.TYPE_USE] of the specified type, or null if no
      * such annotation is present.
      */
-    inline fun <reified T: Annotation> getTypeAnnotation(): T? = this.getTypeAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getTypeAnnotation(): T? = this.getTypeAnnotation(T::class.java)
 //endregion
 
     /**
@@ -157,7 +157,7 @@ abstract class TypeMirror internal constructor() {
      * @throws ClassCastException if this TypeMirror object is not a ClassMirror
      */
     @Throws(ClassCastException::class)
-    fun asClassMirror(): ClassMirror {
+    public fun asClassMirror(): ClassMirror {
         return this as ClassMirror
     }
 
@@ -175,7 +175,7 @@ abstract class TypeMirror internal constructor() {
      * @throws ClassCastException if this TypeMirror object is not a ArrayMirror
      */
     @Throws(ClassCastException::class)
-    fun asArrayMirror(): ArrayMirror {
+    public fun asArrayMirror(): ArrayMirror {
         return this as ArrayMirror
     }
 
@@ -187,7 +187,7 @@ abstract class TypeMirror internal constructor() {
      * Specifically, a "more specific" type is one where `other.isAssignableFrom(this)` and not
      * `this.isAssignableFrom(other)`.
      */
-    val specificity: Specificity = Specificity(this)
+    public val specificity: Specificity = Specificity(this)
 
     // TODO: Is this needed? I thought everything was supposed to be cached to equal by identity.
     @Untested
@@ -214,7 +214,7 @@ abstract class TypeMirror internal constructor() {
      * A wrapper class that allows comparing TypeMirrors by how "specific" they are.
      * A more specific type is one where `other.isAssignableFrom(this)` and the inverse is not true.
      */
-    class Specificity internal constructor(private val type: TypeMirror): Comparable<Specificity> {
+    public class Specificity internal constructor(private val type: TypeMirror): Comparable<Specificity> {
         override fun compareTo(other: Specificity): Int {
             if(this == other) return 0
             val thisAssignableFromOther = type.isAssignableFrom(other.type)

@@ -15,7 +15,7 @@ import java.lang.reflect.WildcardType
  * @see TypeVariableMirror
  * @see VoidMirror
  */
-class WildcardMirror internal constructor(
+public class WildcardMirror internal constructor(
     override val cache: MirrorCache,
     override val coreType: WildcardType,
     // you can't annotate wildcard types, so type annotations are ignored, all we care about are the annotated bounds
@@ -47,7 +47,7 @@ class WildcardMirror internal constructor(
      * - ArrayList       - Invalid - `ArrayList myVar = myAbstractList;` does not compile
      * ```
      */
-    val lowerBounds: List<TypeMirror> by lazy {
+    public val lowerBounds: List<TypeMirror> by lazy {
         annotated?.annotatedLowerBounds?.map { cache.types.reflect(it) }
             ?: this.coreType.lowerBounds.map { cache.types.reflect(it) }
     }
@@ -69,7 +69,7 @@ class WildcardMirror internal constructor(
      * ```
      */
     @Untested
-    val lowerBound: TypeMirror?
+    public val lowerBound: TypeMirror?
         get() = lowerBounds.getOrNull(0)
 
     /**
@@ -88,7 +88,7 @@ class WildcardMirror internal constructor(
      * - ArrayList       - Valid   - `public List foo() { return myArrayList; }` compiles
      * ```
      */
-    val upperBounds: List<TypeMirror> by lazy {
+    public val upperBounds: List<TypeMirror> by lazy {
         annotated?.annotatedUpperBounds?.map { cache.types.reflect(it) }
             ?: this.coreType.upperBounds.map { cache.types.reflect(it) }
     }
@@ -110,7 +110,7 @@ class WildcardMirror internal constructor(
      * ```
      */
     @Untested
-    val upperBound: TypeMirror?
+    public val upperBound: TypeMirror?
         get() = upperBounds.getOrNull(0)
 
     override fun defaultSpecialization() = TypeSpecialization.Wildcard.DEFAULT
@@ -119,7 +119,7 @@ class WildcardMirror internal constructor(
      * Specialize this wildcard with the provided upper and lower bounds. If the upper and lower bounds aren't
      */
     @Untested
-    fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror {
+    public fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror {
         if(upperBounds != null && (upperBounds.size != raw.upperBounds.size ||
             raw.upperBounds.zip(upperBounds).any { (raw, specialized) ->
                 !raw.isAssignableFrom(specialized)

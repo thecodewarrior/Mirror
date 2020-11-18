@@ -17,7 +17,7 @@ import java.lang.reflect.Type
  * @see VoidMirror
  * @see WildcardMirror
  */
-class ArrayMirror internal constructor(
+public class ArrayMirror internal constructor(
     override val cache: MirrorCache,
     override val java: Class<*>,
     raw: ArrayMirror?,
@@ -27,7 +27,7 @@ class ArrayMirror internal constructor(
     /**
      * The specialized component type of this mirror
      */
-    val component: TypeMirror by lazy {
+    public val component: TypeMirror by lazy {
         specialization?.component
             ?: cache.types.reflect(
                 java.componentType
@@ -50,7 +50,7 @@ class ArrayMirror internal constructor(
      * Creates a type mirror with the passed specialized component. The passed component must be assignable to the raw
      * component of this mirror.
      */
-    fun withComponent(component: TypeMirror): ArrayMirror {
+    public fun withComponent(component: TypeMirror): ArrayMirror {
         if(!this.raw.component.isAssignableFrom(component))
             throw InvalidSpecializationException("Passed component $component is not assignable to raw component type " +
                 "${this.raw.component}")
@@ -89,16 +89,16 @@ class ArrayMirror internal constructor(
      * common superclass for arrays. Use [ArrayReflect] to access this array's values or cast if the result type is
      * known. If this mirror represents a non-primitive array, the returned array is filled with null values.
      */
-    fun newInstance(length: Int): Any {
-        return when {
-            this.java == BooleanArray::class.java -> BooleanArray(length)
-            this.java == ByteArray::class.java -> ByteArray(length)
-            this.java == CharArray::class.java -> CharArray(length)
-            this.java == ShortArray::class.java -> ShortArray(length)
-            this.java == IntArray::class.java -> IntArray(length)
-            this.java == LongArray::class.java -> LongArray(length)
-            this.java == FloatArray::class.java -> FloatArray(length)
-            this.java == DoubleArray::class.java -> DoubleArray(length)
+    public fun newInstance(length: Int): Any {
+        return when (this.java) {
+            BooleanArray::class.java -> BooleanArray(length)
+            ByteArray::class.java -> ByteArray(length)
+            CharArray::class.java -> CharArray(length)
+            ShortArray::class.java -> ShortArray(length)
+            IntArray::class.java -> IntArray(length)
+            LongArray::class.java -> LongArray(length)
+            FloatArray::class.java -> FloatArray(length)
+            DoubleArray::class.java -> DoubleArray(length)
             else -> ArrayReflect.newInstanceRaw(component.erasure, length)
         }
     }

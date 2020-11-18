@@ -11,7 +11,7 @@ import dev.thecodewarrior.mirror.utils.unmodifiableView
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Field
 
-class FieldMirror internal constructor(
+public class FieldMirror internal constructor(
     cache: MirrorCache,
     raw: FieldMirror?,
     override val java: Field,
@@ -21,13 +21,13 @@ class FieldMirror internal constructor(
     /**
      * The raw, unspecialized mirror of this field.
      */
-    var raw: FieldMirror = raw ?: this
+    public var raw: FieldMirror = raw ?: this
     override val annotatedElement: AnnotatedElement = java
 
     /**
      * The field's name
      */
-    val name: String = java.name
+    public val name: String = java.name
 
     /**
      * The set of modifiers present on this field. The valid modifiers for fields are `public`, `protected`, `private`,
@@ -35,68 +35,68 @@ class FieldMirror internal constructor(
      *
      * **Note: this value is immutable**
      */
-    val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
+    public val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
 
     /**
      * The access level of this field.
      */
-    val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
+    public val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
 
     /**
      * A shorthand for checking if the `public` [modifier][modifiers] is present on this field.
      */
-    val isPublic: Boolean = Modifier.PUBLIC in modifiers
+    public val isPublic: Boolean = Modifier.PUBLIC in modifiers
 
     /**
      * A shorthand for checking if the `protected` [modifier][modifiers] is present on this field.
      */
-    val isProtected: Boolean = Modifier.PROTECTED in modifiers
+    public val isProtected: Boolean = Modifier.PROTECTED in modifiers
 
     /**
      * A shorthand for checking if the `private` [modifier][modifiers] is present on this field.
      */
-    val isPrivate: Boolean = Modifier.PRIVATE in modifiers
+    public val isPrivate: Boolean = Modifier.PRIVATE in modifiers
 
     /**
      * A shorthand for checking if neither the `public`, `protected`, nor `private` [modifiers][modifiers] are present
      * on this field.
      */
-    val isPackagePrivate: Boolean = !isPublic && !isProtected && !isPrivate
+    public val isPackagePrivate: Boolean = !isPublic && !isProtected && !isPrivate
 
     /**
      * A shorthand for checking if the `static` [modifier][modifiers] is present on this field.
      */
-    val isStatic: Boolean = Modifier.STATIC in modifiers
+    public val isStatic: Boolean = Modifier.STATIC in modifiers
 
     /**
      * A shorthand for checking if the `final` [modifier][modifiers] is present on this field.
      */
-    val isFinal: Boolean = Modifier.FINAL in modifiers
+    public val isFinal: Boolean = Modifier.FINAL in modifiers
 
     /**
      * A shorthand for checking if the `transient` [modifier][modifiers] is present on this field.
      */
-    val isTransient: Boolean = Modifier.TRANSIENT in modifiers
+    public val isTransient: Boolean = Modifier.TRANSIENT in modifiers
 
     /**
      * A shorthand for checking if the `volatile` [modifier][modifiers] is present on this field.
      */
-    val isVolatile: Boolean = Modifier.VOLATILE in modifiers
+    public val isVolatile: Boolean = Modifier.VOLATILE in modifiers
 
     /**
      * Returns true if this field is synthetic.
      */
-    val isSynthetic: Boolean = java.isSynthetic
+    public val isSynthetic: Boolean = java.isSynthetic
 
     /**
      * True if this field holds an enum constant
      */
-    val isEnumConstant: Boolean = java.isEnumConstant
+    public val isEnumConstant: Boolean = java.isEnumConstant
 
     /**
      * The field type, specialized based on the declaring class's specialization.
      */
-    val type: TypeMirror by lazy {
+    public val type: TypeMirror by lazy {
         declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
@@ -107,7 +107,7 @@ class FieldMirror internal constructor(
      *
      * @see Field.getAnnotations
      */
-    val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
+    public val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
 
     override fun withDeclaringClass(enclosing: ClassMirror?): FieldMirror {
         if(enclosing != null && enclosing.java != java.declaringClass)
@@ -131,7 +131,7 @@ class FieldMirror internal constructor(
      * have somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> get(receiver: Any?): T {
+    public fun <T : Any?> get(receiver: Any?): T {
         if(isStatic) {
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
@@ -151,7 +151,7 @@ class FieldMirror internal constructor(
      * be near-native speed. This method, while faster than [get], will provide somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> getFast(receiver: Any?): T {
+    public fun <T : Any?> getFast(receiver: Any?): T {
         if(isStatic) {
             return raw.staticGetWrapper() as T
         } else {
@@ -174,7 +174,7 @@ class FieldMirror internal constructor(
      * have somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun set(receiver: Any?, value: Any?) {
+    public fun set(receiver: Any?, value: Any?) {
         if(isStatic) {
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
@@ -194,7 +194,7 @@ class FieldMirror internal constructor(
      * should be near-native speed. This method, while faster than [set], will provide somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun setFast(receiver: Any?, value: Any?) {
+    public fun setFast(receiver: Any?, value: Any?) {
         if(isStatic) {
             raw.staticSetWrapper(value)
         } else {

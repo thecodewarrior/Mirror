@@ -9,38 +9,38 @@ import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Parameter
 
-class ParameterMirror internal constructor(
+public class ParameterMirror internal constructor(
     internal val cache: MirrorCache,
     raw: ParameterMirror?,
-    val declaringExecutable: ExecutableMirror?,
+    public val declaringExecutable: ExecutableMirror?,
     internal val java: Parameter
 ): AnnotatedElement by java {
-    val hasName: Boolean = java.isNamePresent
-    val name: String = java.name
+    public val hasName: Boolean = java.isNamePresent
+    public val name: String = java.name
 
-    val raw: ParameterMirror = raw ?: this
+    public val raw: ParameterMirror = raw ?: this
 
 
     /**
      * The index in the parameter list
      */
-    val index: Int = java.declaringExecutable.parameters.indexOf(java)
+    public val index: Int = java.declaringExecutable.parameters.indexOf(java)
 
     /**
      * True if the `final` modifier is present on this parameter
      */
-    val isFinal: Boolean = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
+    public val isFinal: Boolean = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
 
     /**
      * True if this is a vararg parameter
      */
     @Untested
-    val isVarArgs: Boolean = java.isVarArgs
+    public val isVarArgs: Boolean = java.isVarArgs
 
     /**
      * The type of this parameter
      */
-    val type: TypeMirror by lazy {
+    public val type: TypeMirror by lazy {
         java.annotatedType.let {
             genericMapping[cache.types.reflect(it)]
         }
@@ -55,14 +55,14 @@ class ParameterMirror internal constructor(
      *
      * @see AnnotatedElement.isAnnotationPresent
      */
-    inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
+    public inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
 
     /**
      * Returns the annotation of the specified type, or null if no such annotation is parameter.
      *
      * @see AnnotatedElement.getAnnotation
      */
-    inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
 
     /**
      * Returns the annotation of the specified type, or null if no such annotation is _directly_ present on this
@@ -70,7 +70,7 @@ class ParameterMirror internal constructor(
      *
      * @see AnnotatedElement.getDeclaredAnnotation
      */
-    inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
 
     /**
      * Returns a copy of this parameter with its enclosing method/constructor replaced with [enclosing].
@@ -83,7 +83,7 @@ class ParameterMirror internal constructor(
      * @return A copy of this parameter with the passed enclosing executable, or with the raw enclosing executable if
      * [enclosing] is null
      */
-    fun withDeclaringExecutable(enclosing: ExecutableMirror?): ParameterMirror {
+    public fun withDeclaringExecutable(enclosing: ExecutableMirror?): ParameterMirror {
         if(enclosing != null && enclosing.java != java.declaringExecutable)
             throw InvalidSpecializationException("Invalid declaring " +
                 (if(enclosing is ConstructorMirror) "constructor" else "method") +

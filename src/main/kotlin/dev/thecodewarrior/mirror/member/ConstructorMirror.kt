@@ -11,7 +11,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
 import kotlin.reflect.jvm.javaConstructor
 
-class ConstructorMirror internal constructor(
+public class ConstructorMirror internal constructor(
     cache: MirrorCache,
     override val java: Constructor<*>,
     raw: ConstructorMirror?,
@@ -50,14 +50,14 @@ class ConstructorMirror internal constructor(
      * near-native speed, but will provide somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> call(vararg args: Any?): T {
+    public fun <T : Any?> call(vararg args: Any?): T {
         if(args.size != parameters.size)
             throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$this`")
         return raw.wrapper(args as Array<Any?>) as T
     }
 
     @JvmSynthetic
-    operator fun <T> invoke(vararg args: Any?): T = call(*args)
+    public operator fun <T> invoke(vararg args: Any?): T = call(*args)
 
     /**
      * Create a new instance using this constructor. After the one-time cost of creating the
@@ -65,7 +65,7 @@ class ConstructorMirror internal constructor(
      * than [call], will provide somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> callFast(vararg args: Any?): T {
+    public fun <T : Any?> callFast(vararg args: Any?): T {
         return raw.wrapper(args as Array<Any?>) as T
     }
 

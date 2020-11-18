@@ -13,7 +13,7 @@ import kotlin.reflect.KVisibility
 import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
 
-class MethodMirror internal constructor(
+public class MethodMirror internal constructor(
     cache: MirrorCache,
     override val java: Method,
     raw: MethodMirror?,
@@ -37,74 +37,76 @@ class MethodMirror internal constructor(
     /**
      * A shorthand for checking if the `public` [modifier][modifiers] is present on this field.
      */
-    val isPublic: Boolean = Modifier.PUBLIC in modifiers
+    public val isPublic: Boolean = Modifier.PUBLIC in modifiers
 
     /**
      * A shorthand for checking if the `protected` [modifier][modifiers] is present on this field.
      */
-    val isProtected: Boolean = Modifier.PROTECTED in modifiers
+    public val isProtected: Boolean = Modifier.PROTECTED in modifiers
 
     /**
      * A shorthand for checking if the `private` [modifier][modifiers] is present on this field.
      */
-    val isPrivate: Boolean = Modifier.PRIVATE in modifiers
+    public val isPrivate: Boolean = Modifier.PRIVATE in modifiers
 
     /**
      * A shorthand for checking if neither the `public`, `protected`, nor `private` [modifiers][modifiers] are present
      * on this field.
      */
-    val isPackagePrivate: Boolean = !isPublic && !isProtected && !isPrivate
+    public val isPackagePrivate: Boolean = !isPublic && !isProtected && !isPrivate
 
     /**
      * A shorthand for checking if the `abstract` [modifier][modifiers] is present on this field.
      */
-    val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
+    public val isAbstract: Boolean = Modifier.ABSTRACT in modifiers
 
     /**
      * A shorthand for checking if the `static` [modifier][modifiers] is present on this field.
      */
-    val isStatic: Boolean = Modifier.STATIC in modifiers
+    public val isStatic: Boolean = Modifier.STATIC in modifiers
 
     /**
      * A shorthand for checking if the `final` [modifier][modifiers] is present on this field.
      */
-    val isFinal: Boolean = Modifier.FINAL in modifiers
+    public val isFinal: Boolean = Modifier.FINAL in modifiers
 
     /**
      * A shorthand for checking if the `strictfp` [modifier][modifiers] is present on this field.
      */
-    val isStrict: Boolean = Modifier.STRICT in modifiers
+    public val isStrict: Boolean = Modifier.STRICT in modifiers
 
     /**
      * A shorthand for checking if the `synchronized` [modifier][modifiers] is present on this field.
      */
-    val isSynchronized: Boolean = Modifier.SYNCHRONIZED in modifiers
+    public val isSynchronized: Boolean = Modifier.SYNCHRONIZED in modifiers
 
     /**
      * A shorthand for checking if the `native` [modifier][modifiers] is present on this field.
      */
-    val isNative: Boolean = Modifier.NATIVE in modifiers
+    public val isNative: Boolean = Modifier.NATIVE in modifiers
 
     /**
      * Returns true if this method is a [bridge method](https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html#bridgeMethods).
      *
      * @see Method.isBridge
      */
-    val isBridge: Boolean = java.isBridge
+    public val isBridge: Boolean = java.isBridge
+
     /**
      * Returns true if this method is a default interface method. Implementations of default interface methods don't
      * have this flag. For the default values of annotation parameters, use [defaultValue].
      *
      * @see Method.isDefault
      */
-    val isDefault: Boolean = java.isDefault
+    public val isDefault: Boolean = java.isDefault
+
     /**
      * Returns the default value of the annotation method, if it has one. Somewhat confusingly, this is entirely
-     * separate from [isDefault]
+     * distinct from [isDefault], despite the similar name.
      *
      * @see Method.getDefaultValue
      */
-    val defaultValue: Any? = java.defaultValue
+    public val defaultValue: Any? = java.defaultValue
 
     override fun withTypeParameters(vararg parameters: TypeMirror): MethodMirror {
         return super.withTypeParameters(*parameters) as MethodMirror
@@ -128,7 +130,7 @@ class MethodMirror internal constructor(
      * superclass, not from any interfaces.
      */
     @Untested
-    val overrides: MethodMirror? by lazy {
+    public val overrides: MethodMirror? by lazy {
         if(this != this.raw)
             return@lazy this.raw.overrides?.let { declaringClass.getMethod(it.java) }
 
@@ -150,7 +152,7 @@ class MethodMirror internal constructor(
      * method's declaring class, so if this method is inherited by another class and overrides an interface declared on
      * on that other class, this will _not_ detect that.
      */
-    fun doesOverride(otherMethod: Method): Boolean {
+    public fun doesOverride(otherMethod: Method): Boolean {
         if(this != this.raw)
             return this.raw.doesOverride(otherMethod)
         if(!otherMethod.declaringClass.isAssignableFrom(declaringClass.java))
@@ -179,7 +181,7 @@ class MethodMirror internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(Throwable::class)
-    fun <T> call(receiver: Any?, vararg args: Any?): T {
+    public fun <T> call(receiver: Any?, vararg args: Any?): T {
         if(isStatic) {
             if(receiver != null)
                 throw IllegalArgumentException("Invalid receiver for static method `${declaringClass.java.simpleName}.$name`. Expected null.")
@@ -200,7 +202,7 @@ class MethodMirror internal constructor(
     }
 
     @JvmSynthetic
-    operator fun <T> invoke(receiver: Any?, vararg args: Any?): T = call(receiver, *args)
+    public operator fun <T> invoke(receiver: Any?, vararg args: Any?): T = call(receiver, *args)
 
     /**
      * Call this method on the passed instance. If this is a static method, `null` should be used for the instance.
@@ -208,7 +210,7 @@ class MethodMirror internal constructor(
      * near-native speed. This method, while faster than [call], will provide somewhat less helpful exceptions.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> callFast(receiver: Any?, vararg args: Any?): T {
+    public fun <T : Any?> callFast(receiver: Any?, vararg args: Any?): T {
         if(isStatic) {
             return raw.staticWrapper(args as Array<Any?>) as T
         } else {

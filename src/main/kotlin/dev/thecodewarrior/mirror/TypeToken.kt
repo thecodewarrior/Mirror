@@ -25,20 +25,21 @@ import kotlin.reflect.KTypeProjection
  *
  * **NOTE!!** Due to a bug in javac before JDK 10, in most cases annotated type tokens will not work. https://github.com/raphw/byte-buddy/issues/583
  *
- * **NOTE!!** As of 1.3, Kotlin does not support runtime type annotations. Thus, type annotations in kotlin code will not work.
+ * **NOTE!!** As of Kotlin 1.4, Java type annotations are finally supported, though in a limited fashion and gated
+ * behind a compiler flag. [(more info here)](https://kotlinlang.org/docs/reference/whatsnew14.html#type-annotations-in-the-jvm-bytecode)
  */
-abstract class TypeToken<T> {
+public abstract class TypeToken<T> {
     /**
      * Gets the generic type represented by this TypeToken
      */
-    fun get(): Type {
+    public fun get(): Type {
         return (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
     }
 
     /**
      * Gets the annotated type represented by this TypeToken
      */
-    fun getAnnotated(): AnnotatedType {
+    public fun getAnnotated(): AnnotatedType {
         return (javaClass.annotatedSuperclass as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
     }
 
@@ -47,7 +48,7 @@ abstract class TypeToken<T> {
      *
      * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    fun getKotlin(): KTypeProjection {
+    public fun getKotlin(): KTypeProjection {
         return javaClass.kotlin.supertypes[0].arguments[0]
     }
 }
@@ -57,6 +58,6 @@ abstract class TypeToken<T> {
  *
  * **NOTE!!** As of 1.3, Kotlin does not support runtime type annotations. Thus, type annotations in kotlin code will not work.
  */
-inline fun <reified T> typeToken(): Type {
+public inline fun <reified T> typeToken(): Type {
     return object : TypeToken<T>() {}.get()
 }

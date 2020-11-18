@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  * @see VoidMirror
  * @see WildcardMirror
  */
-abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
+public abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
 
     /**
      * The raw, unspecialized version of this mirror.
@@ -36,7 +36,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * a primitive, or `void`. The returned type will be specialized based on this type's specialization and any
      * explicit parameters set in the source code.
      */
-    abstract val superclass: ClassMirror?
+    public abstract val superclass: ClassMirror?
 
     /**
      * The list of interfaces directly implemented by this type, in the order they appear in the source code.
@@ -45,7 +45,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * **Note: this list is immutable**
      */
-    abstract val interfaces: List<ClassMirror>
+    public abstract val interfaces: List<ClassMirror>
 
     /**
      * The list of type parameters defined by this mirror. These will be replaced when specializing, so you should use
@@ -53,11 +53,11 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * **Note: this list is immutable**
      */
-    abstract val typeParameters: List<TypeMirror>
+    public abstract val typeParameters: List<TypeMirror>
 
-    abstract val enclosingClass: ClassMirror?
+    public abstract val enclosingClass: ClassMirror?
 
-    abstract val enclosingExecutable: ExecutableMirror?
+    public abstract val enclosingExecutable: ExecutableMirror?
 
     internal abstract val genericMapping: TypeMapping
 
@@ -71,7 +71,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws InvalidSpecializationException if the passed type list is not the same length as [typeParameters] or zero
      * @return A copy of this type with its type parameters replaced, or the the existing mirror with those types
      */
-    abstract fun withTypeArguments(vararg parameters: TypeMirror): ClassMirror
+    public abstract fun withTypeArguments(vararg parameters: TypeMirror): ClassMirror
 
     /**
      * Returns a copy of this class with its enclosing class replaced with [enclosing].
@@ -85,7 +85,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @return A copy of this class with the passed enclosing class, or with the raw enclosing class if [enclosing]
      * is null
      */
-    abstract fun withEnclosingClass(enclosing: ClassMirror?): ClassMirror
+    public abstract fun withEnclosingClass(enclosing: ClassMirror?): ClassMirror
 
     /**
      * Returns a copy of this class with its enclosing method/constructor replaced with [enclosing].
@@ -99,7 +99,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @return A copy of this class with the passed enclosing executable, or with the raw enclosing executable if
      * [enclosing] is null
      */
-    abstract fun withEnclosingExecutable(enclosing: ExecutableMirror?): ClassMirror
+    public abstract fun withEnclosingExecutable(enclosing: ExecutableMirror?): ClassMirror
 //endregion =====================================================================================================================
 
 //region Relationships ==========================================================================================================
@@ -110,7 +110,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @return The specialized superclass with the passed type, or null if none were found.
      */
-    abstract fun findSuperclass(clazz: Class<*>): ClassMirror?
+    public abstract fun findSuperclass(clazz: Class<*>): ClassMirror?
 
     /**
      * Recursively searches through this class's supertypes to find the [most specific][specificity] superclass
@@ -120,8 +120,9 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @return The specialized superclass with the passed type, or null if none were found.
      */
     @Untested
+    @JvmSynthetic
     @JvmName("findSuperclassInline")
-    inline fun <reified T> findSuperclass(): ClassMirror? {
+    public inline fun <reified T> findSuperclass(): ClassMirror? {
         return findSuperclass(T::class.java)
     }
 
@@ -134,7 +135,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if this class has no superclass of the passed type
      */
     @Untested
-    abstract fun getSuperclass(clazz: Class<*>): ClassMirror
+    public abstract fun getSuperclass(clazz: Class<*>): ClassMirror
 
     /**
      * Recursively searches through this class's supertypes to find the [most specific][specificity] superclass
@@ -145,8 +146,9 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if this class has no superclass of the passed type
      */
     @Untested
+    @JvmSynthetic
     @JvmName("getSuperclassInline")
-    inline fun <reified T> getSuperclass(): ClassMirror {
+    public inline fun <reified T> getSuperclass(): ClassMirror {
         return getSuperclass(T::class.java)
     }
 //endregion =====================================================================================================================
@@ -155,51 +157,51 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
     /**
      * The Kotlin `KClass` instance associated with this class
      */
-    abstract val kClass: KClass<*>
+    public abstract val kClass: KClass<*>
 
     /**
      * The modifiers present on this class. (e.g. `public`, `abstract`, `final`, etc.)
      *
      * **Note: this list is immutable**
      */
-    abstract val modifiers: Set<Modifier>
+    public abstract val modifiers: Set<Modifier>
 
     /**
      * The access modifier present on this class
      */
-    abstract val access: Modifier.Access
+    public abstract val access: Modifier.Access
 
     /**
      * Returns true if this object represents a Kotlin class and that class has an `internal` visibility modifier
      *
      * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    abstract val isInternalAccess: Boolean
+    public abstract val isInternalAccess: Boolean
 
     /**
      * A set of flags used to store properties such as whether the class is static, abstract, an enum, etc.
      *
      * **Note: this list is immutable**
      */
-    abstract val flags: Set<Flag>
+    public abstract val flags: Set<Flag>
 
     /**
      * Returns true if this mirror represents an abstract class.
      */
     @Untested
-    abstract val isAbstract: Boolean
+    public abstract val isAbstract: Boolean
 
     /**
      * Returns true if this mirror represents a static class.
      */
     @Untested
-    abstract val isStatic: Boolean
+    public abstract val isStatic: Boolean
 
     /**
      * Returns true if this mirror represents a final class.
      */
     @Untested
-    abstract val isFinal: Boolean
+    public abstract val isFinal: Boolean
 
     /**
      * Returns true if the class this mirror represents has the `strictfp` modifier.
@@ -208,66 +210,66 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * this is always false
      */
     @Untested
-    abstract val isStrict: Boolean
+    public abstract val isStrict: Boolean
 
     /**
      * Returns true if the class this mirror represents is not final.
      */
     @Untested
-    abstract val isOpen: Boolean
+    public abstract val isOpen: Boolean
 
     /**
      * Returns true if this object represents a Kotlin class and that class is a companion class
      *
      * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    abstract val isCompanion: Boolean
+    public abstract val isCompanion: Boolean
 
     /**
      * Returns true if this object represents a Kotlin class and that class is a data class
      *
      * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    abstract val isData: Boolean
+    public abstract val isData: Boolean
 
     /**
      * Returns true if this object represents a Kotlin class and that class is a sealed class
      *
      * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
-    abstract val isSealed: Boolean
+    public abstract val isSealed: Boolean
 
     /**
      * Returns true if this mirror represents an annotation class.
      */
     @Untested
-    abstract val isAnnotation: Boolean
+    public abstract val isAnnotation: Boolean
 
     /**
      * Returns true if this mirror represents an anonymous class.
      */
     @Untested
-    abstract val isAnonymous: Boolean
+    public abstract val isAnonymous: Boolean
 
     /**
      * Returns true if this mirror represents an enum class. This is false for anonymous enum subclasses, so for more
      * consistent behavior check if [enumType] is non-null.
      */
     @Untested
-    abstract val isEnum: Boolean
+    public abstract val isEnum: Boolean
 
     /**
      * Returns true if the class this mirror represents is an interface.
      */
     @Untested
-    abstract val isInterface: Boolean
+    public abstract val isInterface: Boolean
 
     /**
      * Returns true if this mirror represents a local class. Local classes are classes declared within a block of code
      * such as a method or constructor.
      */
     @Untested
-    abstract val isLocal: Boolean
+    public abstract val isLocal: Boolean
 
     /**
      * Returns true if the class this mirror represents is a member of another class. Member classes are non-static
@@ -280,19 +282,19 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * ```
      */
     @Untested
-    abstract val isMember: Boolean
+    public abstract val isMember: Boolean
 
     /**
      * Returns true if this mirror represents a primitive class.
      */
     @Untested
-    abstract val isPrimitive: Boolean
+    public abstract val isPrimitive: Boolean
 
     /**
      * Returns true if this mirror represents a synthetic class.
      */
     @Untested
-    abstract val isSynthetic: Boolean
+    public abstract val isSynthetic: Boolean
 
     /**
      * Returns annotations that are present on the class this mirror represents. These are not the annotations
@@ -303,7 +305,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see Class.getAnnotations
      */
     @Untested
-    abstract val annotations: List<Annotation>
+    public abstract val annotations: List<Annotation>
 
     /**
      * Returns annotations that are directly present on the class this mirror represents. These are not the annotations
@@ -314,7 +316,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see Class.getDeclaredAnnotations
      */
     @Untested
-    abstract val declaredAnnotations: List<Annotation>
+    public abstract val declaredAnnotations: List<Annotation>
 
     /**
      * Returns the logical enum type of the class this mirror represents, taking into account anonymous enum subclasses,
@@ -323,7 +325,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * Anonymous enum subclasses (any enum element that overrides or implements a method from the enum itself) aren't
      * enum classes themselves. This method will return the true enum class for both the actual enum and the subclasses.
      */
-    abstract val enumType: ClassMirror?
+    public abstract val enumType: ClassMirror?
 
     /**
      * Returns the list of constants in the enum class this mirror represents, or null if this mirror does not
@@ -334,7 +336,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see enumType
      * @see Class.enumConstants
      */
-    abstract val enumConstants: List<Enum<*>>?
+    public abstract val enumConstants: List<Enum<*>>?
 
     /**
      * Returns the simple name of the class this mirror represents. e.g. `"String"`
@@ -342,7 +344,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see [Class.getSimpleName]
      */
     @Untested
-    abstract val simpleName: String
+    public abstract val simpleName: String
 
     /**
      * Returns an informative string describing this type. e.g. `"java.lang.String"` or `"com.example.Foo$1"`
@@ -350,7 +352,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see [Class.getTypeName]
      */
     @Untested
-    abstract val name: String
+    public abstract val name: String
 
     /**
      * Returns the simple fully qualified name of the class this mirror represents. e.g. `"java.lang.String"`. Returns
@@ -359,14 +361,14 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see [Class.getCanonicalName]
      */
     @Untested
-    abstract val canonicalName: String?
+    public abstract val canonicalName: String?
 
     /**
      * Returns the internal name of the class this mirror represents. (e.g. `boolean` = `"Z"`,
      * `com.example.Foo` = `"Lcom/example/Foo;"`)
      */
     @Untested
-    abstract val jvmName: String
+    public abstract val jvmName: String
 //endregion =====================================================================================================================
 
 //region Methods ================================================================================================================
@@ -378,7 +380,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @see Class.getDeclaredMethods
      */
-    abstract val declaredMethods: MethodList
+    public abstract val declaredMethods: MethodList
 
     /**
      * The methods [inherited](https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.4.8) from the
@@ -387,7 +389,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * **Note: this list is immutable**
      */
-    abstract val inheritedMethods: MethodList
+    public abstract val inheritedMethods: MethodList
 
     /**
      * The public methods declared in this class and inherited from its superclasses.
@@ -397,7 +399,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @see Class.getMethods
      */
-    abstract val publicMethods: MethodList
+    public abstract val publicMethods: MethodList
 
     /**
      * The methods that would be visible inside of this class. This includes public and private methods from this class,
@@ -410,7 +412,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see inheritedMethods
      */
     @Untested
-    abstract val visibleMethods: MethodList
+    public abstract val visibleMethods: MethodList
 
     /**
      * All the methods declared in this class and its supertypes, excluding overridden methods. This includes public and
@@ -421,13 +423,13 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * **Note: This list is immutable.**
      */
-    abstract val methods: MethodList
+    public abstract val methods: MethodList
 
     /**
      * Returns the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
-    abstract fun getMethod(other: Method): MethodMirror
+    public abstract fun getMethod(other: Method): MethodMirror
 
     /**
      * Returns the public and private methods declared in this class or its superclasses that have the specified name,
@@ -439,7 +441,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see methods
      */
     @Untested
-    abstract fun findMethods(name: String): List<MethodMirror>
+    public abstract fun findMethods(name: String): List<MethodMirror>
 
     /**
      * Returns the public or private method declared in this class or its superclasses that has the specified signature,
@@ -448,7 +450,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see methods
      */
     @Untested
-    abstract fun findMethod(name: String, vararg params: TypeMirror): MethodMirror?
+    public abstract fun findMethod(name: String, vararg params: TypeMirror): MethodMirror?
 
     /**
      * Returns the public or private method declared in this class or its superclasses that has the specified raw
@@ -457,7 +459,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see methods
      */
     @Untested
-    abstract fun findMethodRaw(name: String, vararg params: Class<*>): MethodMirror?
+    public abstract fun findMethodRaw(name: String, vararg params: Class<*>): MethodMirror?
 
     /**
      * Returns the public or private method declared in this class or its superclasses that has the specified signature,
@@ -468,7 +470,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no method with the specified signature exists
      */
     @Untested
-    abstract fun getMethod(name: String, vararg params: TypeMirror): MethodMirror
+    public abstract fun getMethod(name: String, vararg params: TypeMirror): MethodMirror
 
     /**
      * Returns the public or private method declared in this class or its superclasses that has the specified raw
@@ -479,7 +481,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no method with the specified signature exists
      */
     @Untested
-    abstract fun getMethodRaw(name: String, vararg params: Class<*>): MethodMirror
+    public abstract fun getMethodRaw(name: String, vararg params: Class<*>): MethodMirror
 //endregion =====================================================================================================================
 
 //region Fields =================================================================================================================
@@ -490,7 +492,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @see Class.getDeclaredFields
      */
-    abstract val declaredFields: List<FieldMirror>
+    public abstract val declaredFields: List<FieldMirror>
 
     /**
      * The public methods declared in this class and inherited from its superclasses.
@@ -500,7 +502,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see Class.getFields
      */
     @Untested
-    abstract val publicFields: List<FieldMirror>
+    public abstract val publicFields: List<FieldMirror>
 
     /**
      * The fields declared in this class and its superclasses. Since fields can be shadowed but not overridden, there
@@ -509,14 +511,14 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * **Note: This list is immutable.**
      */
     @Untested
-    abstract val fields: List<FieldMirror>
+    public abstract val fields: List<FieldMirror>
 
     /**
      * Returns the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
     @Untested
-    abstract fun getField(other: Field): FieldMirror
+    public abstract fun getField(other: Field): FieldMirror
 
     /**
      * Returns the field declared directly in this class that has the specified name, or null if no such field
@@ -525,7 +527,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getDeclaredField
      */
     @Untested
-    abstract fun findDeclaredField(name: String): FieldMirror?
+    public abstract fun findDeclaredField(name: String): FieldMirror?
 
     /**
      * Returns the public field declared in this class or inherited from its superclasses that has the specified
@@ -534,7 +536,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getPublicField
      */
     @Untested
-    abstract fun findPublicField(name: String): FieldMirror?
+    public abstract fun findPublicField(name: String): FieldMirror?
 
     /**
      * Returns the field declared in this class or inherited from its superclasses that has the specified name,
@@ -543,7 +545,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getField
      */
     @Untested
-    abstract fun findField(name: String): FieldMirror?
+    public abstract fun findField(name: String): FieldMirror?
 
     /**
      * Returns the field declared directly in this class that has the specified signature, or throws if no such field
@@ -553,7 +555,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no field with the specified name exists
      */
     @Untested
-    abstract fun getDeclaredField(name: String): FieldMirror
+    public abstract fun getDeclaredField(name: String): FieldMirror
 
     /**
      * Returns the public field declared in this class or inherited from its superclasses that has the specified name,
@@ -563,7 +565,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no field with the specified name exists
      */
     @Untested
-    abstract fun getPublicField(name: String): FieldMirror
+    public abstract fun getPublicField(name: String): FieldMirror
 
     /**
      * Returns the field declared in this class or inherited from its superclasses that has the specified name, or
@@ -573,7 +575,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no field with the specified name exists
      */
     @Untested
-    abstract fun getField(name: String): FieldMirror
+    public abstract fun getField(name: String): FieldMirror
 
 //endregion =====================================================================================================================
 
@@ -585,7 +587,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @see Class.getDeclaredConstructors
      */
-    abstract val declaredConstructors: List<ConstructorMirror>
+    public abstract val declaredConstructors: List<ConstructorMirror>
 
     /**
      * The public constructors declared in this class.
@@ -595,21 +597,21 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see Class.getConstructors
      */
     @Untested
-    abstract val publicConstructors: List<ConstructorMirror>
+    public abstract val publicConstructors: List<ConstructorMirror>
 
     /**
      * Returns the specialized mirror that represents the same constructor as [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
     @Untested
-    abstract fun getConstructor(other: ConstructorMirror): ConstructorMirror
+    public abstract fun getConstructor(other: ConstructorMirror): ConstructorMirror
 
     /**
      * Gets the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
     @Untested
-    abstract fun getConstructor(other: Constructor<*>): ConstructorMirror
+    public abstract fun getConstructor(other: Constructor<*>): ConstructorMirror
 
     /**
      * Returns the constructor declared in this class that has the specified parameter types, or null if no such
@@ -618,7 +620,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getDeclaredConstructor
      */
     @Untested
-    abstract fun findDeclaredConstructor(vararg params: TypeMirror): ConstructorMirror?
+    public abstract fun findDeclaredConstructor(vararg params: TypeMirror): ConstructorMirror?
 
     /**
      * Returns the constructor declared in this class that has the specified parameter types, or throws if no such
@@ -627,7 +629,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no constructor with the specified parameter types exists
      */
     @Untested
-    abstract fun getDeclaredConstructor(vararg params: TypeMirror): ConstructorMirror
+    public abstract fun getDeclaredConstructor(vararg params: TypeMirror): ConstructorMirror
 //endregion =====================================================================================================================
 
 //region Member classes =========================================================================================================
@@ -638,7 +640,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @see Class.getDeclaredClasses
      */
-    abstract val declaredMemberClasses: List<ClassMirror>
+    public abstract val declaredMemberClasses: List<ClassMirror>
 
     /**
      * The public member classes declared in this class and inherited from its superclasses.
@@ -648,7 +650,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see Class.getClasses
      */
     @Untested
-    abstract val publicMemberClasses: List<ClassMirror>
+    public abstract val publicMemberClasses: List<ClassMirror>
 
     /**
      * The member classes declared in this class and inherited from its superclasses. Since member classes can be
@@ -657,21 +659,21 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * **Note: This list is immutable.**
      */
     @Untested
-    abstract val memberClasses: List<ClassMirror>
+    public abstract val memberClasses: List<ClassMirror>
 
     /**
      * Returns the specialized mirror that represents the same class as [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
     @Untested
-    abstract fun getMemberClass(other: ClassMirror): ClassMirror
+    public abstract fun getMemberClass(other: ClassMirror): ClassMirror
 
     /**
      * Returns the specialized mirror that represents [other].
      * @throws NoSuchMirrorException if this type has no corresponding mirror
      */
     @Untested
-    abstract fun getMemberClass(other: Class<*>): ClassMirror
+    public abstract fun getMemberClass(other: Class<*>): ClassMirror
 
     /**
      * Returns the member class declared directly in this class that has the specified name, or null if no such class
@@ -680,7 +682,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getDeclaredMemberClass
      */
     @Untested
-    abstract fun findDeclaredMemberClass(name: String): ClassMirror?
+    public abstract fun findDeclaredMemberClass(name: String): ClassMirror?
 
     /**
      * Returns the public member class declared in this class or inherited from its superclasses that has the specified
@@ -689,7 +691,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getPublicMemberClass
      */
     @Untested
-    abstract fun findPublicMemberClass(name: String): ClassMirror?
+    public abstract fun findPublicMemberClass(name: String): ClassMirror?
 
     /**
      * Returns the member class declared in this class or inherited from its superclasses that has the specified name,
@@ -698,7 +700,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @see getMemberClass
      */
     @Untested
-    abstract fun findMemberClass(name: String): ClassMirror?
+    public abstract fun findMemberClass(name: String): ClassMirror?
 
     /**
      * Returns the member class declared directly in this class that has the specified signature, or throws if no such
@@ -708,7 +710,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no class with the specified name exists
      */
     @Untested
-    abstract fun getDeclaredMemberClass(name: String): ClassMirror?
+    public abstract fun getDeclaredMemberClass(name: String): ClassMirror?
 
     /**
      * Returns the public member class declared in this class or inherited from its superclasses that has the specified
@@ -718,7 +720,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no class with the specified name exists
      */
     @Untested
-    abstract fun getPublicMemberClass(name: String): ClassMirror?
+    public abstract fun getPublicMemberClass(name: String): ClassMirror?
 
     /**
      * Returns the member class declared in this class or inherited from its superclasses that has the specified name,
@@ -728,7 +730,7 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      * @throws NoSuchMirrorException if no class with the specified name exists
      */
     @Untested
-    abstract fun getMemberClass(name: String): ClassMirror?
+    public abstract fun getMemberClass(name: String): ClassMirror?
 //endregion =====================================================================================================================
 
     /**
@@ -736,33 +738,33 @@ abstract class ClassMirror : ConcreteTypeMirror(), AnnotatedElement {
      *
      * @see AnnotatedElement.isAnnotationPresent
      */
-    inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
+    public inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
 
     /**
      * Returns the annotation of the specified type, or null if no such annotation is present.
      *
      * @see AnnotatedElement.getAnnotation
      */
-    inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
 
     /**
      * Returns the annotation of the specified type, or null if no such annotation is _directly_ present on this class.
      *
      * @see AnnotatedElement.getDeclaredAnnotation
      */
-    inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
+    public inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
 
     /**
      * Returns a string representing the declaration of this type with type parameters substituted in,
      * as opposed to [toString] which returns the string representing the usage of this type
      */
     @Untested
-    abstract val declarationString: String
+    public abstract val declarationString: String
 
     /**
      * A set of useful flags for classes, such as whether it is abstract, anonymous, primitive, etc.
      */
-    enum class Flag {
+    public enum class Flag {
         /**
          * This flag is present on abstract classes
          */

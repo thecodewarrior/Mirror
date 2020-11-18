@@ -16,7 +16,7 @@ import dev.thecodewarrior.mirror.utils.unmodifiableCopy
  * }
  * ```
  */
-class TypeMapping(
+internal class TypeMapping(
     genericMapping: Map<TypeMirror, TypeMirror>
 ) {
     private val typeMap: Map<TypeMirror, TypeMirror> = genericMapping.filter { it.key != it.value }.unmodifiableCopy()
