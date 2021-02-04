@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.methodhandles
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
+import dev.thecodewarrior.mirror.testsupport.assertMessage
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -59,21 +60,21 @@ internal class InstanceMethods: MTest() {
     }
 
     @Test
-    fun `calling a method with the wrong receiver type should throw`() {
+    fun `calling a method with the wrong receiver type should throw a ClassCastException`() {
         val X by sources.add("X", "class X { void method() { } }")
         sources.compile()
-        assertThrows<IllegalArgumentException> {
+        assertThrows<ClassCastException> {
             Mirror.reflect(X._m("method")).call<Unit>("")
-        }
+        }.assertMessage("Cannot cast java.lang.String to gen.X")
     }
 
     @Test
-    fun `calling a method with arguments and no parameters should throw`() {
+    fun `calling a method with arguments and no parameters should not throw`() {
         val X by sources.add("X", "class X { void method() { } }")
         sources.compile()
         val instance = X._new<Any>()
         assertDoesNotThrow {
-            Mirror.reflect(X._m("method")).callFast<Unit>(instance, 0)
+            Mirror.reflect(X._m("method")).call<Unit>(instance, 0)
         }
     }
 

@@ -42,7 +42,7 @@ public abstract class MemberMirror internal constructor(
      */
     public abstract fun withDeclaringClass(enclosing: ClassMirror?): MemberMirror
 
-    override fun <T: Annotation?> getAnnotation(annotationClass: Class<T>): T {
+    override fun <T: Annotation> getAnnotation(annotationClass: Class<T>): T? {
         return annotatedElement.getAnnotation(annotationClass)
     }
 

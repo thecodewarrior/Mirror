@@ -127,31 +127,11 @@ public class FieldMirror internal constructor(
 
     /**
      * Get the value of this field in the passed instance. If this is a static field, `null` should be used for the
-     * instance. If performance is of the essence however, use [getFast], which should be near-native speed, but will
-     * have somewhat less helpful exceptions.
+     * instance. After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access should
+     * be near-native speed.
      */
     @Suppress("UNCHECKED_CAST")
     public fun <T : Any?> get(receiver: Any?): T {
-        if(isStatic) {
-            if(receiver != null)
-                throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
-            return raw.staticGetWrapper() as T
-        } else {
-            if (receiver == null)
-                throw NullPointerException("Null receiver for instance field `${declaringClass.java.simpleName}.$name`")
-            if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
-                throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance field `${declaringClass.java.simpleName}.$name`")
-            return raw.instanceGetWrapper(receiver) as T
-        }
-    }
-
-    /**
-     * Get the value of this field in the passed instance. If this is a static field, `null` should be used for the
-     * instance. After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access should
-     * be near-native speed. This method, while faster than [get], will provide somewhat less helpful exceptions.
-     */
-    @Suppress("UNCHECKED_CAST")
-    public fun <T : Any?> getFast(receiver: Any?): T {
         if(isStatic) {
             return raw.staticGetWrapper() as T
         } else {
@@ -170,31 +150,11 @@ public class FieldMirror internal constructor(
 
     /**
      * Set the value of this field in the passed instance. If this is a static field, `null` should be used for the
-     * instance. If performance is of the essence however, use [setFast], which should be near-native speed, but will
-     * have somewhat less helpful exceptions.
+     * instance. After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access
+     * should be near-native speed.
      */
     @Suppress("UNCHECKED_CAST")
     public fun set(receiver: Any?, value: Any?) {
-        if(isStatic) {
-            if(receiver != null)
-                throw IllegalArgumentException("Invalid receiver for static field `${declaringClass.java.simpleName}.$name`. Expected null.")
-            raw.staticSetWrapper(value)
-        } else {
-            if (receiver == null)
-                throw NullPointerException("Null receiver for instance field `${declaringClass.java.simpleName}.$name`")
-            if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
-                throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance field `${declaringClass.java.simpleName}.$name`")
-            raw.instanceSetWrapper(receiver, value)
-        }
-    }
-
-    /**
-     * Set the value of this field in the passed instance. If this is a static field, `null` should be used for the
-     * instance. After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access
-     * should be near-native speed. This method, while faster than [set], will provide somewhat less helpful exceptions.
-     */
-    @Suppress("UNCHECKED_CAST")
-    public fun setFast(receiver: Any?, value: Any?) {
         if(isStatic) {
             raw.staticSetWrapper(value)
         } else {

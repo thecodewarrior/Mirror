@@ -46,28 +46,16 @@ public class ConstructorMirror internal constructor(
     }
 
     /**
-     * Create a new instance using this constructor. If performance is of the essence use [callFast], which should be
-     * near-native speed, but will provide somewhat less helpful exceptions.
+     * Create a new instance using this constructor. After the one-time cost of creating the
+     * [MethodHandle][java.lang.invoke.MethodHandle], the access should be near-native speed.
      */
     @Suppress("UNCHECKED_CAST")
     public fun <T : Any?> call(vararg args: Any?): T {
-        if(args.size != parameters.size)
-            throw IllegalArgumentException("Incorrect argument count (${args.size}) for constructor `$this`")
         return raw.wrapper(args as Array<Any?>) as T
     }
 
     @JvmSynthetic
     public operator fun <T> invoke(vararg args: Any?): T = call(*args)
-
-    /**
-     * Create a new instance using this constructor. After the one-time cost of creating the
-     * [MethodHandle][java.lang.invoke.MethodHandle], the access should be near-native speed. This method, while faster
-     * than [call], will provide somewhat less helpful exceptions.
-     */
-    @Suppress("UNCHECKED_CAST")
-    public fun <T : Any?> callFast(vararg args: Any?): T {
-        return raw.wrapper(args as Array<Any?>) as T
-    }
 
     override fun toString(): String {
         var str = ""

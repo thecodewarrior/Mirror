@@ -47,7 +47,7 @@ internal class StaticMethods: MTest() {
         val X by sources.add("X", "class X { static void method() { } }")
         sources.compile()
         val instance = X._new<Any>()
-        assertThrows<IllegalArgumentException> {
+        assertDoesNotThrow { // Core Reflection just ignores the instance
             Mirror.reflect(X._m("method")).call<Unit>(instance)
         }
     }
@@ -56,7 +56,7 @@ internal class StaticMethods: MTest() {
     fun `calling a static method with the wrong receiver type should throw`() {
         val X by sources.add("X", "class X { static void method() { } }")
         sources.compile()
-        assertThrows<IllegalArgumentException> {
+        assertDoesNotThrow { // Core Reflection just ignores the instance
             Mirror.reflect(X._m("method")).call<Unit>("")
         }
     }
@@ -66,7 +66,7 @@ internal class StaticMethods: MTest() {
         val X by sources.add("X", "class X { static void method() { } }")
         sources.compile()
         assertThrows<IllegalArgumentException> {
-            Mirror.reflect(X._m("method")).callFast<Unit>(null, 0)
+            Mirror.reflect(X._m("method")).call<Unit>(null, 0)
         }
     }
 

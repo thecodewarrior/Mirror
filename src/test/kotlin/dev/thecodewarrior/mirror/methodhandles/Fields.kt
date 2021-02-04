@@ -3,6 +3,7 @@ package dev.thecodewarrior.mirror.methodhandles
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
+import dev.thecodewarrior.mirror.testsupport.assertMessage
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -18,13 +19,13 @@ internal class Fields: MTest() {
     }
 
     @Test
-    fun `getting a static field with a non-null receiver should throw`() {
+    fun `getting a static field with a non-null receiver should not throw`() {
         val X by sources.add("X", "class X { static int field = 10; }")
         sources.compile()
         val instance = X._new<Any>()
         val field = Mirror.reflect(X._f("field"))
-        assertThrows<IllegalArgumentException> {
-            field.get(instance)
+        assertDoesNotThrow {
+            field.get<Int>(instance)
         }
     }
 
@@ -38,12 +39,12 @@ internal class Fields: MTest() {
     }
 
     @Test
-    fun `setting a static field with a non-null receiver should throw`() {
+    fun `setting a static field with a non-null receiver should not throw`() {
         val X by sources.add("X", "class X { static int field = 10; }")
         sources.compile()
         val instance = X._new<Any>()
         val field = Mirror.reflect(X._f("field"))
-        assertThrows<IllegalArgumentException> {
+        assertDoesNotThrow {
             field.set(instance, 20)
         }
     }
@@ -72,9 +73,9 @@ internal class Fields: MTest() {
         val X by sources.add("X", "class X { int field = 10; }")
         sources.compile()
         val field = Mirror.reflect(X._f("field"))
-        assertThrows<IllegalArgumentException> {
+        assertThrows<ClassCastException> {
             field.get("")
-        }
+        }.assertMessage("Cannot cast java.lang.String to gen.X")
     }
 
     @Test
@@ -116,121 +117,6 @@ internal class Fields: MTest() {
 
     @Test
     fun `setting a final field should change its value`() {
-        val X by sources.add("X", "class X { final static int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        field.set(null, 20)
-        assertEquals(20, X._get("field"))
-    }
-
-    @Test
-    fun `fast getting a static field with a null receiver should return its value`() {
-        val X by sources.add("X", "class X { static int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        assertEquals(10, field.getFast(null))
-    }
-
-    @Test
-    fun `fast getting a static field with a non-null receiver should not throw`() {
-        val X by sources.add("X", "class X { static int field = 10; }")
-        sources.compile()
-        val instance = X._new<Any>()
-        val field = Mirror.reflect(X._f("field"))
-        assertDoesNotThrow {
-            assertEquals(10, field.getFast<Any?>(instance))
-        }
-    }
-
-    @Test
-    fun `fast setting a static field with a null receiver should change its value`() {
-        val X by sources.add("X", "class X { static int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        field.setFast(null, 20)
-        assertEquals(20, X._get("field"))
-    }
-
-    @Test
-    fun `fast setting a static field with a non-null receiver should not throw`() {
-        val X by sources.add("X", "class X { static int field = 10; }")
-        sources.compile()
-        val instance = X._new<Any>()
-        val field = Mirror.reflect(X._f("field"))
-        assertDoesNotThrow {
-            field.setFast(instance, 20)
-        }
-        assertEquals(20, instance._get("field"))
-    }
-
-    @Test
-    fun `fast getting a field with a nonnull receiver should return its value`() {
-        val X by sources.add("X", "class X { int field = 10; }")
-        sources.compile()
-        val instance = X._new<Any>()
-        val field = Mirror.reflect(X._f("field"))
-        assertEquals(10, field.getFast(instance))
-    }
-
-    @Test
-    fun `fast getting a field with a null receiver should throw`() {
-        val X by sources.add("X", "class X { int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        assertThrows<NullPointerException> {
-            field.getFast(null)
-        }
-    }
-
-    @Test
-    fun `fast getting a field with the wrong receiver type should throw`() {
-        val X by sources.add("X", "class X { int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        assertThrows<ClassCastException> {
-            field.getFast("")
-        }
-    }
-
-    @Test
-    fun `fast setting a field with a non-null receiver should change its value`() {
-        val X by sources.add("X", "class X { int field = 10; }")
-        sources.compile()
-        val instance = X._new<Any>()
-        val field = Mirror.reflect(X._f("field"))
-        field.setFast(instance, 20)
-        assertEquals(20, instance._get("field"))
-    }
-
-    @Test
-    fun `fast setting a field with a null receiver should throw`() {
-        val X by sources.add("X", "class X { int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        assertThrows<NullPointerException> {
-            field.setFast(null, 20)
-        }
-    }
-
-    @Test
-    fun `fast getting a private field with should return its value`() {
-        val X by sources.add("X", "class X { private static int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        assertEquals(10, field.getFast(null))
-    }
-
-    @Test
-    fun `fast setting a private field should change its value`() {
-        val X by sources.add("X", "class X { private static int field = 10; }")
-        sources.compile()
-        val field = Mirror.reflect(X._f("field"))
-        field.set(null, 20)
-        assertEquals(20, X._get("field"))
-    }
-
-    @Test
-    fun `fast setting a final field should change its value`() {
         val X by sources.add("X", "class X { final static int field = 10; }")
         sources.compile()
         val field = Mirror.reflect(X._f("field"))

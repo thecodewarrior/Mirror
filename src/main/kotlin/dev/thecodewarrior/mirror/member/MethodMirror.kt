@@ -175,48 +175,22 @@ public class MethodMirror internal constructor(
     }
 
     /**
-     * Call this method on the passed instance. If this is a static method, `null` should be used for the instance. If
-     * performance is of the essence use [callFast], which should be near-native speed, but will provide somewhat less
-     * helpful exceptions.
+     * Call this method on the passed instance. If this is a static method, `null` should be used for the instance.
+     * After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access should be
+     * near-native speed.
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(Throwable::class)
     public fun <T> call(receiver: Any?, vararg args: Any?): T {
-        if(isStatic) {
-            if(receiver != null)
-                throw IllegalArgumentException("Invalid receiver for static method `${declaringClass.java.simpleName}.$name`. Expected null.")
-            if(args.size != parameters.size)
-                throw IllegalArgumentException("Incorrect argument count (${args.size}) for static method `$this`")
-
-            return raw.staticWrapper(args as Array<Any?>) as T
-        } else {
-            if(receiver == null)
-                throw NullPointerException("Null receiver for instance method `${declaringClass.java.simpleName}.$name`")
-            if(!declaringClass.java.isAssignableFrom(receiver.javaClass))
-                throw IllegalArgumentException("Invalid receiver type `${receiver.javaClass.simpleName}` for instance method `${declaringClass.java.simpleName}.$name`")
-            if(args.size != parameters.size)
-                throw IllegalArgumentException("Incorrect argument count (${args.size}) for instance method `$this`")
-
-            return raw.instanceWrapper(receiver, args as Array<Any?>) as T
-        }
-    }
-
-    @JvmSynthetic
-    public operator fun <T> invoke(receiver: Any?, vararg args: Any?): T = call(receiver, *args)
-
-    /**
-     * Call this method on the passed instance. If this is a static method, `null` should be used for the instance.
-     * After the one-time cost of creating the [MethodHandle][java.lang.invoke.MethodHandle], the access should be
-     * near-native speed. This method, while faster than [call], will provide somewhat less helpful exceptions.
-     */
-    @Suppress("UNCHECKED_CAST")
-    public fun <T : Any?> callFast(receiver: Any?, vararg args: Any?): T {
         if(isStatic) {
             return raw.staticWrapper(args as Array<Any?>) as T
         } else {
             return raw.instanceWrapper(receiver!!, args as Array<Any?>) as T
         }
     }
+
+    @JvmSynthetic
+    public operator fun <T> invoke(receiver: Any?, vararg args: Any?): T = call(receiver, *args)
 
     override fun toString(): String {
         var str = ""

@@ -166,6 +166,39 @@ class TestUtilsAssertions {
         }
     }
 
+    @Test
+    fun assertNotInstanceOf_withExactType_shouldFail() {
+        assertThrows<AssertionFailedError> {
+            assertNotInstanceOf(Object1::class.java, Object1())
+        }
+    }
+
+    @Test
+    fun assertNotInstanceOf_withSubclass_shouldFail() {
+        class SubObject1: Object1()
+        assertThrows<AssertionFailedError> {
+            assertNotInstanceOf(Object1::class.java, SubObject1())
+        }
+    }
+
+    @Test
+    fun assertNotInstanceOf_withImplementor_shouldFail() {
+        class SubObject1: Interface1
+        assertThrows<AssertionFailedError> {
+            assertNotInstanceOf(Interface1::class.java, SubObject1())
+        }
+    }
+
+    @Test
+    fun assertNotInstanceOf_withUnrelated_shouldSucceed() {
+        assertNotInstanceOf(Object2::class.java, Object1())
+    }
+
+    @Test
+    fun assertNotInstanceOf_withSuperclass_shouldSucceed() {
+        class SubObject1: Interface1
+        assertNotInstanceOf(SubObject1::class.java, Object1())
+    }
     // =============================================================================================================
 
     @Test

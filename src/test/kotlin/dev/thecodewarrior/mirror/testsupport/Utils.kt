@@ -80,17 +80,30 @@ fun assertSetEquals(expected: List<Any?>, actual: List<Any?>) {
         )
 }
 
-
-fun assertInstanceOf(expected: Class<*>, actual: Any?) {
+fun <T: Any?> assertInstanceOf(expected: Class<T>, actual: Any?): T {
     if(!expected.isInstance(actual))
         throw AssertionFailedError("",
             expected.canonicalName,
             actual.toStringWithIdentity()
         )
+    @Suppress("UNCHECKED_CAST")
+    return actual as T
 }
 
-inline fun <reified T> assertInstanceOf(actual: Any?) {
-    assertInstanceOf(T::class.java, actual)
+inline fun <reified T: Any?> assertInstanceOf(actual: Any?): T {
+    return assertInstanceOf(T::class.java, actual)
+}
+
+fun assertNotInstanceOf(notExpected: Class<*>, actual: Any?) {
+    if(notExpected.isInstance(actual))
+        throw AssertionFailedError("",
+            "Not " + notExpected.canonicalName,
+            actual.toStringWithIdentity()
+        )
+}
+
+inline fun <reified T> assertNotInstanceOf(actual: Any?) {
+    assertNotInstanceOf(T::class.java, actual)
 }
 
 private fun Any?.toStringWithIdentity(): String {
