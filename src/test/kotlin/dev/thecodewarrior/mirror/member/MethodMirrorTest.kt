@@ -94,6 +94,17 @@ internal class MethodMirrorTest : MTest() {
         assertEquals(setOf<Any>(), bridge.modifiers)
     }
 
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-5070593
+     */
+    @Test
+    fun `variadic method should not include the 'transient' modifier`() {
+        val X by sources.add("X", "class X { void method(int... x) {} }")
+        sources.compile()
+        val method = Mirror.reflect(X._m("method"))
+        assertEquals(setOf<Any>(), method.modifiers)
+    }
+
     @Test
     fun `'isDefault' for a default interface method should return true`() {
         val I by sources.add("I", "interface I { default int method() { return 1; } }")

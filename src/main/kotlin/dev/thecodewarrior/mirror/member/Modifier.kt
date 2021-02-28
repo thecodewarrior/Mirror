@@ -127,7 +127,18 @@ public enum class Modifier(
         @Untested
         @JvmStatic
         public fun fromModifiers(mods: Int): Set<Modifier> {
-            return values().filter { it.test(mods) }.toSet()
+            return values().filterTo(mutableSetOf()) { it.test(mods) }
+        }
+
+        /**
+         * Extracts a set of [Modifiers][Modifier] from the given Core Reflection method mods.
+         *
+         * This exists as a workaround for [JDK-5070593](https://bugs.openjdk.java.net/browse/JDK-5070593).
+         */
+        @Untested
+        @JvmStatic
+        public fun fromMethodModifiers(mods: Int): Set<Modifier> {
+            return values().filterTo(mutableSetOf()) { it != VOLATILE && it != TRANSIENT && it.test(mods) }
         }
     }
 

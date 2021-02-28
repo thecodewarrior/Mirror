@@ -25,8 +25,7 @@ internal class MethodMirrorImpl internal constructor(
 
     override val raw: MethodMirrorImpl = raw ?: this
     override val name: String = java.name
-    // Removing VOLATILE due to this interaction: https://bugs.openjdk.java.net/browse/JDK-5070593
-    override val modifiers: Set<Modifier> = (Modifier.fromModifiers(java.modifiers) - setOf(Modifier.VOLATILE)).unmodifiableView()
+    override val modifiers: Set<Modifier> = Modifier.fromMethodModifiers(java.modifiers).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
     override val isVarArgs: Boolean = java.isVarArgs
     override val isSynthetic: Boolean = java.isSynthetic
