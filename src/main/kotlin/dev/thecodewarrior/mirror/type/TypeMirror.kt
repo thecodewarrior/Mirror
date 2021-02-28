@@ -1,7 +1,9 @@
 package dev.thecodewarrior.mirror.type
 
+import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.impl.utils.Untested
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Type
 
@@ -44,7 +46,7 @@ public interface TypeMirror {
      * These are not the annotations present on the _declaration,_ they are the annotations present on the _use_ of the
      * type.
      */
-    public val typeAnnotations: List<Annotation>
+    public val typeAnnotations: AnnotationList
 
     /**
      * Determines if this mirror represents a logical supertype of the passed mirror, i.e. whether a value of type
@@ -56,34 +58,12 @@ public interface TypeMirror {
 
     /**
      * Creates a copy of this type mirror that has been specialized to have the passed
-     * [type annotation][java.lang.annotation.ElementType.TYPE_USE]. Type annotations on this mirror will not be
-     * present on the resulting mirror.
+     * [Type Annotations][typeAnnotations]. Type annotations on this mirror will not carry over to the resulting mirror.
      *
-     * In the case of [ClassMirror], these are not the annotations present on the class _declaration,_
-     * they are the annotations present on the _use_ of the type.
+     * Note that are not the annotations present on the class _declaration,_ they are the annotations present on the
+     * _use_ of the type.
      */
     public fun withTypeAnnotations(annotations: List<Annotation>): TypeMirror
-
-    /**
-     * Returns true if the specified [type annotation][java.lang.annotation.ElementType.TYPE_USE] is present on this
-     * type.
-     */
-    @Untested
-    public fun isTypeAnnotationPresent(annotationType: Class<out Annotation>): Boolean
-
-    /**
-     * Returns the [type annotation][java.lang.annotation.ElementType.TYPE_USE] of the specified type, or null if no
-     * such annotation is present.
-     */
-    @Untested
-    public fun <T: Annotation> getTypeAnnotation(annotationClass: Class<T>): T?
-
-    /**
-     * Returns the [type annotation][java.lang.annotation.ElementType.TYPE_USE] with the specified type, detecting
-     * repeatable annotations.
-     */
-    @Untested
-    public fun <T: Annotation> getTypeAnnotationsByType(annotationClass: Class<T>): List<T>
 
     /**
      * Casts this TypeMirror to ClassMirror. Designed to avoid the nested casts from hell:
@@ -116,4 +96,10 @@ public interface TypeMirror {
      */
     @Throws(ClassCastException::class)
     public fun asArrayMirror(): ArrayMirror
+
+    /**
+     * Returns a string approximating the appearance of this type when used in source code.
+     */
+    @Untested
+    public override fun toString(): String
 }

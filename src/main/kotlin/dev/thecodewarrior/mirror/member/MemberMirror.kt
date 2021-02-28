@@ -3,13 +3,14 @@ package dev.thecodewarrior.mirror.member
 import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 
 /**
  * The abstract superclass representing any Java class member
  */
-public interface MemberMirror: AnnotatedElement {
+public interface MemberMirror {
     /**
      * The Core Reflection object this mirror represents
      */
@@ -63,11 +64,18 @@ public interface MemberMirror: AnnotatedElement {
     /**
      * Returns annotations that are present on the member this mirror represents.
      *
-     * **Note: this value is immutable**
-     *
+     * @see AnnotatedElement
      * @see AnnotatedElement.getAnnotations
      */
-    public val annotations: List<Annotation>
+    public val annotations: AnnotationList
+
+    /**
+     * Returns annotations that are declared on the member this mirror represents.
+     *
+     * @see AnnotatedElement
+     * @see AnnotatedElement.getDeclaredAnnotations
+     */
+    public val declaredAnnotations: AnnotationList
 
     /**
      * The potentially specialized class this member is declared in

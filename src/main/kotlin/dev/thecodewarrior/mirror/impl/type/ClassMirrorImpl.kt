@@ -14,6 +14,7 @@ import dev.thecodewarrior.mirror.type.*
 import dev.thecodewarrior.mirror.type.ClassMirror.Flag
 import dev.thecodewarrior.mirror.impl.TypeMapping
 import dev.thecodewarrior.mirror.impl.member.ExecutableMirrorImpl
+import dev.thecodewarrior.mirror.impl.util.ElementBackedAnnotationListImpl
 import dev.thecodewarrior.mirror.type.MethodList
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.impl.utils.checkedCast
@@ -22,6 +23,7 @@ import dev.thecodewarrior.mirror.impl.utils.stableSort
 import dev.thecodewarrior.mirror.impl.utils.unique
 import dev.thecodewarrior.mirror.impl.utils.uniqueBy
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
@@ -39,7 +41,7 @@ internal class ClassMirrorImpl internal constructor(
     override val java: Class<*>,
     raw: ClassMirror?,
     override val specialization: TypeSpecialization.Class?
-): TypeMirrorImpl(), ClassMirror, AnnotatedElement by java {
+): TypeMirrorImpl(), ClassMirror {
     override val coreType: Type
     override val coreAnnotatedType: AnnotatedType
 
@@ -222,8 +224,14 @@ internal class ClassMirrorImpl internal constructor(
     override val isPrimitive: Boolean = Flag.PRIMITIVE in flags
     override val isSynthetic: Boolean = Flag.SYNTHETIC in flags
 
-    override val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
-    override val declaredAnnotations: List<Annotation> = java.declaredAnnotations.toList().unmodifiableView()
+    override val annotations: AnnotationList by lazy {
+        ElementBackedAnnotationListImpl(java, false)
+    }
+
+    override val declaredAnnotations: AnnotationList by lazy {
+        ElementBackedAnnotationListImpl(java, false)
+    }
+
 
     override val enumType: ClassMirror? by lazy {
         when {
@@ -538,23 +546,6 @@ internal class ClassMirrorImpl internal constructor(
         }
     }
 //endregion =====================================================================================================================
-
-    override val declarationString: String
-        get() {
-            var str = ""
-            str += java.simpleName
-            if(typeParameters.isNotEmpty()) {
-                str += "<${typeParameters.joinToString(", ")}>"
-            }
-            superclass?.let { superclass ->
-                str += " extends $superclass"
-            }
-            if(interfaces.isNotEmpty()) {
-                str += " implements ${interfaces.joinToString(", ")}"
-            }
-
-            return str
-        }
 
     @Untested
     override fun toString(): String {

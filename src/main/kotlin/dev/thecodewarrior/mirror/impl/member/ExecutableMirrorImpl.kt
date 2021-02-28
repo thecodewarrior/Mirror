@@ -11,10 +11,6 @@ import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.ParameterMirror
 import java.lang.reflect.AnnotatedElement
-import java.lang.reflect.Executable
-import java.lang.reflect.Method
-import java.lang.reflect.Constructor
-import kotlin.reflect.KCallable
 
 internal abstract class ExecutableMirrorImpl internal constructor(
     cache: MirrorCache,
@@ -64,17 +60,6 @@ internal abstract class ExecutableMirrorImpl internal constructor(
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
                 (specialization?.enclosing as ClassMirrorImpl?)?.genericMapping
-    }
-
-    /**
-     * Returns annotations that are present on the executable this mirror represents.
-     *
-     * **Note: this value is immutable**
-     *
-     * @see Executable.getAnnotations
-     */
-    override val annotations: List<Annotation> by lazy {
-        java.annotations.toList().unmodifiableView()
     }
 
     /**

@@ -4,7 +4,9 @@ import dev.thecodewarrior.mirror.NoSuchMirrorException
 import dev.thecodewarrior.mirror.member.MethodMirror
 
 /**
- * A searchable list of MethodMirrors
+ * A searchable list of MethodMirrors.
+ *
+ * **Note: when used as a `List`, this object is immutable**
  */
 public interface MethodList: List<MethodMirror> {
     /**

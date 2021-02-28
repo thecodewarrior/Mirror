@@ -336,9 +336,9 @@ internal class ExecutableMirrorTest: MTest() {
         fun `'annotations' of an non-annotated parameter should return an empty list`() {
             val X by sources.add("X", "class X { public void method(int param) {} }")
             sources.compile()
-            assertArrayEquals(
-                emptyArray<Any>(),
-                Mirror.reflect(X._m("method")).parameters.single().annotations
+            assertEquals(
+                emptyList<Any>(),
+                Mirror.reflect(X._m("method")).parameters.single().annotations.toList()
             )
         }
 
@@ -348,9 +348,9 @@ internal class ExecutableMirrorTest: MTest() {
             val A2 by sources.add("A2", "@rt(PARAMETER) @interface A2 { String value(); }").typed<Annotation>()
             val X by sources.add("X", "class X { public void method(@A @A2(\"annotation value\") int param) {} }")
             sources.compile()
-            assertArrayEquals(
-                arrayOf(Mirror.newAnnotation(A), Mirror.newAnnotation(A2, "value" to "annotation value")),
-                Mirror.reflect(X._m("method")).parameters.single().annotations
+            assertEquals(
+                listOf(Mirror.newAnnotation(A), Mirror.newAnnotation(A2, "value" to "annotation value")),
+                Mirror.reflect(X._m("method")).parameters.single().annotations.toList()
             )
         }
 
@@ -360,9 +360,9 @@ internal class ExecutableMirrorTest: MTest() {
             val A2 by sources.add("A2", "@Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME) @interface A2 { String value(); }").typed<Annotation>()
             val X by sources.add("X", "class X { public void method(@A @A2(\"annotation value\") int param) {} }")
             sources.compile()
-            assertArrayEquals(
-                arrayOf<Any>(),
-                Mirror.reflect(X._m("method")).parameters.single().annotations
+            assertEquals(
+                listOf<Any>(),
+                Mirror.reflect(X._m("method")).parameters.single().annotations.toList()
             )
         }
 

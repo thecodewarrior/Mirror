@@ -2,8 +2,10 @@ package dev.thecodewarrior.mirror.impl.member
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.impl.MirrorCache
+import dev.thecodewarrior.mirror.impl.util.ElementBackedAnnotationListImpl
 import dev.thecodewarrior.mirror.member.MemberMirror
 import dev.thecodewarrior.mirror.type.ClassMirror
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 
@@ -12,20 +14,15 @@ internal abstract class MemberMirrorImpl internal constructor(
     val annotatedElement: AnnotatedElement,
     _enclosing: ClassMirror?
 ): MemberMirror {
-
     override val declaringClass: ClassMirror by lazy {
         _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
     }
 
-    override fun <T: Annotation> getAnnotation(annotationClass: Class<T>): T? {
-        return annotatedElement.getAnnotation(annotationClass)
+    override val annotations: AnnotationList by lazy {
+        ElementBackedAnnotationListImpl(annotatedElement, false)
     }
 
-    override fun getAnnotations(): Array<Annotation> {
-        return annotatedElement.annotations
-    }
-
-    override fun getDeclaredAnnotations(): Array<Annotation> {
-        return annotatedElement.declaredAnnotations
+    override val declaredAnnotations: AnnotationList by lazy {
+        ElementBackedAnnotationListImpl(annotatedElement, false)
     }
 }

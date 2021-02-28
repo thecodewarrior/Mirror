@@ -8,6 +8,7 @@ import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.impl.utils.Untested
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.*
 import kotlin.reflect.KClass
 
@@ -19,7 +20,7 @@ import kotlin.reflect.KClass
  * @see VoidMirror
  * @see WildcardMirror
  */
-public interface ClassMirror : ConcreteTypeMirror, AnnotatedElement {
+public interface ClassMirror : ConcreteTypeMirror {
     public override val coreType: Type
     public override val coreAnnotatedType: AnnotatedType
     public override val raw: ClassMirror
@@ -269,23 +270,19 @@ public interface ClassMirror : ConcreteTypeMirror, AnnotatedElement {
      * Returns annotations that are present on the class this mirror represents. These are not the annotations
      * present on the use of the type, for those use [typeAnnotations]
      *
-     * **Note: this list is immutable**
-     *
      * @see Class.getAnnotations
      */
     @Untested
-    public val annotations: List<Annotation>
+    public val annotations: AnnotationList
 
     /**
      * Returns annotations that are directly present on the class this mirror represents. These are not the annotations
      * present on the use of the type, for those use [typeAnnotations]
      *
-     * **Note: this list is immutable**
-     *
      * @see Class.getDeclaredAnnotations
      */
     @Untested
-    public val declaredAnnotations: List<Annotation>
+    public val declaredAnnotations: AnnotationList
 
     /**
      * Returns the logical enum type of the class this mirror represents, taking into account anonymous enum subclasses,
@@ -701,13 +698,6 @@ public interface ClassMirror : ConcreteTypeMirror, AnnotatedElement {
     @Untested
     public fun getMemberClass(name: String): ClassMirror
 //endregion =====================================================================================================================
-
-    /**
-     * Returns a string representing the declaration of this type with type parameters substituted in,
-     * as opposed to [toString] which returns the string representing the usage of this type
-     */
-    @Untested
-    public val declarationString: String
 
     /**
      * A set of useful flags for classes, such as whether it is abstract, anonymous, primitive, etc.

@@ -7,13 +7,14 @@ import dev.thecodewarrior.mirror.impl.TypeMapping
 import dev.thecodewarrior.mirror.impl.member.ExecutableMirrorImpl
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.impl.utils.Untested
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Parameter
 
 /**
  * A mirror representing a method or constructor parameter
  */
-public interface ParameterMirror : AnnotatedElement {
+public interface ParameterMirror {
     /**
      * The Core Reflection object this mirror represents
      */
@@ -55,6 +56,22 @@ public interface ParameterMirror : AnnotatedElement {
      * The type of this parameter, specialized based on the declaring executable's specialization.
      */
     public val type: TypeMirror
+
+    /**
+     * Returns annotations that are present on the member this mirror represents.
+     *
+     * @see AnnotatedElement
+     * @see AnnotatedElement.getAnnotations
+     */
+    public val annotations: AnnotationList
+
+    /**
+     * Returns annotations that are declared on the member this mirror represents.
+     *
+     * @see AnnotatedElement
+     * @see AnnotatedElement.getDeclaredAnnotations
+     */
+    public val declaredAnnotations: AnnotationList
 
     /**
      * The potentially specialized executable this parameter is declared in

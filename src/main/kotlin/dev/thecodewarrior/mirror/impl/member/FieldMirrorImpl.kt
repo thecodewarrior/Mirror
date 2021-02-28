@@ -38,8 +38,6 @@ internal class FieldMirrorImpl internal constructor(
         (declaringClass as ClassMirrorImpl).genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
-    override val annotations: List<Annotation> = java.annotations.toList().unmodifiableView()
-
     override fun withDeclaringClass(enclosing: ClassMirror?): FieldMirror {
         if(enclosing != null && enclosing.java != java.declaringClass)
             throw InvalidSpecializationException("Invalid declaring class $type. " +

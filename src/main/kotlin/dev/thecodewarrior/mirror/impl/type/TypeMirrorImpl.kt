@@ -4,11 +4,12 @@ import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.impl.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.impl.util.ListBackedAnnotationListImpl
 import dev.thecodewarrior.mirror.type.ArrayMirror
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.impl.utils.Untested
-
+import dev.thecodewarrior.mirror.util.AnnotationList
 
 internal abstract class TypeMirrorImpl: TypeMirror {
     /**
@@ -49,25 +50,9 @@ internal abstract class TypeMirrorImpl: TypeMirror {
         )
     }
 
-//region Type Annotations
-    override val typeAnnotations: List<Annotation>
-        get() = specialization?.annotations ?: emptyList()
-
-    @Untested
-    override fun isTypeAnnotationPresent(annotationType: Class<out Annotation>): Boolean {
-        return this.getTypeAnnotation(annotationType) != null
+    override val typeAnnotations: AnnotationList by lazy {
+        specialization?.annotations?.let { ListBackedAnnotationListImpl(it) } ?: ListBackedAnnotationListImpl.EMPTY
     }
-
-    @Untested
-    override fun <T: Annotation> getTypeAnnotation(annotationClass: Class<T>): T? {
-        return coreAnnotatedType.getDeclaredAnnotation(annotationClass)
-    }
-
-    @Untested
-    override fun <T: Annotation> getTypeAnnotationsByType(annotationClass: Class<T>): List<T> {
-        return coreAnnotatedType.getDeclaredAnnotationsByType(annotationClass).toList()
-    }
-//endregion
 
     @Throws(ClassCastException::class)
     override fun asClassMirror(): ClassMirror {

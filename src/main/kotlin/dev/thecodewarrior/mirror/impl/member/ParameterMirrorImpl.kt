@@ -5,12 +5,14 @@ import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ArrayMirror
 import dev.thecodewarrior.mirror.impl.TypeMapping
 import dev.thecodewarrior.mirror.impl.member.ExecutableMirrorImpl
+import dev.thecodewarrior.mirror.impl.util.ElementBackedAnnotationListImpl
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.member.ConstructorMirror
 import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.member.ParameterMirror
+import dev.thecodewarrior.mirror.util.AnnotationList
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Parameter
 
@@ -19,12 +21,12 @@ internal class ParameterMirrorImpl(
     raw: ParameterMirrorImpl?,
     override val declaringExecutable: ExecutableMirror?,
     override val java: Parameter
-): ParameterMirror, AnnotatedElement by java {
-    override val hasName: Boolean = java.isNamePresent
-    override val name: String = java.name
+): ParameterMirror {
 
     override val raw: ParameterMirror = raw ?: this
 
+    override val hasName: Boolean = java.isNamePresent
+    override val name: String = java.name
     override val index: Int = java.declaringExecutable.parameters.indexOf(java)
 
     override val isFinal: Boolean = Modifier.FINAL in Modifier.fromModifiers(java.modifiers)
@@ -36,6 +38,14 @@ internal class ParameterMirrorImpl(
         java.annotatedType.let {
             genericMapping[cache.types.reflect(it)]
         }
+    }
+
+    override val annotations: AnnotationList by lazy {
+        ElementBackedAnnotationListImpl(java, false)
+    }
+
+    override val declaredAnnotations: AnnotationList by lazy {
+        ElementBackedAnnotationListImpl(java, false)
     }
 
     private val genericMapping: TypeMapping by lazy {

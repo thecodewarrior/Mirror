@@ -8,7 +8,6 @@ import dev.thecodewarrior.mirror.impl.utils.MethodHandleHelper
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import dev.thecodewarrior.mirror.member.ConstructorMirror
 import dev.thecodewarrior.mirror.member.Modifier
-import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Constructor
 import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
