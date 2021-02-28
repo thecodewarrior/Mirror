@@ -9,23 +9,70 @@ import java.lang.reflect.Member
 /**
  * The abstract superclass representing any Java class member
  */
-public abstract class MemberMirror internal constructor(
-    internal val cache: MirrorCache,
-    _enclosing: ClassMirror?
-): AnnotatedElement {
+public interface MemberMirror: AnnotatedElement {
     /**
      * The Core Reflection object this mirror represents
      */
-    public abstract val java: Member
+    public val java: Member
 
-    internal abstract val annotatedElement: AnnotatedElement
+    /**
+     * The mirror representing this member without any generic specialization
+     */
+    public val raw: MemberMirror
+
+    /**
+     * The set of modifiers present on this member.
+     *
+     * **Note: This set is immutable**
+     */
+    public val modifiers: Set<Modifier>
+
+    /**
+     * The access control modifier for this member.
+     */
+    public val access: Modifier.Access
+
+    /**
+     * A shorthand for checking if the `public` [modifier][modifiers] is present on this field.
+     */
+    public val isPublic: Boolean
+
+    /**
+     * A shorthand for checking if the `protected` [modifier][modifiers] is present on this field.
+     */
+    public val isProtected: Boolean
+
+    /**
+     * A shorthand for checking if the `private` [modifier][modifiers] is present on this field.
+     */
+    public val isPrivate: Boolean
+
+    /**
+     * A shorthand for checking if neither the `public`, `protected`, nor `private` [modifiers][modifiers] are present
+     * on this field.
+     */
+    public val isPackagePrivate: Boolean
+
+    /**
+     * Returns true if this member is synthetic.
+     *
+     * @see Member.isSynthetic
+     */
+    public val isSynthetic: Boolean
+
+    /**
+     * Returns annotations that are present on the member this mirror represents.
+     *
+     * **Note: this value is immutable**
+     *
+     * @see AnnotatedElement.getAnnotations
+     */
+    public val annotations: List<Annotation>
 
     /**
      * The potentially specialized class this member is declared in
      */
-    public val declaringClass: ClassMirror by lazy {
-        _enclosing ?: cache.types.reflect(java.declaringClass) as ClassMirror
-    }
+    public val declaringClass: ClassMirror
 
     /**
      * Returns a copy of this member with its enclosing class replaced with [enclosing]. Substituting type variables as
@@ -38,38 +85,5 @@ public abstract class MemberMirror internal constructor(
      * @return A copy of this member with the passed enclosing class, or with the raw enclosing class if [enclosing]
      * is null
      */
-    public abstract fun withDeclaringClass(enclosing: ClassMirror?): MemberMirror
-
-    override fun <T: Annotation> getAnnotation(annotationClass: Class<T>): T? {
-        return annotatedElement.getAnnotation(annotationClass)
-    }
-
-    override fun getAnnotations(): Array<Annotation> {
-        return annotatedElement.annotations
-    }
-
-    override fun getDeclaredAnnotations(): Array<Annotation> {
-        return annotatedElement.declaredAnnotations
-    }
-
-    /**
-     * Returns true if the specified annotation is present on this member.
-     *
-     * @see AnnotatedElement.isAnnotationPresent
-     */
-    public inline fun <reified T: Annotation> isAnnotationPresent(): Boolean = this.isAnnotationPresent(T::class.java)
-
-    /**
-     * Returns the annotation of the specified type, or null if no such annotation is present.
-     *
-     * @see AnnotatedElement.getAnnotation
-     */
-    public inline fun <reified T: Annotation> getAnnotation(): T? = this.getAnnotation(T::class.java)
-
-    /**
-     * Returns the annotation of the specified type, or null if no such annotation is _directly_ present on this member.
-     *
-     * @see AnnotatedElement.getDeclaredAnnotation
-     */
-    public inline fun <reified T: Annotation> getDeclaredAnnotation(): T? = this.getDeclaredAnnotation(T::class.java)
+    public fun withDeclaringClass(enclosing: ClassMirror?): MemberMirror
 }

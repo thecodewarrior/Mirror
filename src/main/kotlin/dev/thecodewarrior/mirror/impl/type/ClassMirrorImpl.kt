@@ -13,6 +13,7 @@ import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.type.*
 import dev.thecodewarrior.mirror.type.ClassMirror.Flag
 import dev.thecodewarrior.mirror.impl.TypeMapping
+import dev.thecodewarrior.mirror.impl.member.ExecutableMirrorImpl
 import dev.thecodewarrior.mirror.type.MethodList
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.impl.utils.checkedCast
@@ -114,7 +115,7 @@ internal class ClassMirrorImpl internal constructor(
     val genericMapping: TypeMapping by lazy {
         TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
                 (enclosingClass as ClassMirrorImpl?)?.genericMapping +
-                (enclosingExecutable)?.genericMapping
+                (enclosingExecutable as ExecutableMirrorImpl?)?.genericMapping
     }
 
     override fun defaultSpecialization() = TypeSpecialization.Class.DEFAULT

@@ -1,4 +1,4 @@
-package dev.thecodewarrior.mirror.member
+package dev.thecodewarrior.mirror.impl.member
 
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror

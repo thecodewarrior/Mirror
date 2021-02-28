@@ -1,5 +1,6 @@
 package dev.thecodewarrior.mirror.impl
 
+import dev.thecodewarrior.mirror.impl.member.FieldMirrorImpl
 import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
@@ -12,7 +13,7 @@ internal class FieldMirrorCache(private val cache: MirrorCache) {
 
     fun reflect(field: Field): FieldMirror {
         return rawCache.getOrPut(field) {
-            FieldMirror(cache, null, field, null)
+            FieldMirrorImpl(cache, null, field, null)
         }
     }
 
@@ -21,7 +22,7 @@ internal class FieldMirrorCache(private val cache: MirrorCache) {
         if(enclosing == null)
             return raw
         return specializedCache.getOrPut(raw to enclosing) {
-            FieldMirror(cache, raw, raw.java, enclosing)
+            FieldMirrorImpl(cache, raw as FieldMirrorImpl, raw.java, enclosing)
         }
     }
 }

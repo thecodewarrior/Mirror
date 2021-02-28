@@ -18,28 +18,28 @@ internal class MethodMirrorTest : MTest() {
 
     @Test
     fun `'name' of a method should be correct`() {
-        val X by sources.add("X", "class X { public void method() {} }")
+        val X by sources.add("X", "class X { void method() {} }")
         sources.compile()
         assertEquals("method", Mirror.reflect(X._m("method")).name)
     }
 
     @Test
     fun `'isVarArgs' for a non-variadic method should return false`() {
-        val X by sources.add("X", "class X { public void method(int x) {} }")
+        val X by sources.add("X", "class X { void method(int x) {} }")
         sources.compile()
         assertFalse(Mirror.reflect(X._m("method")).isVarArgs)
     }
 
     @Test
     fun `'isVarArgs' for a variadic method should return true`() {
-        val X by sources.add("X", "class X { public void method(int... x) {} }")
+        val X by sources.add("X", "class X { void method(int... x) {} }")
         sources.compile()
         assertTrue(Mirror.reflect(X._m("method")).isVarArgs)
     }
 
     @Test
     fun `'isSynthetic' for a non-synthetic method should return false`() {
-        val X by sources.add("X", "class X { public void method() {} }")
+        val X by sources.add("X", "class X { void method() {} }")
         sources.compile()
         assertFalse(Mirror.reflect(X._m("method")).isSynthetic)
     }
