@@ -2,7 +2,7 @@ package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
-import dev.thecodewarrior.mirror.utils.unmodifiableCopy
+import dev.thecodewarrior.mirror.impl.utils.unmodifiableCopy
 
 internal class ExecutableSpecialization(val enclosing: ClassMirror?, arguments: List<TypeMirror>?) {
     // * **Note: this value is immutable**

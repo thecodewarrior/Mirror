@@ -1,11 +1,11 @@
 package dev.thecodewarrior.mirror.member
 
-import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
-import dev.thecodewarrior.mirror.utils.MethodHandleHelper
-import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.unmodifiableView
+import dev.thecodewarrior.mirror.impl.utils.MethodHandleHelper
+import dev.thecodewarrior.mirror.impl.utils.Untested
+import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 import kotlin.reflect.KFunction

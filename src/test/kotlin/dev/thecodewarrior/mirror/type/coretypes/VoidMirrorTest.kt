@@ -2,7 +2,7 @@ package dev.thecodewarrior.mirror.type.coretypes
 
 import dev.thecodewarrior.mirror.Mirror
 import dev.thecodewarrior.mirror.annotations.TypeAnnotation1
-import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.impl.coretypes.CoreTypeUtils
 import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

@@ -1,7 +1,7 @@
 package dev.thecodewarrior.mirror.testsupport
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.typeholders.EmptyTypeHolder
 import org.junit.jupiter.api.BeforeEach
 import java.lang.IllegalArgumentException

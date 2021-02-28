@@ -1,9 +1,6 @@
 package dev.thecodewarrior.mirror.type
 
-import dev.thecodewarrior.mirror.InvalidSpecializationException
-import dev.thecodewarrior.mirror.MirrorCache
-import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
-import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import java.lang.reflect.AnnotatedWildcardType
 import java.lang.reflect.WildcardType
 
@@ -15,21 +12,10 @@ import java.lang.reflect.WildcardType
  * @see TypeVariableMirror
  * @see VoidMirror
  */
-public class WildcardMirror internal constructor(
-    override val cache: MirrorCache,
-    override val coreType: WildcardType,
-    // you can't annotate wildcard types, so type annotations are ignored, all we care about are the annotated bounds
-    private val annotated: AnnotatedWildcardType?,
-    raw: WildcardMirror?,
-    override val specialization: TypeSpecialization.Wildcard?
-): TypeMirror() {
-
-    override val coreAnnotatedType: AnnotatedWildcardType = if(annotated != null)
-        CoreTypeUtils.replaceAnnotations(annotated, typeAnnotations.toTypedArray())
-    else
-        CoreTypeUtils.annotate(coreType, typeAnnotations.toTypedArray()) as AnnotatedWildcardType
-
-    override val raw: WildcardMirror = raw ?: this
+public interface WildcardMirror : TypeMirror {
+    public override val coreType: WildcardType
+    public override val coreAnnotatedType: AnnotatedWildcardType
+    public override val raw: WildcardMirror
 
     /**
      * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
@@ -47,10 +33,7 @@ public class WildcardMirror internal constructor(
      * - ArrayList       - Invalid - `ArrayList myVar = myAbstractList;` does not compile
      * ```
      */
-    public val lowerBounds: List<TypeMirror> by lazy {
-        annotated?.annotatedLowerBounds?.map { cache.types.reflect(it) }
-            ?: this.coreType.lowerBounds.map { cache.types.reflect(it) }
-    }
+    public val lowerBounds: List<TypeMirror>
 
     /**
      * `? super T` or `out T`. The lowermost type in the hierarchy that is valid. Any valid type must be a supertype
@@ -70,7 +53,6 @@ public class WildcardMirror internal constructor(
      */
     @Untested
     public val lowerBound: TypeMirror?
-        get() = lowerBounds.getOrNull(0)
 
     /**
      * `? extends T` or `in T`. The uppermost type in the hierarchy that is valid. Any valid type must be a subclass
@@ -88,10 +70,7 @@ public class WildcardMirror internal constructor(
      * - ArrayList       - Valid   - `public List foo() { return myArrayList; }` compiles
      * ```
      */
-    public val upperBounds: List<TypeMirror> by lazy {
-        annotated?.annotatedUpperBounds?.map { cache.types.reflect(it) }
-            ?: this.coreType.upperBounds.map { cache.types.reflect(it) }
-    }
+    public val upperBounds: List<TypeMirror>
 
     /**
      * `? extends T` or `in T`. The uppermost type in the hierarchy that is valid. Any valid type must be a subclass
@@ -111,66 +90,10 @@ public class WildcardMirror internal constructor(
      */
     @Untested
     public val upperBound: TypeMirror?
-        get() = upperBounds.getOrNull(0)
-
-    override fun defaultSpecialization() = TypeSpecialization.Wildcard.DEFAULT
 
     /**
      * Specialize this wildcard with the provided upper and lower bounds. If the upper and lower bounds aren't
      */
     @Untested
-    public fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror {
-        if(upperBounds != null && (upperBounds.size != raw.upperBounds.size ||
-            raw.upperBounds.zip(upperBounds).any { (raw, specialized) ->
-                !raw.isAssignableFrom(specialized)
-            })
-        )
-            throw InvalidSpecializationException("Passed upper bounds $upperBounds are not assignable to raw " +
-                "upper bounds ${raw.upperBounds}")
-        if(lowerBounds != null && (lowerBounds.size != raw.lowerBounds.size ||
-                raw.lowerBounds.zip(lowerBounds).any { (raw, specialized) ->
-                    !raw.isAssignableFrom(specialized)
-                })
-        )
-            throw InvalidSpecializationException("Passed lower bounds $lowerBounds are not assignable to raw " +
-                "lower bounds ${raw.lowerBounds}")
-        val newSpecialization = (specialization ?: defaultSpecialization())
-            .copy(upperBounds = upperBounds, lowerBounds = lowerBounds)
-        return cache.types.specialize(this, newSpecialization) as WildcardMirror
-    }
-
-    override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
-        return defaultApplySpecialization<TypeSpecialization.Wildcard>(
-            specialization,
-            { true }
-        ) {
-            WildcardMirror(cache, coreType, annotated, raw, it)
-        }
-    }
-
-    override fun isAssignableFrom(other: TypeMirror): Boolean {
-        if(other == this) return true
-        if(other is WildcardMirror)
-            return this.upperBounds.zip(other.upperBounds).all { (ours, theirs) -> ours.isAssignableFrom(theirs) } &&
-                this.lowerBounds.zip(other.lowerBounds).all { (ours, theirs) -> ours.isAssignableFrom(theirs) }
-        return upperBounds.all {
-            it.isAssignableFrom(other)
-        } && lowerBounds.all {
-            other.isAssignableFrom(it)
-        }
-    }
-
-    @Untested
-    override fun toString(): String {
-        var str = "?"
-        if(upperBounds.isNotEmpty()) {
-            // java spec doesn't have multi-bounded wildcards, but we don't want to throw away data, so join to ` & `
-            str += " extends ${upperBounds.joinToString(" & ")}"
-        }
-        if(lowerBounds.isNotEmpty()) {
-            // java spec doesn't have multi-bounded wildcards, but we don't want to throw away data, so join to ` & `
-            str += " super ${lowerBounds.joinToString(" & ")}"
-        }
-        return str
-    }
+    public fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror
 }

@@ -1,6 +1,6 @@
 package dev.thecodewarrior.mirror
 
-import dev.thecodewarrior.mirror.coretypes.AnnotationFormatException
+import dev.thecodewarrior.mirror.impl.coretypes.AnnotationFormatException
 import dev.thecodewarrior.mirror.testsupport.AnnotationWithParameter
 import dev.thecodewarrior.mirror.testsupport.MTest
 import org.junit.jupiter.api.Assertions.assertEquals

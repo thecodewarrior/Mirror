@@ -1,6 +1,7 @@
 package dev.thecodewarrior.mirror.type
 
-import dev.thecodewarrior.mirror.utils.Untested
+import java.lang.reflect.AnnotatedType
+import java.lang.reflect.Type
 
 /**
  * A type mirror that represents a concrete type, i.e. a type representable by a [java.lang.Class].
@@ -10,10 +11,14 @@ import dev.thecodewarrior.mirror.utils.Untested
  * @see ClassMirror
  * @see ArrayMirror
  */
-public abstract class ConcreteTypeMirror: TypeMirror() {
+public interface ConcreteTypeMirror: TypeMirror {
+    public override val coreType: Type
+    public override val coreAnnotatedType: AnnotatedType
+    public override val raw: ConcreteTypeMirror
+
     /**
      * The raw Core Reflection class this mirror represents
      */
-    public abstract val java: Class<*>
+    public val java: Class<*>
 }
 

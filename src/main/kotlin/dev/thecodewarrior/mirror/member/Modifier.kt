@@ -1,7 +1,7 @@
 package dev.thecodewarrior.mirror.member
 
-import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.unmodifiableSetOf
+import dev.thecodewarrior.mirror.impl.utils.Untested
+import dev.thecodewarrior.mirror.impl.utils.unmodifiableSetOf
 
 /**
  * Java Core Reflection Modifier class

@@ -2,16 +2,10 @@
 
 package dev.thecodewarrior.mirror.type.classmirror
 
-import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.member.MethodMirror
-import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.testsupport.*
-import dev.thecodewarrior.mirror.utils.Untested
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.lang.reflect.Method
-import kotlin.reflect.KMutableProperty
+import org.junit.jupiter.api.assertAll
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMembers
@@ -47,4 +41,18 @@ internal class KClassTest: MTest() {
         assertEquals(_int, property.returnType.jvmErasure.java)
     }
 
+    @Test
+    fun `declaredMemberProperties should not include getters and setters as properties`() {
+        val X by sources.add("X", "class X { int getField() { NOP; } void setField(int value) {}}")
+        sources.compile()
+        val members = X.kotlin.declaredMembers.toList()
+        assertEquals(2, members.size)
+        assertAll(
+            *members.map {
+                {
+                    assertNotInstanceOf<KProperty1<Any, Any>>(members[0])
+                }
+            }.toTypedArray()
+        )
+    }
 }

@@ -1,11 +1,11 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
-import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ArrayMirror
-import dev.thecodewarrior.mirror.type.TypeMapping
+import dev.thecodewarrior.mirror.impl.TypeMapping
 import dev.thecodewarrior.mirror.type.TypeMirror
-import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Parameter
 

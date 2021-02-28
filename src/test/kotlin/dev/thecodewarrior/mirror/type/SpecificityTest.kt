@@ -31,60 +31,60 @@ internal class SpecificityTest: MTest() {
         val type = Mirror.reflect<Object1>()
         val type1 = type.withTypeAnnotations(listOf(Mirror.newAnnotation(A)))
         val type2 = type.withTypeAnnotations(listOf(Mirror.newAnnotation(A2)))
-        Assertions.assertEquals(0, type1.specificity.compareTo(type2.specificity))
+        Assertions.assertEquals(0, TypeSpecificityComparator.compare(type1, type2))
     }
 
     @Test
     fun specificity_ofSelf_shouldBeEqual() {
-        val type = Mirror.reflect(X).specificity
-        Assertions.assertEquals(0, type.compareTo(type))
+        val type = Mirror.reflect(X)
+        Assertions.assertEquals(0, TypeSpecificityComparator.compare(type, type))
     }
 
     @Test
     fun specificity_ofSeparateTypes_shouldBeEqual() {
-        val type1 = Mirror.reflect(X).specificity
-        val type2 = Mirror.reflect(Y).specificity
-        Assertions.assertEquals(0, type1.compareTo(type2))
-        Assertions.assertEquals(0, type2.compareTo(type1))
+        val type1 = Mirror.reflect(X)
+        val type2 = Mirror.reflect(Y)
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(type1, type2))
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(type2, type1))
     }
 
     @Test
     fun specificity_ofSeparateSubTypes_shouldBeEqual() {
-        val type1 = Mirror.reflect(X_X).specificity
-        val type2 = Mirror.reflect(X_Y).specificity
-        Assertions.assertEquals(0, type1.compareTo(type2))
-        Assertions.assertEquals(0, type2.compareTo(type1))
+        val type1 = Mirror.reflect(X_X)
+        val type2 = Mirror.reflect(X_Y)
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(type1, type2))
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(type2, type1))
     }
 
     @Test
     fun specificity_ofSubclass_shouldBeGreater() {
-        val superclass = Mirror.reflect(X).specificity
-        val subclass = Mirror.reflect(X_X).specificity
-        Assertions.assertEquals(-1, superclass.compareTo(subclass))
-        Assertions.assertEquals(1, subclass.compareTo(superclass))
+        val superclass = Mirror.reflect(X)
+        val subclass = Mirror.reflect(X_X)
+        Assertions.assertEquals(-1,TypeSpecificityComparator.compare(superclass, subclass))
+        Assertions.assertEquals(1,TypeSpecificityComparator.compare(subclass, superclass))
     }
 
     @Test
     fun specificity_ofSpecifiedGeneric_shouldBeGreater() {
-        val unspecified = Mirror.reflect(Generic).specificity
-        val specified = Mirror.reflect(types["Generic<X>"]).specificity
-        Assertions.assertEquals(-1, unspecified.compareTo(specified))
-        Assertions.assertEquals(1, specified.compareTo(unspecified))
+        val unspecified = Mirror.reflect(Generic)
+        val specified = Mirror.reflect(types["Generic<X>"])
+        Assertions.assertEquals(-1,TypeSpecificityComparator.compare(unspecified, specified))
+        Assertions.assertEquals(1,TypeSpecificityComparator.compare(specified, unspecified))
     }
 
     @Test
     fun specificity_ofSubclass_shouldBeEqualTo_specifiedGeneric() {
-        val subclass = Mirror.reflect(Generic_Subclass).specificity
-        val specified = Mirror.reflect(types["Generic<X>"]).specificity
-        Assertions.assertEquals(0, specified.compareTo(subclass))
-        Assertions.assertEquals(0, subclass.compareTo(specified))
+        val subclass = Mirror.reflect(Generic_Subclass)
+        val specified = Mirror.reflect(types["Generic<X>"])
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(specified, subclass))
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(subclass, specified))
     }
 
     @Test
     fun specificity_ofIncompatibleGenerics_shouldBeEqual() {
-        val list1 = Mirror.reflect(types["Generic<X>"]).specificity
-        val list2 = Mirror.reflect(types["Generic_Subclass<Y>"]).specificity
-        Assertions.assertEquals(0, list1.compareTo(list2))
-        Assertions.assertEquals(0, list2.compareTo(list1))
+        val list1 = Mirror.reflect(types["Generic<X>"])
+        val list2 = Mirror.reflect(types["Generic_Subclass<Y>"])
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(list1, list2))
+        Assertions.assertEquals(0,TypeSpecificityComparator.compare(list2, list1))
     }
 }

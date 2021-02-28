@@ -1,17 +1,15 @@
 package dev.thecodewarrior.mirror.testsupport
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import java.lang.IllegalArgumentException
-import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod

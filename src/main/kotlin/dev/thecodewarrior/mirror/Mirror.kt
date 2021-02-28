@@ -1,8 +1,9 @@
 package dev.thecodewarrior.mirror
 
-import dev.thecodewarrior.mirror.coretypes.AnnotationFormatException
-import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
-import dev.thecodewarrior.mirror.coretypes.TypeImplAccess
+import dev.thecodewarrior.mirror.impl.coretypes.AnnotationFormatException
+import dev.thecodewarrior.mirror.impl.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.impl.coretypes.TypeImplAccess
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.member.ConstructorMirror
 import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.FieldMirror
@@ -11,9 +12,7 @@ import dev.thecodewarrior.mirror.type.ArrayMirror
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.type.VoidMirror
-import dev.thecodewarrior.mirror.utils.IndirectTests
-import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.UntestedNegative
+import dev.thecodewarrior.mirror.impl.utils.IndirectTests
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable

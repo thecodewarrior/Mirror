@@ -1,19 +1,13 @@
 package dev.thecodewarrior.mirror
 
-import dev.thecodewarrior.mirror.coretypes.AnnotationFormatException
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.member.ExecutableMirror
 import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.member.ParameterMirror
-import dev.thecodewarrior.mirror.testsupport.AnnotationWithParameter
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertThrows
 import java.io.File
-import kotlin.streams.asStream
 
 internal object StressTest: MTest() { // extending MTest for its helpers, not for the JUnit functionality
     @JvmStatic

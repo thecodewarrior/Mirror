@@ -8,7 +8,7 @@ import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.testsupport.MTest
 import dev.thecodewarrior.mirror.testsupport.assertSameSet
 import dev.thecodewarrior.mirror.testsupport.assertSetEquals
-import dev.thecodewarrior.mirror.utils.Untested
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

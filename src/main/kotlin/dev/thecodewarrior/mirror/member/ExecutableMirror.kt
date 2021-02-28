@@ -1,12 +1,12 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
-import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
-import dev.thecodewarrior.mirror.type.TypeMapping
+import dev.thecodewarrior.mirror.impl.TypeMapping
+import dev.thecodewarrior.mirror.impl.type.ClassMirrorImpl
 import dev.thecodewarrior.mirror.type.TypeMirror
-import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.unmodifiableView
+import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
 import java.lang.reflect.Constructor
@@ -95,7 +95,8 @@ public abstract class ExecutableMirror internal constructor(
     }
 
     internal val genericMapping: TypeMapping by lazy {
-        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) + specialization?.enclosing?.genericMapping
+        TypeMapping(this.raw.typeParameters.zip(typeParameters).associate { it }) +
+                (specialization?.enclosing as ClassMirrorImpl?)?.genericMapping
     }
 
     /**

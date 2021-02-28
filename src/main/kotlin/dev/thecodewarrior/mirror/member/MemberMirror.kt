@@ -1,10 +1,8 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
-import dev.thecodewarrior.mirror.MirrorCache
-import dev.thecodewarrior.mirror.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
-import dev.thecodewarrior.mirror.utils.Untested
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 

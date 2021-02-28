@@ -1,13 +1,12 @@
 package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.InvalidSpecializationException
-import dev.thecodewarrior.mirror.MirrorCache
+import dev.thecodewarrior.mirror.impl.MirrorCache
+import dev.thecodewarrior.mirror.impl.type.ClassMirrorImpl
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
-import dev.thecodewarrior.mirror.utils.MethodHandleHelper
-import dev.thecodewarrior.mirror.utils.Untested
-import dev.thecodewarrior.mirror.utils.UntestedNegative
-import dev.thecodewarrior.mirror.utils.unmodifiableView
+import dev.thecodewarrior.mirror.impl.utils.MethodHandleHelper
+import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Field
 
@@ -97,7 +96,7 @@ public class FieldMirror internal constructor(
      * The field type, specialized based on the declaring class's specialization.
      */
     public val type: TypeMirror by lazy {
-        declaringClass.genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
+        (declaringClass as ClassMirrorImpl).genericMapping[java.annotatedType.let { cache.types.reflect(it) }]
     }
 
     /**
