@@ -4,13 +4,14 @@ import dev.thecodewarrior.mirror.InvalidSpecializationException
 import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.util.AnnotationList
+import dev.thecodewarrior.mirror.util.DeclarationMirror
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 
 /**
  * The abstract superclass representing any Java class member
  */
-public interface MemberMirror {
+public interface MemberMirror : DeclarationMirror {
     /**
      * The Core Reflection object this mirror represents
      */
@@ -23,6 +24,7 @@ public interface MemberMirror {
 
     /**
      * The set of modifiers present on this member.
+     * This set is in customary order, as defined in JLS §8.1.1
      *
      * **Note: This set is immutable**
      */
@@ -62,6 +64,11 @@ public interface MemberMirror {
     public val isSynthetic: Boolean
 
     /**
+     * Returns true if this member is declared in a class directly written in Kotlin
+     */
+    public val isKotlinMember: Boolean
+
+    /**
      * Returns annotations that are present on the member this mirror represents.
      *
      * @see AnnotatedElement
@@ -78,7 +85,7 @@ public interface MemberMirror {
     public val declaredAnnotations: AnnotationList
 
     /**
-     * The potentially specialized class this member is declared in
+     * The specialized class this member is declared in
      */
     public val declaringClass: ClassMirror
 
@@ -94,4 +101,9 @@ public interface MemberMirror {
      * is null
      */
     public fun withDeclaringClass(enclosing: ClassMirror?): MemberMirror
+
+    /**
+     * Returns a string describing this member.
+     */
+    public override fun toString(): String
 }

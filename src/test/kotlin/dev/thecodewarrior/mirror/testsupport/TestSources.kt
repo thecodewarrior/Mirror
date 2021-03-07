@@ -6,6 +6,8 @@ import org.intellij.lang.annotations.Language
 import java.lang.reflect.AnnotatedParameterizedType
 import java.lang.reflect.AnnotatedType
 import java.lang.IllegalStateException
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 import kotlin.reflect.KProperty
 
 /**
@@ -59,13 +61,20 @@ class TestSources {
      * ### Expansions
      * This method will perform these expansions in the source code:
      * - Any occurrences of `@rt(targets)` in the text will be replaced with the annotations for runtime annotation
-     *   retention and the passed element targets.
+     *   retention and the passed element targets. e.g. `@rt(TYPE_USE)`
      * - Any occurrences of `NOP;` in the text will be replaced with a throw statement
      *
      * ### Useful reference
      * - Annotation: `@Retention(RetentionPolicy.RUNTIME) @Target(ElementType...) @interface A { int value(); }`
      *   - ElementTypes: `TYPE`, `FIELD`, `METHOD`, `PARAMETER`, `CONSTRUCTOR`, `LOCAL_VARIABLE`, `ANNOTATION_TYPE`,
      *     `PACKAGE`, `TYPE_PARAMETER`, `TYPE_USE`
+     *
+     * ### Common examples
+     * ```kotlin
+     * val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
+     * val X by sources.add("X", "class X {}")
+     * val G by sources.add("G", "class G<T> {}")
+     * ```
      *
      * @param name The qualified name relative to the "root" package (`gen`)
      * @param code The code to compile into that class
@@ -130,20 +139,25 @@ class TestSources {
         val fullClassName: String = "$packageName.$className"
         val classText: String = createClassText()
 
-        private var typeCache = mutableMapOf<String, AnnotatedType>()
+        private val annotatedTypeCache = mutableMapOf<String, AnnotatedType>()
+        private val genericTypeCache = mutableMapOf<String, Type>()
 
         operator fun get(name: String): AnnotatedType {
-            return typeCache.getOrPut(name) {
-                definition.find(name).getType(holder)
+            return annotatedTypeCache.getOrPut(name) {
+                definition.find(name).getAnnotated(holder)
             }
         }
 
-        private var holderCache: Class<*>? = null
-        val holder: Class<*>
-            get() {
-                holderCache?.also { return it }
-                return getClass(fullClassName).also { holderCache = it }
+        val generic: GenericAccess = GenericAccess()
+        fun getGeneric(name: String): Type {
+            return genericTypeCache.getOrPut(name) {
+                definition.find(name).getGeneric(holder)
             }
+        }
+
+        val holder: Class<*> by lazy {
+            getClass(fullClassName)
+        }
 
         fun createClassText(): String {
             var classText = ""
@@ -156,6 +170,17 @@ class TestSources {
             classText += "\n"
             classText += definition.createClassText(className)
             return classText
+        }
+
+        /**
+         * Allows array-like access to the generic, non-annotated types
+         */
+        inner class GenericAccess {
+            val annotated: TypeSet = this@TypeSet
+
+            operator fun get(name: String): Type {
+                return this@TypeSet.getGeneric(name)
+            }
         }
     }
 
@@ -283,13 +308,22 @@ class TypeBlock(val root: TypeSetDefinition, val parent: TypeBlock?, val index: 
 
 data class TypeDefinition(val block: TypeBlock, val index: Int, val name: String, val type: String) {
     private val fieldName = "type_${index}"
-    fun getType(rootClass: Class<*>): AnnotatedType {
+    fun getAnnotated(rootClass: Class<*>): AnnotatedType {
         val blockClass = block.getClass(rootClass)
 
         val field = blockClass.getDeclaredField(fieldName)
             ?: throw IllegalStateException("Unable to find field $fieldName in type block")
 
         return (field.annotatedType as AnnotatedParameterizedType).annotatedActualTypeArguments[0]
+    }
+
+    fun getGeneric(rootClass: Class<*>): Type {
+        val blockClass = block.getClass(rootClass)
+
+        val field = blockClass.getDeclaredField(fieldName)
+            ?: throw IllegalStateException("Unable to find field $fieldName in type block")
+
+        return (field.genericType as ParameterizedType).actualTypeArguments[0]
     }
 
     fun createClassText(): String {

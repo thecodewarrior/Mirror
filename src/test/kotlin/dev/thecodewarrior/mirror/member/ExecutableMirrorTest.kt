@@ -386,43 +386,6 @@ internal class ExecutableMirrorTest: MTest() {
             sources.compile()
             assertEquals(listOf(0, 1), Mirror.reflect(X._m("method")).parameters.map { it.index })
         }
-
-        @Test
-        fun `'toString' of a plain parameter should be correct`() {
-            val X by sources.add("X", "class X { public void method(int param) {} }")
-            sources.compile()
-            val param = Mirror.reflect(X._m("method")).parameters.single()
-            assertEquals("int param", param.java.toString())
-            assertEquals("int param", param.toString())
-        }
-
-        @Test
-        fun `'toString' of a final parameter should be correct`() {
-            val X by sources.add("X", "class X { public void method(final int param) {} }")
-            sources.compile()
-            val param = Mirror.reflect(X._m("method")).parameters.single()
-            assertEquals("final int param", param.java.toString())
-            assertEquals("final int param", param.toString())
-        }
-
-        @Test
-        fun `'toString' of a vararg parameter should be correct`() {
-            val X by sources.add("X", "class X { public void method(int... param) {} }")
-            sources.compile()
-            val param = Mirror.reflect(X._m("method")).parameters.single()
-            assertEquals("int... param", param.java.toString())
-            assertEquals("int... param", param.toString())
-        }
-
-        @Test
-        fun `'toString' of a parameter without a name should be correct`() {
-            val X by sources.add("X", "class X { public void method(int param) {} }")
-            sources.options.remove("-parameters")
-            sources.compile()
-            val param = Mirror.reflect(X._m("method")).parameters.single()
-            assertEquals("int arg0", param.java.toString())
-            assertEquals("int arg0", param.toString())
-        }
     }
 
 }

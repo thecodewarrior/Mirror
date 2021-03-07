@@ -42,7 +42,7 @@ internal abstract class TypeMirrorImpl: TypeMirror {
         return specializedConstructor(specialization)
     }
 
-    override fun withTypeAnnotations(annotations: List<Annotation>): TypeMirror {
+    protected fun withTypeAnnotationsImpl(annotations: List<Annotation>): TypeMirror {
         return cache.types.specialize(raw,
             (this.specialization ?: this.defaultSpecialization()).copy(
                 annotations = annotations

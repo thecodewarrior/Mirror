@@ -9,6 +9,7 @@ import dev.thecodewarrior.mirror.member.MethodMirror
 import dev.thecodewarrior.mirror.member.Modifier
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.util.AnnotationList
+import dev.thecodewarrior.mirror.util.DeclarationMirror
 import java.lang.reflect.*
 import kotlin.reflect.KClass
 
@@ -20,7 +21,7 @@ import kotlin.reflect.KClass
  * @see VoidMirror
  * @see WildcardMirror
  */
-public interface ClassMirror : ConcreteTypeMirror {
+public interface ClassMirror : ConcreteTypeMirror, DeclarationMirror {
     public override val coreType: Type
     public override val coreAnnotatedType: AnnotatedType
     public override val raw: ClassMirror
@@ -73,14 +74,16 @@ public interface ClassMirror : ConcreteTypeMirror {
     public fun withTypeArguments(vararg parameters: TypeMirror): ClassMirror
 
     /**
-     * Returns a copy of this class with its enclosing class replaced with [enclosing].
-     * If the passed class is null this method removes any enclosing class specialization.
+     * Returns a copy of this class with its enclosing class replaced with the annotation-stripped version of
+     * [enclosing]. If the passed class is null this method removes any enclosing class specialization.
      *
      * **Note: A new `ClassMirror` is only created if none already exist with the required specialization**
      *
+     * @throws InvalidSpecializationException if this class has no enclosing class and [enclosing] is not null
      * @throws InvalidSpecializationException if [enclosing] is not equal to or a specialization of this
      * class's raw enclosing class
-     * @throws InvalidSpecializationException if this class has no enclosing class and [enclosing] is not null
+     * @throws InvalidSpecializationException if this class is a static member class and (after stripping annotations),
+     * [enclosing] is not equal to this class's raw enclosing class
      * @return A copy of this class with the passed enclosing class, or with the raw enclosing class if [enclosing]
      * is null
      */
@@ -92,13 +95,15 @@ public interface ClassMirror : ConcreteTypeMirror {
      *
      * **Note: A new `ClassMirror` is only created if none already exist with the required specialization**
      *
+     * @throws InvalidSpecializationException if this class has no enclosing executable and [enclosing] is not null
      * @throws InvalidSpecializationException if the passed executable is not equal to or a specialization of this
      * class's raw enclosing method
-     * @throws InvalidSpecializationException if this class has no enclosing executable and [enclosing] is not null
      * @return A copy of this class with the passed enclosing executable, or with the raw enclosing executable if
      * [enclosing] is null
      */
     public fun withEnclosingExecutable(enclosing: ExecutableMirror?): ClassMirror
+
+    public override fun withTypeAnnotations(annotations: List<Annotation>): ClassMirror
 //endregion =====================================================================================================================
 
 //region Relationships ==========================================================================================================
@@ -131,6 +136,7 @@ public interface ClassMirror : ConcreteTypeMirror {
 
     /**
      * The modifiers present on this class. (e.g. `public`, `abstract`, `final`, etc.)
+     * This set is in customary order, as defined in JLS §8.1.1
      *
      * **Note: this list is immutable**
      */
@@ -147,6 +153,12 @@ public interface ClassMirror : ConcreteTypeMirror {
      * @throws KotlinReflectionNotSupportedError if `kotlin-reflect.jar` is not on the classpath
      */
     public val isInternalAccess: Boolean
+
+    /**
+     * Returns true if this object represents a class directly written in Kotlin
+     */
+    @Untested
+    public val isKotlinClass: Boolean
 
     /**
      * A set of flags used to store properties such as whether the class is static, abstract, an enum, etc.
@@ -453,6 +465,7 @@ public interface ClassMirror : ConcreteTypeMirror {
 //region Fields =================================================================================================================
     /**
      * The fields declared directly in this class.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      *
@@ -462,6 +475,7 @@ public interface ClassMirror : ConcreteTypeMirror {
 
     /**
      * The public methods declared in this class and inherited from its superclasses.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      *
@@ -473,6 +487,7 @@ public interface ClassMirror : ConcreteTypeMirror {
     /**
      * The fields declared in this class and its superclasses. Since fields can be shadowed but not overridden, there
      * may be multiple fields with the same name in this list.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: This list is immutable.**
      */
@@ -601,6 +616,7 @@ public interface ClassMirror : ConcreteTypeMirror {
 //region Member classes =========================================================================================================
     /**
      * The member classes declared directly in this class.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      *
@@ -610,6 +626,7 @@ public interface ClassMirror : ConcreteTypeMirror {
 
     /**
      * The public member classes declared in this class and inherited from its superclasses.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: this list is immutable**
      *
@@ -621,6 +638,7 @@ public interface ClassMirror : ConcreteTypeMirror {
     /**
      * The member classes declared in this class and inherited from its superclasses. Since member classes can be
      * shadowed but not overridden, there may be multiple classes with the same name in this list.
+     * The returned list is in an arbitrary stable order.
      *
      * **Note: This list is immutable.**
      */
@@ -708,7 +726,7 @@ public interface ClassMirror : ConcreteTypeMirror {
          */
         ABSTRACT,
         /**
-         * This flag is present on static inner classes
+         * This flag is present on static nested classes
          */
         STATIC,
         /**
@@ -741,7 +759,7 @@ public interface ClassMirror : ConcreteTypeMirror {
          */
         LOCAL,
         /**
-         * This flag is present on member classes. This includes inner and static inner classes
+         * This flag is present on member classes. This includes inner and nested classes
          */
         MEMBER,
         /**

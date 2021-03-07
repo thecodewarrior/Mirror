@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.member
 
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableSetOf
+import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 
 /**
  * Java Core Reflection Modifier class
@@ -58,6 +59,15 @@ public enum class Modifier(
     }
 
     public companion object {
+        /**
+         * The set of all valid modifiers in customary order, as defined in §8.1.1
+         *
+         * **Note: this value is immutable**
+         */
+        @JvmStatic
+        @get:JvmName("getOrderedModifiers")
+        public val ORDERED: Set<Modifier> = values().sortedBy { it.customaryOrder }.toSet().unmodifiableView()
+
         /**
          * The valid modifiers for class declarations. This set is in customary order, as defined in §8.1.1
          *
@@ -127,7 +137,7 @@ public enum class Modifier(
         @Untested
         @JvmStatic
         public fun fromModifiers(mods: Int): Set<Modifier> {
-            return values().filterTo(mutableSetOf()) { it.test(mods) }
+            return ORDERED.filterTo(mutableSetOf()) { it.test(mods) }
         }
 
         /**
@@ -138,8 +148,10 @@ public enum class Modifier(
         @Untested
         @JvmStatic
         public fun fromMethodModifiers(mods: Int): Set<Modifier> {
-            return values().filterTo(mutableSetOf()) { it != VOLATILE && it != TRANSIENT && it.test(mods) }
+            return ORDERED.filterTo(mutableSetOf()) { it != VOLATILE && it != TRANSIENT && it.test(mods) }
         }
+
+
     }
 
     /**

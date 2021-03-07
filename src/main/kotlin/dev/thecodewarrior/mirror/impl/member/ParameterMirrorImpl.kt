@@ -19,7 +19,7 @@ import java.lang.reflect.Parameter
 internal class ParameterMirrorImpl(
     internal val cache: MirrorCache,
     raw: ParameterMirrorImpl?,
-    override val declaringExecutable: ExecutableMirror?,
+    _declaringExecutable: ExecutableMirror?,
     override val java: Parameter
 ): ParameterMirror {
 
@@ -33,6 +33,11 @@ internal class ParameterMirrorImpl(
 
     @Untested
     override val isVarArgs: Boolean = java.isVarArgs
+
+    @Untested
+    override val declaringExecutable: ExecutableMirror by lazy {
+        _declaringExecutable ?: cache.executables.reflect(java.declaringExecutable)
+    }
 
     override val type: TypeMirror by lazy {
         java.annotatedType.let {
@@ -60,7 +65,21 @@ internal class ParameterMirrorImpl(
         return if(enclosing == null || enclosing == raw.declaringExecutable) raw else cache.parameters.specialize(this, enclosing)
     }
 
+    @Untested
     override fun toString(): String {
+        return ""
+    }
+
+    @Untested
+    override fun toDeclarationString(): String {
+        return if(declaringExecutable.isKotlinMember)
+            toJavaDeclarationString()
+        else
+            toKotlinDeclarationString()
+    }
+
+    @Untested
+    override fun toJavaDeclarationString(): String {
         var str = ""
         if(isFinal)
             str += "final "
@@ -71,5 +90,10 @@ internal class ParameterMirrorImpl(
             str += "$type $name"
         }
         return str
+    }
+
+    @Untested
+    override fun toKotlinDeclarationString(): String {
+        TODO("Not yet implemented")
     }
 }

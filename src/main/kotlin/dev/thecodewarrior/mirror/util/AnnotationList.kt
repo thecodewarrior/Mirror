@@ -44,6 +44,20 @@ public abstract class AnnotationList : List<Annotation> {
      */
     public abstract fun <T: Annotation> getAllByType(annotationClass: Class<T>): Array<T>
 
+
+    /**
+     * If this list is empty, an empty string will be returned, otherwise returns the Java-like string representation
+     * of this annotation list with annotations separated by [joiner] and [trailing] appended to the end.
+     */
+    public abstract fun toJavaString(joiner: String, trailing: String): String
+    /**
+     * If this list is empty, an empty string will be returned, otherwise returns the Kotlin-like string representation
+     * of this annotation list with annotations separated by [joiner] and [trailing] appended to the end.
+     */
+    public abstract fun toKotlinString(joiner: String, trailing: String): String
+
+    public override fun toString(): String = toJavaString(joiner = " ", trailing = "")
+
     // Kotlin inline methods:
 
     /**

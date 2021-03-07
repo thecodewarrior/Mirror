@@ -16,10 +16,12 @@ fun assertSameList(expected: List<Any?>, actual: List<Any?>) {
 
 /**
  * _Asserts_ that [expected] and [actual] have the same size and that each element in [expected] has exactly one
- * matching element in [actual] that refers to the same object (multiple copies in one will require the same number of
+ * element in [actual] that is equal *by identity.* (multiple copies in one will require the same number of
  * copies in the other)
+ *
+ * To use [equals], use [assertSetEquals]
  */
-fun assertSameSet(expected: List<Any?>, actual: List<Any?>) {
+fun assertSameSet(expected: List<Any?>, actual: Collection<Any?>) {
     val remainingExpected = expected.toMutableList()
     val remainingActual = actual.toMutableList()
 
@@ -49,8 +51,9 @@ fun assertSameSet(expected: List<Any?>, actual: List<Any?>) {
 
 /**
  * _Asserts_ that [expected] and [actual] have the same size and that each element in [expected] has exactly one
- * equal element in [actual] (multiple copies in one will require the same number of
- * copies in the other)
+ * equal element in [actual] (multiple copies in one will require the same number of copies in the other)
+ *
+ * To match by identity, use [assertSameSet]
  */
 fun assertSetEquals(expected: List<Any?>, actual: List<Any?>) {
     val remainingExpected = expected.toMutableList()
@@ -106,7 +109,7 @@ inline fun <reified T> assertNotInstanceOf(actual: Any?) {
     assertNotInstanceOf(T::class.java, actual)
 }
 
-private fun Any?.toStringWithIdentity(): String {
+fun Any?.toStringWithIdentity(): String {
     if(this == null) return "null"
 
     val hashCode = System.identityHashCode(this).toString(16)

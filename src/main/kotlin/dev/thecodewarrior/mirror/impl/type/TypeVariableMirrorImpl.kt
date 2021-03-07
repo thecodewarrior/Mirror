@@ -2,6 +2,7 @@ package dev.thecodewarrior.mirror.impl.type
 
 import dev.thecodewarrior.mirror.impl.MirrorCache
 import dev.thecodewarrior.mirror.impl.coretypes.CoreTypeUtils
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.type.TypeVariableMirror
 import dev.thecodewarrior.mirror.type.WildcardMirror
@@ -26,6 +27,10 @@ internal class TypeVariableMirrorImpl internal constructor(
         coreType.annotatedBounds.map { cache.types.reflect(it) }
     }
 
+    override fun withTypeAnnotations(annotations: List<Annotation>): TypeVariableMirror {
+        return withTypeAnnotationsImpl(annotations) as TypeVariableMirror
+    }
+
     override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
 
     override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
@@ -46,14 +51,31 @@ internal class TypeVariableMirrorImpl internal constructor(
         }
     }
 
+    @Untested
     override fun toString(): String {
+        return toJavaString()
+    }
+
+    @Untested
+    override fun toDeclarationString(): String {
+        return toJavaDeclarationString()
+    }
+
+    @Untested
+    override fun toJavaString(): String {
         var str = ""
-        str += typeAnnotations.annotationString()
+        str += typeAnnotations.toJavaString(joiner = " ", trailing = " ")
         str += coreType.name
         return str
     }
 
-    override fun toDeclarationString(): String {
+    @Untested
+    override fun toKotlinString(): String {
+        TODO("Not yet implemented")
+    }
+
+    @Untested
+    override fun toJavaDeclarationString(): String {
         var str = ""
         str += coreType.annotations.annotationString()
         str += coreType.name
@@ -61,5 +83,10 @@ internal class TypeVariableMirrorImpl internal constructor(
             str += " extends ${bounds.joinToString(" & ")}"
         }
         return str
+    }
+
+    @Untested
+    override fun toKotlinDeclarationString(): String {
+        TODO("Not yet implemented")
     }
 }

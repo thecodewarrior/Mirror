@@ -14,6 +14,54 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaMethod
 
+/**
+ * The base class for Mirror tests, which provides access to systems for runtime compilation, as well as extensions for
+ * easily accessing Core Reflection objects.
+ *
+ * ## Basic MTest usage
+ * ```kotlin
+ * internal class SomeTest: MTest() {
+ *     val A by sources.add("A", "@rt(TYPE_USE) @interface A {}")
+ *     val X by sources.add("X", "class X {}")
+ *     val Generic by sources.add("Generic", "class Generic<T> {}")
+ *
+ *     val types = sources.types {
+ *         +"X[]"
+ *         +"Generic<X>[]"
+ *         +"@A X @A []"
+ *         +"Generic<@A X>[]"
+ *         block("K", "V") {
+ *             +"K[]"
+ *             +"@A Generic<V>"
+ *         }
+ *     }
+ *
+ *     @Test
+ *     fun `methods should not override themselves`() {
+ *         val X by sources.add("X", "public class X { public void method() {} }")
+ *         sources.compile()
+ *         assertFalse(Mirror.reflect(X._m("method")).doesOverride(X._m("method")))
+ *     }
+ * }
+ * ```
+ *
+ * ## Basic `TestSources` usage
+ * ```kotlin
+ * val sources = TestSources()
+ * val X: Class<*> by sources.add("X", "class X {}")
+ * val A: Class<Annotation> by sources.add("A", "@interface A {}")
+ * val types = sources.types {
+ *     +"? extends X"
+ *     block("T") {
+ *         +"T"
+ *     }
+ * }
+ * sources.compile()
+ *
+ * types["? extends X"]
+ * types["T"]
+ * ```
+ */
 @Suppress("TestFunctionName", "PropertyName")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class MTest {
@@ -89,7 +137,7 @@ abstract class MTest {
     /** Get the specified field from this class. */
     protected fun Class<*>._f(name: String): Field = this.getDeclaredField(name)
 
-    /** Get the specified field from this class. */
+    /** Get the specified inner class from this class. */
     protected fun Class<*>._class(name: String): Class<*> = this.declaredClasses.find { it.simpleName == name }
         ?: throw IllegalArgumentException("Couldn't find declared class $name in $this")
 

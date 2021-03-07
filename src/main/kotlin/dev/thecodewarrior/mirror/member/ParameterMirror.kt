@@ -8,13 +8,14 @@ import dev.thecodewarrior.mirror.impl.member.ExecutableMirrorImpl
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.util.AnnotationList
+import dev.thecodewarrior.mirror.util.DeclarationMirror
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Parameter
 
 /**
  * A mirror representing a method or constructor parameter
  */
-public interface ParameterMirror {
+public interface ParameterMirror : DeclarationMirror {
     /**
      * The Core Reflection object this mirror represents
      */
@@ -74,9 +75,9 @@ public interface ParameterMirror {
     public val declaredAnnotations: AnnotationList
 
     /**
-     * The potentially specialized executable this parameter is declared in
+     * The specialized executable this parameter is declared in
      */
-    public val declaringExecutable: ExecutableMirror?
+    public val declaringExecutable: ExecutableMirror
 
     /**
      * Returns a copy of this parameter with its enclosing method/constructor replaced with [enclosing].

@@ -4,7 +4,7 @@ import dev.thecodewarrior.mirror.impl.utils.ListBackedAnnotatedElement
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import dev.thecodewarrior.mirror.util.AnnotationList
 
-internal class ListBackedAnnotationListImpl(private val annotations: List<Annotation>) : AnnotationList(),
+internal class ListBackedAnnotationListImpl(private val annotations: List<Annotation>) : AbstractAnnotationListImpl(),
     List<Annotation> by annotations.unmodifiableView() {
 
     private val wrapper = ListBackedAnnotatedElement(annotations)

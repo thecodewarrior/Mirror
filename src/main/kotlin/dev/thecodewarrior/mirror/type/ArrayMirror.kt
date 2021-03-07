@@ -28,6 +28,8 @@ public interface ArrayMirror: ConcreteTypeMirror {
      */
     public fun withComponent(component: TypeMirror): ArrayMirror
 
+    public override fun withTypeAnnotations(annotations: List<Annotation>): ArrayMirror
+
     /**
      * Create a new instance of this array type with the given length. Returns an [Object] because there is no
      * common superclass for arrays. Use [ArrayReflect] to access this array's values or cast if the result type is

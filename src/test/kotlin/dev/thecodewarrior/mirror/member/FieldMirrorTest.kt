@@ -212,21 +212,4 @@ internal class FieldMirrorTest: MTest() {
         val field = Mirror.reflectClass(types["X<Y>"]).getField("field")
         assertSame(field.raw, field.withDeclaringClass(Mirror.reflectClass(X)))
     }
-
-    @Test
-    fun `'toString' for a field should have modifiers and qualified type and field names`() {
-        val X by sources.add("X", "class X { private Y field; }")
-        val Y by sources.add("Y", "class Y {}")
-        sources.compile()
-        assertEquals("private gen.Y gen.X.field", Mirror.reflect(X._f("field")).toString())
-    }
-
-    @Test
-    fun `'toString' for a field in an anonymous class should use the dot-separated binary class name`() {
-        val X by sources.add("X", "class X { static Class type = new Y() { private Y field; }.getClass(); }")
-        val Y by sources.add("Y", "interface Y {}")
-        sources.compile()
-        val field = X._f("type")._get<Class<*>>(null)._f("field")
-        assertEquals("private gen.Y gen.X$1.field", Mirror.reflect(field).toString())
-    }
 }

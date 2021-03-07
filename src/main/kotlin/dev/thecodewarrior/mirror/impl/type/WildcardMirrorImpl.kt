@@ -66,6 +66,10 @@ internal class WildcardMirrorImpl internal constructor(
         return cache.types.specialize(this, newSpecialization) as WildcardMirror
     }
 
+    override fun withTypeAnnotations(annotations: List<Annotation>): WildcardMirror {
+        return withTypeAnnotationsImpl(annotations) as WildcardMirror
+    }
+
     override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
         return defaultApplySpecialization<TypeSpecialization.Wildcard>(
             specialization,
@@ -89,8 +93,13 @@ internal class WildcardMirrorImpl internal constructor(
 
     @Untested
     override fun toString(): String {
+        return toJavaString()
+    }
+
+    @Untested
+    override fun toJavaString(): String {
         var str = "?"
-        if(upperBounds.isNotEmpty()) {
+        if(upperBounds.isNotEmpty() && upperBounds != listOf(cache.types.reflect(Any::class.java))) {
             // java spec doesn't have multi-bounded wildcards, but we don't want to throw away data, so join to ` & `
             str += " extends ${upperBounds.joinToString(" & ")}"
         }
@@ -99,5 +108,10 @@ internal class WildcardMirrorImpl internal constructor(
             str += " super ${lowerBounds.joinToString(" & ")}"
         }
         return str
+    }
+
+    @Untested
+    override fun toKotlinString(): String {
+        TODO("Not yet implemented")
     }
 }

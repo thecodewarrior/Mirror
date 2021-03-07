@@ -6,6 +6,7 @@ import dev.thecodewarrior.mirror.impl.type.ClassMirrorImpl
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.impl.utils.MethodHandleHelper
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import dev.thecodewarrior.mirror.member.FieldMirror
 import dev.thecodewarrior.mirror.member.Modifier
@@ -81,9 +82,20 @@ internal class FieldMirrorImpl internal constructor(
         }
     }
 
+    @Untested
     override fun toString(): String {
+        return ""
+    }
+
+    @Untested
+    override fun toJavaDeclarationString(): String {
         var str = ""
         str += "${modifiers.joinToString("") { "$it " }}$type ${declaringClass.name}.$name"
         return str
+    }
+
+    @Untested
+    override fun toKotlinDeclarationString(): String {
+        TODO("Not yet implemented")
     }
 }

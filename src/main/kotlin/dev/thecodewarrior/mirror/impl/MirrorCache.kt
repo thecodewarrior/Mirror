@@ -5,5 +5,6 @@ internal class MirrorCache {
     val fields = FieldMirrorCache(this)
     val executables = ExecutableMirrorCache(this)
     val parameters = ParameterMirrorCache(this)
+    val annotationStrings = AnnotationStringsCache()
 }
 

@@ -13,6 +13,7 @@ import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.type.VoidMirror
 import dev.thecodewarrior.mirror.impl.utils.IndirectTests
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -207,6 +208,30 @@ public object Mirror {
      */
     public inline fun <reified T: Annotation> newAnnotation(vararg arguments: Pair<String, Any>): T {
         return newAnnotation(T::class.java, mapOf(*arguments))
+    }
+
+    /**
+     * Converts an annotation into a Java string representation
+     */
+    @Untested
+    public fun annotationToString(annotation: Annotation): String {
+        return annotationToJavaString(annotation)
+    }
+
+    /**
+     * Converts an annotation into a Java string representation
+     */
+    @Untested
+    public fun annotationToJavaString(annotation: Annotation): String {
+        return cache.annotationStrings.getStringConverter(annotation.javaClass).toJavaString(annotation)
+    }
+
+    /**
+     * Converts an annotation into a Kotlin string representation
+     */
+    @Untested
+    public fun annotationToKotlinString(annotation: Annotation): String {
+        return cache.annotationStrings.getStringConverter(annotation.javaClass).toKotlinString(annotation)
     }
 
     /**

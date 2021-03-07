@@ -80,4 +80,8 @@ Contract contractAnnotation = Mirror.newAnnotation(Contract.class)
     .build();
 ```
 
+Mirror is designed to more broadly follow a source-focused representation of reflection data as opposed to a 
+bytecode-focused representation. This extends to things like the `ClassMirror.toString()` method returning 
+`package.OuterClass.InnerClass` instead of `package.OuterClass$InnerClass`.
+
 … readme wip …

@@ -57,7 +57,7 @@ internal class TypeVariableMirrorTest: MTest() {
     @Test
     fun `'toString' of annotated type variable use should return its type annotations then name`() {
         val type = Mirror.reflect(types["@A T"]) as TypeVariableMirror
-        assertEquals("@gen.A() T", type.toString())
+        assertEquals("@gen.A T", type.toString())
     }
 
     @Test

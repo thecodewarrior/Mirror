@@ -98,8 +98,20 @@ public interface TypeMirror {
     public fun asArrayMirror(): ArrayMirror
 
     /**
-     * Returns a string approximating the appearance of this type when used in source code.
+     * Returns a string approximating the appearance of this type when used in Java source code.
      */
     @Untested
     public override fun toString(): String
+
+    /**
+     * Returns a string approximating the appearance of this type when used in Java source code.
+     */
+    @Untested
+    public fun toJavaString(): String
+
+    /**
+     * Returns a string approximating the appearance of this type when used in Kotlin source code.
+     */
+    @Untested
+    public fun toKotlinString(): String
 }

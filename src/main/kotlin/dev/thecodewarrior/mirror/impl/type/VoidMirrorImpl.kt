@@ -18,6 +18,10 @@ internal class VoidMirrorImpl internal constructor(
 
     override val raw: VoidMirror = raw ?: this
 
+    override fun withTypeAnnotations(annotations: List<Annotation>): VoidMirror {
+        return withTypeAnnotationsImpl(annotations) as VoidMirror
+    }
+
     override fun defaultSpecialization() = TypeSpecialization.Common.DEFAULT
 
     override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
@@ -34,6 +38,14 @@ internal class VoidMirrorImpl internal constructor(
     }
 
     override fun toString(): String {
-        return "void"
+        return toJavaString()
+    }
+
+    override fun toJavaString(): String {
+        return typeAnnotations.toJavaString(joiner = " ", trailing = " ") + "void"
+    }
+
+    override fun toKotlinString(): String {
+        return typeAnnotations.toKotlinString(joiner = " ", trailing = " ") + "Unit"
     }
 }

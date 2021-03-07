@@ -14,4 +14,6 @@ public interface VoidMirror : TypeMirror {
     public override val coreType: Class<*>
     public override val coreAnnotatedType: AnnotatedType
     public override val raw: VoidMirror
+
+    public override fun withTypeAnnotations(annotations: List<Annotation>): VoidMirror
 }

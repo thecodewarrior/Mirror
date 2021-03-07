@@ -45,6 +45,10 @@ internal class ArrayMirrorImpl internal constructor(
         return cache.types.specialize(this, newSpecialization) as ArrayMirror
     }
 
+    override fun withTypeAnnotations(annotations: List<Annotation>): ArrayMirror {
+        return withTypeAnnotationsImpl(annotations) as ArrayMirror
+    }
+
     override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
         return defaultApplySpecialization<TypeSpecialization.Array>(
             specialization,
@@ -61,16 +65,6 @@ internal class ArrayMirrorImpl internal constructor(
         return component.isAssignableFrom(other.component)
     }
 
-    @Untested
-    override fun toString(): String {
-        var str = "$component"
-        if(specialization?.annotations?.isNotEmpty() == true) {
-            str += " " + specialization.annotations.joinToString(" ") + " "
-        }
-        str += "[]"
-        return str
-    }
-
     override fun newInstance(length: Int): Any {
         return when (this.java) {
             BooleanArray::class.java -> BooleanArray(length)
@@ -83,5 +77,23 @@ internal class ArrayMirrorImpl internal constructor(
             DoubleArray::class.java -> DoubleArray(length)
             else -> ArrayReflect.newInstanceRaw(component.erasure, length)
         }
+    }
+
+    @Untested
+    override fun toString(): String {
+        return toJavaString()
+    }
+
+    @Untested
+    override fun toJavaString(): String {
+        var str = "$component"
+        str += typeAnnotations.toJavaString(joiner = " ", trailing = " ")
+        str += "[]"
+        return str
+    }
+
+    @Untested
+    override fun toKotlinString(): String {
+        TODO("Not yet implemented")
     }
 }

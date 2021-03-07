@@ -19,11 +19,11 @@ import dev.thecodewarrior.mirror.type.MethodList
 import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.impl.utils.checkedCast
 import dev.thecodewarrior.mirror.impl.utils.jvmName
-import dev.thecodewarrior.mirror.impl.utils.stableSort
 import dev.thecodewarrior.mirror.impl.utils.unique
 import dev.thecodewarrior.mirror.impl.utils.uniqueBy
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import dev.thecodewarrior.mirror.util.AnnotationList
+import dev.thecodewarrior.mirror.util.MirrorUtils
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.AnnotatedType
 import java.lang.reflect.Constructor
@@ -135,7 +135,12 @@ internal class ClassMirrorImpl internal constructor(
         if(enclosing != null && enclosing.raw != raw.enclosingClass)
             throw InvalidSpecializationException("Passed enclosing class ($enclosing) is not equal to or a " +
                 "specialization of this class's enclosing class (${raw.enclosingClass})")
-        val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingClass = enclosing)
+
+        val stripped = enclosing?.withTypeAnnotations(emptyList())
+        if(this.isStatic && stripped != raw.enclosingClass)
+            throw InvalidSpecializationException("Static member classes can't be specialized for an enclosing class")
+
+        val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingClass = stripped)
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
     }
 
@@ -145,6 +150,10 @@ internal class ClassMirrorImpl internal constructor(
                 "specialization of this class's enclosing executable (${raw.enclosingExecutable})")
         val newSpecialization = (specialization ?: defaultSpecialization()).copy(enclosingExecutable = enclosing)
         return cache.types.specialize(raw, newSpecialization) as ClassMirror
+    }
+
+    override fun withTypeAnnotations(annotations: List<Annotation>): ClassMirror {
+        return withTypeAnnotationsImpl(annotations) as ClassMirror
     }
 
     override fun applySpecialization(specialization: TypeSpecialization): TypeMirror {
@@ -185,6 +194,10 @@ internal class ClassMirrorImpl internal constructor(
     override val modifiers: Set<Modifier> = Modifier.fromModifiers(java.modifiers).unmodifiableView()
     override val access: Modifier.Access = Modifier.Access.fromModifiers(java.modifiers)
     override val isInternalAccess: Boolean get() = kClass.visibility == KVisibility.INTERNAL
+    @Untested
+    override val isKotlinClass: Boolean by lazy {
+        declaredAnnotations.isPresent<Metadata>()
+    }
 
     override val flags: Set<Flag> = sequenceOf(
         Flag.ABSTRACT to (Modifier.ABSTRACT in modifiers),
@@ -251,7 +264,7 @@ internal class ClassMirrorImpl internal constructor(
 
 //region Methods ================================================================================================================
     override val declaredMethods: MethodList by lazy {
-        MethodListImpl(this, "declared", stableSort(java.declaredMethods).map {
+        MethodListImpl(this, "declared", MirrorUtils.stableSort(java.declaredMethods).map {
             cache.executables.reflect(it).withDeclaringClass(this) as MethodMirror
         })
     }
@@ -354,12 +367,12 @@ internal class ClassMirrorImpl internal constructor(
 
 //region Fields =================================================================================================================
     override val declaredFields: List<FieldMirror> by lazy {
-        java.declaredFields.map {
+        MirrorUtils.stableSort(java.declaredFields).map {
             cache.fields.reflect(it).withDeclaringClass(this)
         }.unmodifiableView()
     }
     override val publicFields: List<FieldMirror> by lazy {
-        java.fields.mapNotNull { getField(it) }.unmodifiableView()
+        MirrorUtils.stableSort(java.fields).mapNotNull { getField(it) }.unmodifiableView()
     }
     override val fields: List<FieldMirror> by lazy {
         (declaredFields + superclass?.fields.orEmpty()).unmodifiableView()
@@ -415,12 +428,12 @@ internal class ClassMirrorImpl internal constructor(
 
 //region Constructors ===========================================================================================================
     override val declaredConstructors: List<ConstructorMirror> by lazy {
-        java.declaredConstructors.map {
+        MirrorUtils.stableSort(java.declaredConstructors).map {
             cache.executables.reflect(it).withDeclaringClass(this) as ConstructorMirror
         }.unmodifiableView()
     }
     override val publicConstructors: List<ConstructorMirror> by lazy {
-        java.constructors.mapNotNull { getConstructor(it) }.unmodifiableView()
+        MirrorUtils.stableSort(java.constructors).mapNotNull { getConstructor(it) }.unmodifiableView()
     }
 
     override fun getConstructor(other: ConstructorMirror): ConstructorMirror = getConstructor(other.java)
@@ -447,8 +460,12 @@ internal class ClassMirrorImpl internal constructor(
 
 //region Member classes =========================================================================================================
     override val declaredMemberClasses: List<ClassMirror> by lazy {
-        java.declaredClasses.map {
-            (cache.types.reflect(it) as ClassMirror).withEnclosingClass(this)
+        MirrorUtils.stableSort(java.declaredClasses).map {
+            val mirror = cache.types.reflect(it) as ClassMirror
+            if(mirror.isStatic)
+                mirror
+            else
+                mirror.withEnclosingClass(this)
         }.unmodifiableView()
     }
     override val publicMemberClasses: List<ClassMirror> by lazy { java.classes.mapNotNull { getMemberClass(it) }.unmodifiableView() }
@@ -549,16 +566,70 @@ internal class ClassMirrorImpl internal constructor(
 
     @Untested
     override fun toString(): String {
-        val specialization = this.specialization
-        var str = ""
-        if(specialization?.annotations?.isNotEmpty() == true) {
-            str += specialization.annotations.joinToString(" ") + " "
+        return toJavaString()
+    }
+
+    @Untested
+    override fun toDeclarationString(): String {
+        return if(isKotlinClass) {
+            toKotlinDeclarationString()
+        } else {
+            toJavaDeclarationString()
         }
-        str += java.canonicalName
-        if(typeParameters.isNotEmpty()) {
-            str += "<${typeParameters.joinToString(", ")}>"
+    }
+
+    @Untested
+    override fun toJavaString(): String {
+        var str = ""
+        str += typeAnnotations.toJavaString(joiner = " ", trailing = " ")
+        str += enclosingClass?.let { enclosing ->
+            enclosing.toJavaString() + java.canonicalName.removePrefix(enclosing.java.canonicalName)
+        } ?: java.canonicalName
+        if(specialization?.arguments != null) {
+            str += "<${typeParameters.joinToString(", ") { it.toJavaString() }}>"
         }
         return str
     }
-}
 
+    @Untested
+    override fun toKotlinString(): String {
+        TODO("Not yet implemented")
+    }
+
+    @Untested
+    override fun toJavaDeclarationString(): String {
+        var str = ""
+        str += declaredAnnotations.toJavaString(joiner = "\n", trailing = "\n")
+        str += modifiers.joinToString { "$it " }
+        str += when {
+            isAnnotation -> "@interface "
+            isInterface -> "interface "
+            else -> "class "
+        }
+        str += java.simpleName
+        if(typeParameters.isNotEmpty()) {
+            if(specialization?.annotations != null) {
+                str += "<${typeParameters.joinToString(", ") { it.toJavaString() }}>"
+            } else {
+                str += "<${typeParameters.joinToString(", ") { 
+                    (it as? TypeVariableMirror)?.toJavaDeclarationString() ?: "!ERR!"
+                }}>"
+            }
+        }
+        superclass?.also {
+            if(it.java != Any::class.java) {
+                str += " extends ${it.toJavaString()}"
+            }
+        }
+        if(interfaces.isNotEmpty()) {
+            str += if(isInterface) " extends " else " implements "
+            str += interfaces.joinToString(", ") { it.toJavaString() }
+        }
+        return str
+    }
+
+    @Untested
+    override fun toKotlinDeclarationString(): String {
+        TODO("Not yet implemented")
+    }
+}

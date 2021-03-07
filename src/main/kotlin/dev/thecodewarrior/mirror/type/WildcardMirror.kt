@@ -96,4 +96,6 @@ public interface WildcardMirror : TypeMirror {
      */
     @Untested
     public fun withBounds(upperBounds: List<TypeMirror>?, lowerBounds: List<TypeMirror>?): WildcardMirror
+
+    public override fun withTypeAnnotations(annotations: List<Annotation>): WildcardMirror
 }

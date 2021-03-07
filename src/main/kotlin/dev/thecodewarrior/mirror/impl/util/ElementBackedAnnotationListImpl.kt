@@ -8,7 +8,7 @@ internal class ElementBackedAnnotationListImpl private constructor(
     val element: AnnotatedElement,
     val useDeclared: Boolean,
     backingList: List<Annotation>
-) : AnnotationList(), List<Annotation> by backingList {
+) : AbstractAnnotationListImpl(), List<Annotation> by backingList {
 
     constructor(element: AnnotatedElement, useDeclared: Boolean) : this(
         element,

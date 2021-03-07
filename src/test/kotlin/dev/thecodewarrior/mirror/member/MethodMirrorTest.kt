@@ -323,37 +323,4 @@ internal class MethodMirrorTest : MTest() {
         @JvmStatic
         fun kotlinStatic() {}
     }
-
-    @Test
-    fun `'toString' for non-generic method should be correct`() {
-        val X by sources.add("X", "public class X { public void method(Y arg) {} }")
-        val Y by sources.add("Y", "public class Y { }")
-        sources.compile()
-        assertEquals("public void gen.X.method(gen.Y arg)", Mirror.reflect(X._m("method")).toString())
-    }
-
-    @Test
-    fun `'toString' for generic method should place type parameters before the name`() {
-        val X by sources.add("X", "public class X { public <T> void method(T arg) {} }")
-        val Y by sources.add("Y", "public class Y { }")
-        sources.compile()
-        assertEquals("public <T> void gen.X.method(T arg)", Mirror.reflect(X._m("method")).toString())
-    }
-
-    @Test
-    fun `'toString' for specialized generic method should place specialization after the name`() {
-        val X by sources.add("X", "public class X { public <T> void method(T arg) {} }")
-        val Y by sources.add("Y", "public class Y { }")
-        sources.compile()
-        assertEquals("public void gen.X.method<gen.Y>(gen.Y arg)", Mirror.reflect(X._m("method")).withTypeParameters(Mirror.reflect(Y)).toString())
-    }
-
-    @Test
-    fun `'toString' for a method in an anonymous class should use the dot-separated binary class name`() {
-        val X by sources.add("X", "class X { static Class type = new Y() { private void method() {} }.getClass(); }")
-        val Y by sources.add("Y", "interface Y {}")
-        sources.compile()
-        val method = X._f("type")._get<Class<*>>(null)._m("method")
-        assertEquals("private void gen.X$1.method()", Mirror.reflect(method).toString())
-    }
 }

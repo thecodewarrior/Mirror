@@ -166,27 +166,4 @@ internal class ConstructorMirrorTest: MTest() {
         )
     }
 
-    @Test
-    fun `'toString' for non-generic constructor should be correct`() {
-        val X by sources.add("X", "public class X { public X(Y arg) {} }")
-        val Y by sources.add("Y", "public class Y { }")
-        sources.compile()
-        assertEquals("public gen.X(gen.Y arg)", Mirror.reflect(X._constructor()).toString())
-    }
-
-    @Test
-    fun `'toString' for generic constructor should place type parameters before the name`() {
-        val X by sources.add("X", "public class X { public <T> X(T arg) {} }")
-        val Y by sources.add("Y", "public class Y { }")
-        sources.compile()
-        assertEquals("public <T> gen.X(T arg)", Mirror.reflect(X._constructor()).toString())
-    }
-
-    @Test
-    fun `'toString' for specialized generic constructor should place specialization after the name`() {
-        val X by sources.add("X", "public class X { public <T> X(T arg) {} }")
-        val Y by sources.add("Y", "public class Y { }")
-        sources.compile()
-        assertEquals("public gen.X<gen.Y>(gen.Y arg)", Mirror.reflect(X._constructor()).withTypeParameters(Mirror.reflect(Y)).toString())
-    }
 }

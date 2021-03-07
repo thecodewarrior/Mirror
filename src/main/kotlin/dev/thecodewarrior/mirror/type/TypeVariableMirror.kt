@@ -1,5 +1,6 @@
 package dev.thecodewarrior.mirror.type
 
+import dev.thecodewarrior.mirror.util.DeclarationMirror
 import java.lang.reflect.AnnotatedTypeVariable
 import java.lang.reflect.TypeVariable
 
@@ -15,7 +16,7 @@ import java.lang.reflect.TypeVariable
  * @see VoidMirror
  * @see WildcardMirror
  */
-public interface TypeVariableMirror : TypeMirror {
+public interface TypeVariableMirror : TypeMirror, DeclarationMirror {
     public override val coreType: TypeVariable<*>
     public override val coreAnnotatedType: AnnotatedTypeVariable
     public override val raw: TypeVariableMirror
@@ -27,9 +28,6 @@ public interface TypeVariableMirror : TypeMirror {
      */
     public val bounds: List<TypeMirror>
 
-    /**
-     * The declaration string for this type. e.g. `T extends X`
-     */
-    public fun toDeclarationString(): String
+    public override fun withTypeAnnotations(annotations: List<Annotation>): TypeVariableMirror
 }
 

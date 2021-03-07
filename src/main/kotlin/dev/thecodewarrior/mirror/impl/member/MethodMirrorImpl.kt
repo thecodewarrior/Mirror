@@ -122,7 +122,13 @@ internal class MethodMirrorImpl internal constructor(
         }
     }
 
+    @Untested
     override fun toString(): String {
+        return ""
+    }
+
+    @Untested
+    override fun toJavaDeclarationString(): String {
         var str = ""
         str += modifiers.joinToString("") { "$it " }
         if(specialization?.arguments != null) {
@@ -138,5 +144,10 @@ internal class MethodMirrorImpl internal constructor(
         }
         str += "(${parameters.joinToString(", ")})"
         return str
+    }
+
+    @Untested
+    override fun toKotlinDeclarationString(): String {
+        TODO("Not yet implemented")
     }
 }

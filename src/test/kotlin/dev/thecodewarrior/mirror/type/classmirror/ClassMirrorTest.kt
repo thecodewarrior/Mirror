@@ -1,17 +1,7 @@
 package dev.thecodewarrior.mirror.type.classmirror
 
 import dev.thecodewarrior.mirror.Mirror
-import dev.thecodewarrior.mirror.testsupport.GenericObject1
-import dev.thecodewarrior.mirror.testsupport.GenericPairObject1
-import dev.thecodewarrior.mirror.testsupport.Interface1
-import dev.thecodewarrior.mirror.testsupport.Interface2
-import dev.thecodewarrior.mirror.testsupport.MirrorTestBase
-import dev.thecodewarrior.mirror.testsupport.Object1
-import dev.thecodewarrior.mirror.testsupport.OuterClass1
-import dev.thecodewarrior.mirror.testsupport.OuterGenericClass1
-import dev.thecodewarrior.mirror.testsupport.TestSources
-import dev.thecodewarrior.mirror.testsupport.assertSameList
-import dev.thecodewarrior.mirror.testsupport.assertSameSet
+import dev.thecodewarrior.mirror.testsupport.*
 import dev.thecodewarrior.mirror.type.TypeMirror
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -20,7 +10,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
-internal class ClassMirrorTest: MirrorTestBase() {
+internal class ClassMirrorTest: MTest() {
 
     @Test
     @DisplayName("Getting the raw class of a ClassMirror should return the original class")
@@ -141,7 +131,7 @@ internal class ClassMirrorTest: MirrorTestBase() {
         val barJvmField = FieldHolder::class.java.getDeclaredField("bar")
         val holderMirror = Mirror.reflectClass<FieldHolder>()
         val fields = holderMirror.declaredFields
-        assertSameList(listOf(
+        assertSameSet(listOf(
             Mirror.reflect(fooJvmField),
             Mirror.reflect(barJvmField)
         ), fields)
@@ -190,16 +180,4 @@ internal class ClassMirrorTest: MirrorTestBase() {
     fun kClass_ofSpecializedClass_shouldReturnKClass() {
         assertEquals(GenericObject1::class, Mirror.reflectClass<GenericObject1<Object1>>().kClass)
     }
-
-    @Test
-    fun `'toString' on self-referential class should not infinitely recurse`() {
-        val sources = TestSources()
-        val G by sources.add("G", "class G<T> {}")
-        val X by sources.add("X", "class X extends G<X> {}")
-        sources.compile()
-        assertDoesNotThrow {
-            X.toString()
-        }
-    }
-
 }

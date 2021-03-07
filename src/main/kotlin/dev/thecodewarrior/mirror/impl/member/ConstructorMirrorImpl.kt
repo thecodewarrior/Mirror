@@ -5,6 +5,7 @@ import dev.thecodewarrior.mirror.impl.member.ExecutableSpecialization
 import dev.thecodewarrior.mirror.type.ClassMirror
 import dev.thecodewarrior.mirror.type.TypeMirror
 import dev.thecodewarrior.mirror.impl.utils.MethodHandleHelper
+import dev.thecodewarrior.mirror.impl.utils.Untested
 import dev.thecodewarrior.mirror.impl.utils.unmodifiableView
 import dev.thecodewarrior.mirror.member.ConstructorMirror
 import dev.thecodewarrior.mirror.member.Modifier
@@ -60,7 +61,13 @@ internal class ConstructorMirrorImpl internal constructor(
         return raw.wrapper(args as Array<Any?>) as T
     }
 
+    @Untested
     override fun toString(): String {
+        return ""
+    }
+
+    @Untested
+    override fun toJavaDeclarationString(): String {
         var str = ""
         if(access != Modifier.Access.DEFAULT) {
             str += "$access ".toLowerCase()
@@ -78,5 +85,10 @@ internal class ConstructorMirrorImpl internal constructor(
         }
         str += "(${parameters.joinToString(", ")})"
         return str
+    }
+
+    @Untested
+    override fun toKotlinDeclarationString(): String {
+        TODO("Not yet implemented")
     }
 }
