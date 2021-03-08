@@ -256,8 +256,11 @@ class TypeBlock(val root: TypeSetDefinition, val parent: TypeBlock?, val index: 
         }
     }
 
-    operator fun String.unaryPlus(): Unit = add(this, this)
-    fun add(name: String, type: String) {
+    operator fun @receiver:Language( // this won't work until IDEA-263798 and IDEA-263799 are fixed
+        "java", prefix = "class X { __<", suffix="> field; }"
+    ) String.unaryPlus(): Unit = add(this, this)
+
+    fun add(name: String, @Language("java", prefix = "class X { __<", suffix="> field; }") type: String) {
         if(name in root.definitions)
             throw IllegalArgumentException("A type named `$name` already exists")
         val def = TypeDefinition(this, definitions.size, name, type)
