@@ -238,13 +238,12 @@ internal class AnnotationToStringTest : MTest() {
             ),
             assertToString(
                 types["""@A("\b\t\n\r\f\"'\\$") X"""].annotations[0],
-                // java has all these escapes and doesn't escape the dollar sign
                 // the single quote is also not escaped because we're in a double quote string
                 java = """@gen.A("\b\t\n\r\f\"'\\$")""",
                 // kotlin doesn't have \f and escapes the dollar sign
                 kotlin = """@gen.A("\b\t\n\r\u000C\"'\\\$")"""
             ),
-            // anything outside the 20..7F range gets encoded, anything in there is used directly
+            // anything outside the 20..7E range gets encoded, anything in there is used directly
             assertToString(
                 // 0 = NUL, 1B = ESC, 20 = space, 30 = '0', 7E = '~', 7F = DEL, 80 = <Control>
                 types["""@A("\u0000\u001B\u0020\u0030\u007E\u007F\u0080") X"""].annotations[0],
@@ -288,13 +287,12 @@ internal class AnnotationToStringTest : MTest() {
             ),
             assertToString(
                 types["""@B(a='\b', b='\t', c='\n', d='\r', e='\f', f='"', g='\'', h='\\', i='$') X"""].annotations[0],
-                // java has all these escapes and doesn't escape the dollar sign
-                // the single quote is also not escaped because we're in a double quote string
+                // the double quote is not escaped because we're in a single quote character literal
                 java = """@gen.B(a='\b', b='\t', c='\n', d='\r', e='\f', f='"', g='\'', h='\\', i='$')""",
-                // kotlin doesn't have \f and escapes the dollar sign
+                // kotlin doesn't have \f and doesn't need to escape the dollar sign in character literals
                 kotlin = """@gen.B(a='\b', b='\t', c='\n', d='\r', e='\u000C', f='"', g='\'', h='\\', i='$')"""
             ),
-            // anything outside the 20..7F range gets encoded, anything in there is used directly
+            // anything outside the 20..7E range gets encoded, anything in there is used directly
             assertToString(
                 // 0 = NUL, 1B = ESC, 20 = space, 30 = '0', 7E = '~', 7F = DEL, 80 = <Control>
                 types["""@C(a='\u0000', b='\u001B', c='\u0020', d='\u0030', e='\u007E', f='\u007F', g='\u0080') X"""].annotations[0],
