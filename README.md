@@ -7,7 +7,7 @@
   <br>
 </h1>
 
-<h4 align="center">A library that makes advanced Java reflection features viable for the non-expert to use</h4>
+<h4 align="center">Unlocking the power of reflection</h4>
 
 The central feature of Mirror is the family of “Mirrors,” which wrap Java Core Reflection objects and make many advanced
 reflection features simple and easy to use. Mirrors can contain information about type arguments and annotations,
