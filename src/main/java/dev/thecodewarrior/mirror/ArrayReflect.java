@@ -3,7 +3,7 @@ package dev.thecodewarrior.mirror;
 /**
  * A set of utilities to create, inspect, and access primitive and typed arrays.
  *
- * Legal conversions:
+ * <p>Legal conversions: <pre>
  * From, To: | boolean | byte | char | short | int | long | float | double
  * ----------|-------------------------------------------------------------
  * boolean   |    #
@@ -14,9 +14,10 @@ package dev.thecodewarrior.mirror;
  * long      |    #       #      #
  * float     |    #       #
  * double    |    #
+ * </pre></p>
  */
 @SuppressWarnings({"Duplicates", "JavaDoc"})
-public class ArrayReflect {
+public final class ArrayReflect {
     private static RuntimeException badArray(Object array) {
         if (array == null)
             return new NullPointerException("Array argument is null");

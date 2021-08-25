@@ -214,6 +214,7 @@ public object Mirror {
      * Converts an annotation into a Java string representation
      */
     @Untested
+    @JvmStatic
     public fun annotationToString(annotation: Annotation): String {
         return annotationToJavaString(annotation)
     }
@@ -222,6 +223,7 @@ public object Mirror {
      * Converts an annotation into a Java string representation
      */
     @Untested
+    @JvmStatic
     public fun annotationToJavaString(annotation: Annotation): String {
         return cache.annotationStrings.getStringConverter(annotation.javaClass).toJavaString(annotation)
     }
@@ -230,6 +232,7 @@ public object Mirror {
      * Converts an annotation into a Kotlin string representation
      */
     @Untested
+    @JvmStatic
     public fun annotationToKotlinString(annotation: Annotation): String {
         return cache.annotationStrings.getStringConverter(annotation.javaClass).toKotlinString(annotation)
     }
